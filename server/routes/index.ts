@@ -17,6 +17,9 @@ export default function routes(service: Services): Router {
     service.bulkRemandCalculationService,
   )
 
+  get('/', (req, res, next) => {
+    res.render('pages/index')
+  })
   get('/:nomsId/remand', remandRoutes.remand)
   post('/:nomsId/remand', remandRoutes.remandSubmit)
   get('/bulk', remandRoutes.bulkRemand)
