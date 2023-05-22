@@ -5,12 +5,21 @@ generic-service:
   replicaCount: 2
 
   ingress:
-    host: hmpps-identify-remand-periods-dev.hmpps.service.justice.gov.uk
+    host: identify-remand-periods-dev.hmpps.service.justice.gov.uk
 
   env:
-    INGRESS_URL: "https://hmpps-identify-remand-periods-dev.hmpps.service.justice.gov.uk"
+    INGRESS_URL: "https://identify-remand-periods-dev.hmpps.service.justice.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     TOKEN_VERIFICATION_API_URL: "https://token-verification-api-dev.prison.service.justice.gov.uk"
+    WARRANT_FOLDER_URL: "https://manage-a-warrant-folder-api-dev.hmpps.service.justice.gov.uk"
+    PRISON_API_URL: "https://api-dev.prison.service.justice.gov.uk"
+    ADJUSTMENTS_API_URL: "https://adjustments-api-dev.hmpps.service.justice.gov.uk"
+    CALCULATE_RELEASE_DATES_URL: "https://calculate-release-dates-dev.hmpps.service.justice.gov.uk"
+    DIGITAL_PRISON_SERVICES_URL: "https://digital-dev.prison.service.justice.gov.uk"
+    ADJUSTMENTS_URL: "https://adjust-release-dates-dev.hmpps.service.justice.gov.uk"
+
+  # Switches off the allow list in the DEV env only.
+  allowlist: null
 
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service-dev
