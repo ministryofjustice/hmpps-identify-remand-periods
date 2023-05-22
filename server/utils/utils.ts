@@ -21,3 +21,17 @@ export const initialiseName = (fullName?: string): string | null => {
   const array = fullName.split(' ')
   return `${array[0][0]}. ${array.reverse()[0]}`
 }
+
+export const sameMembers = <T>(array1: T[], array2: T[]) => containsAll(array1, array2) && containsAll(array2, array1)
+
+export const containsAll = <T>(array1: T[], array2: T[]) =>
+  array2.every(arr2Item => array1.find(arr1Item => deepEqual(arr1Item, arr2Item)))
+
+export const deepEqual = <T>(x: T, y: T): boolean => {
+  const ok = Object.keys
+  const tx = typeof x
+  const ty = typeof y
+  return x && y && tx === 'object' && tx === ty
+    ? ok(x).length === ok(y).length && ok(x).every(key => deepEqual(x[key], y[key]))
+    : x === y
+}

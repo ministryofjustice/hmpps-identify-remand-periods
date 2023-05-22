@@ -68,6 +68,41 @@ export default {
       agent: new AgentConfig(Number(get('TOKEN_VERIFICATION_API_TIMEOUT_RESPONSE', 5000))),
       enabled: get('TOKEN_VERIFICATION_ENABLED', 'false') === 'true',
     },
+    prisonApi: {
+      url: get('PRISON_API_URL', 'http://localhost:8080', requiredInProduction),
+      timeout: {
+        response: get('PRISON_API_TIMEOUT_RESPONSE', 10000),
+        deadline: get('PRISON_API_TIMEOUT_DEADLINE', 10000),
+      },
+      agent: new AgentConfig(),
+    },
+    identifyRemandPeriods: {
+      url: get('IDENTIFY_REMAND_PERIODS_API_URL', 'http://localhost:8080', requiredInProduction),
+      timeout: {
+        response: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_RESPONSE', 10000),
+        deadline: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_DEADLINE', 10000),
+      },
+      agent: new AgentConfig(),
+    },
+    adjustments: {
+      url: get('ADJUSTMENTS_API_URL', 'http://localhost:8080', requiredInProduction),
+      timeout: {
+        response: get('ADJUSTMENTS_API_TIMEOUT_RESPONSE', 10000),
+        deadline: get('ADJUSTMENTS_API_TIMEOUT_DEADLINE', 10000),
+      },
+      agent: new AgentConfig(),
+    },
+  },
+  services: {
+    calculateReleaseDatesUI: {
+      url: get('CALCULATE_RELEASE_DATES_URL', 'http://localhost:8080', requiredInProduction),
+    },
+    digitalPrisonServices: {
+      url: get('DIGITAL_PRISON_SERVICES_URL', 'http://localhost:3000/dps', requiredInProduction),
+    },
+    adjustmentServices: {
+      url: get('ADJUSTMENTS_URL', 'http://localhost:3000/adj', requiredInProduction),
+    },
   },
   domain: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
 }

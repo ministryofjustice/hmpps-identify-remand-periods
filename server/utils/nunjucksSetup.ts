@@ -2,8 +2,10 @@
 import nunjucks from 'nunjucks'
 import express from 'express'
 import path from 'path'
+import dayjs from 'dayjs'
 import { initialiseName } from './utils'
 import { ApplicationInfo } from '../applicationInfo'
+import config from '../config'
 
 const production = process.env.NODE_ENV === 'production'
 
@@ -39,5 +41,9 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
     },
   )
 
+  njkEnv.addGlobal('digitalPrisonServicesUrl', config.services.digitalPrisonServices.url)
+
   njkEnv.addFilter('initialiseName', initialiseName)
+
+  njkEnv.addFilter('date', (date, format) => dayjs(date).format(format))
 }
