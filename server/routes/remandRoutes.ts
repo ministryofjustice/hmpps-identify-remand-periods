@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express'
 import { stringify } from 'csv-stringify'
-import { PrisonApiAdjustment } from '../@types/prisonApi/prisonClientTypes'
 import PrisonerService from '../services/prisonerService'
 import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
 import RelevantRemandModel from '../model/RelevantRemandModel'
@@ -52,26 +51,12 @@ export default class RemandRoutes {
         days: relevantRemand.sentenceRemand.map(it => it.days).reduce((sum, current) => sum + current, 0),
       }),
     )
-    return res.redirect(`${config.services.adjustmentServices.url}/adjustments/${nomsId}`)
+    return res.redirect(`/${nomsId}/adjustments`)
   }
 
-  public submitRemand: RequestHandler = async (req, res): Promise<void> => {
-    const { token } = res.locals.user
+  public redirectToAdjustmentsService: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-
-    const relevantRemand = (await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token))
-      .sentenceRemand
-    const adjustment: PrisonApiAdjustment = {
-      from: relevantRemand[0].from,
-      to: relevantRemand[0].to,
-      type: 'REMAND',
-      days: relevantRemand[0].days,
-      sequence: relevantRemand[0].charge.sentenceSequence,
-    }
-
-    await this.prisonerService.createAdjustment(relevantRemand[0].charge.bookingId, adjustment, token)
-
-    return res.redirect(`/remand/${nomsId}`)
+    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}`)
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {
