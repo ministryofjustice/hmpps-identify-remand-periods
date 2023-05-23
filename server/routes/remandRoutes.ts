@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express'
 import { stringify } from 'csv-stringify'
-import { PrisonApiAdjustment } from '../@types/prisonApi/prisonClientTypes'
 import PrisonerService from '../services/prisonerService'
 import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
 import RelevantRemandModel from '../model/RelevantRemandModel'
