@@ -51,11 +51,6 @@ export default class RemandRoutes {
         days: relevantRemand.sentenceRemand.map(it => it.days).reduce((sum, current) => sum + current, 0),
       }),
     )
-    return res.redirect(`/${nomsId}/adjustments`)
-  }
-
-  public redirectToAdjustmentsService: RequestHandler = async (req, res): Promise<void> => {
-    const { nomsId } = req.params
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}`)
   }
 

@@ -25,7 +25,6 @@ export default function routes(service: Services): Router {
   post('/bulk', remandRoutes.submitBulkRemand)
   get('/:nomsId', remandRoutes.remand)
   post('/:nomsId', remandRoutes.remandSubmit)
-  get('/:nomsId/adjustments', remandRoutes.redirectToAdjustmentsService)
 
   return router
 }
