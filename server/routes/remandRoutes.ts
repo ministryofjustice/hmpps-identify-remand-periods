@@ -44,14 +44,12 @@ export default class RemandRoutes {
     })
     await Promise.all(adjustments.map(it => this.adjustmentsService.create(it, token)))
 
-    req.flash(
-      'message',
-      JSON.stringify({
-        type: 'REMAND',
-        days: relevantRemand.sentenceRemand.map(it => it.days).reduce((sum, current) => sum + current, 0),
-      }),
-    )
-    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}`)
+    const message = JSON.stringify({
+      type: 'REMAND',
+      days: relevantRemand.sentenceRemand.map(it => it.days).reduce((sum, current) => sum + current, 0),
+    })
+
+    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {
