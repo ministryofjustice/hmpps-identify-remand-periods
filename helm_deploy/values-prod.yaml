@@ -1,0 +1,22 @@
+---
+# Per environment values which override defaults in hmpps-identify-remand-periods/values.yaml
+
+generic-service:
+  replicaCount: 2
+
+  ingress:
+    host: identify-remand-periods.hmpps.service.justice.gov.uk
+
+  env:
+    INGRESS_URL: "https://identify-remand-periods.hmpps.service.justice.gov.uk"
+    HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
+    TOKEN_VERIFICATION_API_URL: "https://token-verification-api.prison.service.justice.gov.uk"
+    PRISON_API_URL: "https://api.prison.service.justice.gov.uk"
+    ADJUSTMENTS_API_URL: "https://adjustments-api.hmpps.service.justice.gov.uk"
+    CALCULATE_RELEASE_DATES_URL: "https://calculate-release-dates.hmpps.service.justice.gov.uk"
+    DIGITAL_PRISON_SERVICES_URL: "https://digital.prison.service.justice.gov.uk"
+    ADJUSTMENTS_URL: "https://adjust-release-dates.hmpps.service.justice.gov.uk"
+    IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api.hmpps.service.justice.gov.uk"
+
+generic-prometheus-alerts:
+  alertSeverity: digital-prison-service-dev
