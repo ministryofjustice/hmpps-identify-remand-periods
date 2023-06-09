@@ -47,22 +47,6 @@ export default class PrisonerService {
     }
   }
 
-  public async createCourtCase(bookingId: number, courtCase: PrisonApiCourtCase, token: string): Promise<number> {
-    return new PrisonApiClient(token).createCourtCase(bookingId, courtCase)
-  }
-
-  public async createCharge(bookingId: number, courtCase: PrisonApiCharge, token: string): Promise<number> {
-    return new PrisonApiClient(token).createCharge(bookingId, courtCase)
-  }
-
-  public async createSentence(bookingId: number, courtCase: PrisonApiSentence, token: string): Promise<number> {
-    return new PrisonApiClient(token).createSentence(bookingId, courtCase)
-  }
-
-  public async createAdjustment(bookingId: number, adjustment: PrisonApiAdjustment, token: string): Promise<number> {
-    return new PrisonApiClient(token).createAdjustment(bookingId, adjustment)
-  }
-
   public async getCourtDateResults(nomsId: string, token: string): Promise<PrisonApiCourtDateResult[]> {
     return new PrisonApiClient(token).getCourtDateResults(nomsId)
   }
