@@ -1,13 +1,9 @@
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import type {
-  PrisonApiAdjustment,
   PrisonApiBookingAndSentenceAdjustments,
-  PrisonApiCharge,
-  PrisonApiCourtCase,
   PrisonApiCourtDateResult,
   PrisonApiPrisoner,
-  PrisonApiSentence,
   PrisonApiUserCaseloads,
 } from '../@types/prisonApi/prisonClientTypes'
 
@@ -26,37 +22,9 @@ export default class PrisonApiClient {
     return this.restClient.get({ path: `/api/users/me/caseLoads` }) as Promise<PrisonApiUserCaseloads[]>
   }
 
-  async createCourtCase(bookingId: number, courtCase: PrisonApiCourtCase): Promise<number> {
-    return this.restClient.post({
-      path: `/api/digital-warrant/booking/${bookingId}/court-case`,
-      data: courtCase,
-    }) as Promise<number>
-  }
-
-  async createCharge(bookingId: number, charge: PrisonApiCharge): Promise<number> {
-    return this.restClient.post({
-      path: `/api/digital-warrant/booking/${bookingId}/charge`,
-      data: charge,
-    }) as Promise<number>
-  }
-
-  async createSentence(bookingId: number, sentence: PrisonApiSentence): Promise<number> {
-    return this.restClient.post({
-      path: `/api/digital-warrant/booking/${bookingId}/sentence`,
-      data: sentence,
-    }) as Promise<number>
-  }
-
-  async createAdjustment(bookingId: number, sentence: PrisonApiAdjustment): Promise<number> {
-    return this.restClient.post({
-      path: `/api/digital-warrant/booking/${bookingId}/adjustment`,
-      data: sentence,
-    }) as Promise<number>
-  }
-
   async getCourtDateResults(nomsId: string): Promise<PrisonApiCourtDateResult[]> {
     return this.restClient.get({
-      path: `/api/digital-warrant/court-date-results/${nomsId}`,
+      path: `/api/court-date-results/${nomsId}`,
     }) as Promise<PrisonApiCourtDateResult[]>
   }
 
