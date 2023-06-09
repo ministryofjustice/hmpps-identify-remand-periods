@@ -1,13 +1,9 @@
 import type HmppsAuthClient from '../data/hmppsAuthClient'
 import PrisonApiClient from '../api/prisonApiClient'
 import {
-  PrisonApiAdjustment,
   PrisonApiBookingAndSentenceAdjustments,
-  PrisonApiCharge,
-  PrisonApiCourtCase,
   PrisonApiCourtDateResult,
   PrisonApiPrisoner,
-  PrisonApiSentence,
 } from '../@types/prisonApi/prisonClientTypes'
 import FullPageError from '../model/FullPageError'
 
