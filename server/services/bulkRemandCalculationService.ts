@@ -110,14 +110,7 @@ export default class BulkRemandCalculationService {
     return (
       nomisRemand != null &&
       calculatedRemand != null &&
-      sameMembers(
-        this.filterForBookingId(bookingId, nomisRemand).map(it => {
-          return { days: it.days }
-        }),
-        this.filterForBookingId(bookingId, calculatedRemand).map(it => {
-          return { days: it.days }
-        }),
-      )
+      this.sumRemandDays(bookingId, nomisRemand) === this.sumRemandDays(bookingId, calculatedRemand)
     )
   }
 
