@@ -1,9 +1,20 @@
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
 {% extends "../../partials/layout.njk" %}
 
 {% set pageTitle = applicationName + " - Home" %}
 {% set mainClasses = "app-container govuk-body" %}
 
 {% block content %}
+
+    {% if model
+        .errorList()
+        .length %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: model.errorList()
+    }) }}
+    {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
 

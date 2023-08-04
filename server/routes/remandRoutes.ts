@@ -21,6 +21,7 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
     const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+
     return res.render('pages/remand/results', {
       model: new RelevantRemandModel(prisonerDetail, relevantRemand),
     })

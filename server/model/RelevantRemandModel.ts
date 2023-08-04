@@ -7,4 +7,12 @@ export default class RelevantRemandModel {
   public isNotRelevant(sentenceRemand: Remand): boolean {
     return !this.relevantRemand.sentenceRemand.find(it => it.charge.chargeId === sentenceRemand.charge.chargeId)
   }
+
+  public errorList() {
+    return this.relevantRemand.issuesWithLegacyData.map(it => {
+      return {
+        text: it,
+      }
+    })
+  }
 }
