@@ -23,12 +23,14 @@ export interface components {
       offence: components['schemas']['Offence']
       /** Format: date */
       offenceDate: string
+      /** Format: int64 */
+      bookingId: number
       /** Format: date */
       offenceEndDate?: string
       /** Format: int32 */
       sentenceSequence?: number
-      /** Format: int64 */
-      bookingId: number
+      /** Format: date */
+      sentenceDate?: string
       courtCaseRef?: string
       courtLocation?: string
       resultDescription?: string
@@ -45,11 +47,32 @@ export interface components {
       to: string
       charge: components['schemas']['Charge']
       /** Format: int64 */
-      days: number
+      days?: number
     }
     RemandResult: {
       chargeRemand: components['schemas']['Remand'][]
       sentenceRemand: components['schemas']['Remand'][]
+      intersectingSentences: components['schemas']['SentencePeriod'][]
+      issuesWithLegacyData: string[]
+    }
+    Sentence: {
+      /** Format: int32 */
+      sequence: number
+      /** Format: date */
+      sentenceDate: string
+      /** Format: date */
+      recallDate?: string
+      /** Format: int64 */
+      bookingId: number
+    }
+    SentencePeriod: {
+      /** Format: date */
+      from: string
+      /** Format: date */
+      to: string
+      sentence: components['schemas']['Sentence']
+      /** Format: int64 */
+      days?: number
     }
   }
   responses: never
@@ -62,17 +85,17 @@ export interface components {
 export type external = Record<string, never>
 
 export interface operations {
+  /**
+   * Calculates relevant remand
+   * @description This endpoint will calculate relevant remand based on the data from NOMIS before returning it to the user
+   */
   calculate: {
-    /**
-     * Calculates relevant remand
-     * @description This endpoint will calculate relevant remand based on the data from NOMIS before returning it to the user
-     */
     parameters: {
-      /**
-       * @description The prisoners ID (aka nomsId)
-       * @example A1234AB
-       */
       path: {
+        /**
+         * @description The prisoners ID (aka nomsId)
+         * @example A1234AB
+         */
         prisonerId: string
       }
     }

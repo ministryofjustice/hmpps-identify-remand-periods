@@ -13,6 +13,7 @@ type BulkRemandCalculationRow = {
   IS_REMAND_SAME: 'Y' | 'N'
   IS_DAYS_SAME: 'Y' | 'N'
   IS_DATES_SAME: 'Y' | 'N'
+  NOMIS_INPUT_MESSAGES: string
 
   ERROR_TEXT: string
   ERROR_JSON: string
