@@ -1,3 +1,5 @@
+import ValidationError from '../model/validationError'
+
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
 
@@ -34,4 +36,8 @@ export const deepEqual = <T>(x: T, y: T): boolean => {
   return x && y && tx === 'object' && tx === ty
     ? ok(x).length === ok(y).length && ok(x).every(key => deepEqual(x[key], y[key]))
     : x === y
+}
+
+export const fieldHasErrors = (errors: ValidationError[], field: string) => {
+  return !!errors.find(error => error.fields.indexOf(field) !== -1)
 }
