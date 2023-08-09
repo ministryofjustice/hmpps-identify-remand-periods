@@ -1,4 +1,6 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -7,9 +9,18 @@
 
 {% block content %}
 
-    {% if model
-        .errorList()
-        .length %}
+    {% if form.errors.length %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: form.errorList()
+        }) }}
+            </div>
+        </div>
+    {% elif model
+            .errorList()
+            .length %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
           errorList: model.errorList()
@@ -118,14 +129,55 @@
         </table>
         <form class="form" method="post">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+            {% set commentHtml %}
+            {{ govukTextarea({
+                    name: "comment",
+                    id: "comment",
+                    value: form.comment,
+                    label: {
+                        text: "Why is this remand calculation incorrect?",
+                        classes: "govuk-fieldset__legend--l"
+                    },
+                    hint: {
+                        text: "Include any information that may be relevant to your decision."
+                    },
+                    errorMessage: form.messageForField('comment')
+                    }) }}
+            {% endset -%}
+
+            {{ govukRadios({
+                name: "decision",
+                fieldset: {
+                    legend: {
+                    text: "Is this remand correct?",
+                    classes: "govuk-fieldset__legend--l"
+                    }
+                },
+                hint: {
+                    text: "Select one option."
+                },
+                errorMessage: form.messageForField('decision'),
+                value: form.decision,
+                items: [
+                    {
+                        value: "yes",
+                        text: "Yes"
+                    },
+                    {
+                        value: "no",
+                        text: "No",
+                        conditional: {
+                            html: commentHtml
+                        }
+                    }
+                ]
+                }) }}
             <div>
-                <button class="govuk-button" data-module="govuk-button" name="submit">Accept and save</button>
-                <a href="/adjustments/{{model.prisonerDetail.offenderNo}}/list" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                    Reject
-                </a>
+                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
             </div>
         </form>
-        <a href="/adjustments/{{model.prisonerDetail.offenderNo}}/list" class="govuk-link">Cancel and return to adjustments</a>
+        <a href="{{model.returnToAdjustments()}}" class="govuk-link">Cancel and return to adjustments</a>
     </div>
 </div>
 {% endblock %}

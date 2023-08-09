@@ -3,15 +3,14 @@ import { stringify } from 'csv-stringify'
 import PrisonerService from '../services/prisonerService'
 import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
 import RelevantRemandModel from '../model/RelevantRemandModel'
-import { AdjustmentDetails } from '../@types/adjustments/adjustmentsTypes'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
-import AdjustmentsService from '../services/adjustmentsService'
 import config from '../config'
+import RemandDecisionForm from '../model/RemandDecisionForm'
+import { IdentifyRemandDecision } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 
 export default class RemandRoutes {
   constructor(
     private readonly prisonerService: PrisonerService,
-    private readonly adjustmentsService: AdjustmentsService,
     private readonly identifyRemandPeriodsService: IdentifyRemandPeriodsService,
     private readonly bulkRemandCalculationService: BulkRemandCalculationService,
   ) {}
@@ -24,32 +23,36 @@ export default class RemandRoutes {
 
     return res.render('pages/remand/results', {
       model: new RelevantRemandModel(prisonerDetail, relevantRemand),
+      form: new RemandDecisionForm({}),
     })
   }
 
   public remandSubmit: RequestHandler = async (req, res): Promise<void> => {
-    const { token } = res.locals.user
+    const { caseloads, token } = res.locals.user
     const { nomsId } = req.params
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+    const form = new RemandDecisionForm(req.body)
+    form.validate()
+    if (form.errors.length) {
+      const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
+      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+      return res.render('pages/remand/results', {
+        model: new RelevantRemandModel(prisonerDetail, relevantRemand),
+        form,
+      })
+    }
 
-    const adjustments: AdjustmentDetails[] = relevantRemand.sentenceRemand.map(it => {
-      return {
-        fromDate: it.from,
-        toDate: it.to,
-        adjustmentType: 'REMAND',
-        days: it.days,
-        sentenceSequence: it.charge.sentenceSequence,
-        bookingId: it.charge.bookingId,
-        person: nomsId,
-      } as AdjustmentDetails
-    })
-    await Promise.all(adjustments.map(it => this.adjustmentsService.create(it, token)))
+    const decision = {
+      accepted: form.decision === 'yes',
+      rejectComment: form.decision === 'no' ? form.comment : null,
+    } as IdentifyRemandDecision
+
+    const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, token)
 
     const message = JSON.stringify({
       type: 'REMAND',
-      days: relevantRemand.sentenceRemand.map(it => it.days).reduce((sum, current) => sum + current, 0),
+      days: result.days,
+      action: form.decision === 'yes' ? 'CREATE' : 'REJECTED',
     })
-
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
   }
 
