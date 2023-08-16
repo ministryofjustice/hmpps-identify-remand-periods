@@ -1,6 +1,7 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -62,7 +63,7 @@
                                     <td class="govuk-table__cell">{{remand.to | date('DD MMMM YYYY') }}</td>
                                     <td class="govuk-table__cell">{{remand.days}}</td>
                                     <td class="govuk-table__cell">{{remand.charge.offence.description}}<br/>
-                                        {% if (remand.charge.offenceDate and remand.charge.offenceStartDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
+                                        {% if (remand.charge.offenceDate and remand.charge.offenceEndDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
                         committed from {{ remand.charge.offenceDate | date('DD MMMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMMM YYYY') }}
                                         {% elseif remand.charge.offenceDate %}
                         committed on {{ remand.charge.offenceDate | date('DD MMMM YYYY') }}
@@ -105,7 +106,7 @@
                                 <ul class="govuk-list">
                                     <li>{{remand.charge.offence.description}}<br>
                                         <span class="govuk-hint">
-                                            {% if (remand.charge.offenceDate and remand.charge.offenceStartDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
+                                            {% if (remand.charge.offenceDate and remand.charge.offenceEndDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
                         Committed from {{ remand.charge.offenceDate | date('DD MMMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMMM YYYY') }}
                                             {% elseif remand.charge.offenceDate %}
                         Committed on {{ remand.charge.offenceDate | date('DD MMMM YYYY') }}
@@ -127,6 +128,15 @@
 
             </tbody>
         </table>
+
+        {% if model.relevantRemand.intersectingSentences.length %}
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
+                    {{ govukTable( model.intersectingSentenceTable() )}}
+                </div>
+            </div>
+        {% endif %}
+
         <form class="form" method="post">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 

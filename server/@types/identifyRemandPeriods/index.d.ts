@@ -83,6 +83,7 @@ export interface components {
       /** Format: date */
       to: string
       sentence: components['schemas']['Sentence']
+      charge: components['schemas']['Charge']
       /** Format: int64 */
       days?: number
     }
@@ -197,11 +198,23 @@ export interface operations {
     }
     responses: {
       /** @description Decision created okay. */
-      201: never
+      201: {
+        content: {
+          'application/json': components['schemas']['IdentifyRemandDecisionDto']
+        }
+      }
       /** @description Unauthorised, requires a valid Oauth2 token */
-      401: never
+      401: {
+        content: {
+          'application/json': components['schemas']['IdentifyRemandDecisionDto']
+        }
+      }
       /** @description Forbidden, requires an appropriate role */
-      403: never
+      403: {
+        content: {
+          'application/json': components['schemas']['IdentifyRemandDecisionDto']
+        }
+      }
     }
   }
 }
