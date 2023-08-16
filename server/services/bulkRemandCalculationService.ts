@@ -89,7 +89,8 @@ export default class BulkRemandCalculationService {
       IS_REMAND_SAME: this.isRemandSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
       IS_DATES_SAME: this.isDatesSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
       IS_DAYS_SAME: this.isDaysSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
-      NOMIS_INPUT_MESSAGES: calculatedRemand.issuesWithLegacyData.join('\n'),
+      INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences),
+      NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.join('\n'),
       ERROR_JSON: JSON.stringify(ex),
       ERROR_TEXT: errorText,
     }
