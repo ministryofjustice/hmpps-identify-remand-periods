@@ -4,7 +4,10 @@ import { Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRe
 import config from '../config'
 
 export default class RelevantRemandModel {
-  constructor(public prisonerDetail: PrisonApiPrisoner, public relevantRemand: RemandResult) {}
+  constructor(
+    public prisonerDetail: PrisonApiPrisoner,
+    public relevantRemand: RemandResult,
+  ) {}
 
   public isNotRelevant(sentenceRemand: Remand): boolean {
     return !this.relevantRemand.sentenceRemand.find(it => it.charge.chargeId === sentenceRemand.charge.chargeId)
