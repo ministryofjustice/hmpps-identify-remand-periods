@@ -2,6 +2,7 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -20,11 +21,56 @@
             </div>
         </div>
     {% elif model
-            .errorList()
+            .allErrors()
             .length %}
+        {% set unrelatedHtml %}
+        <ul class="govuk-list govuk-error-summary__list">
+            {% for error in model.otherErrors() %}
+                <li>{{error.text}}</li>
+            {% endfor %}
+        </ul>
+        {% endset -%}
+
+        {% set errorHtml %}
+        {% if model
+            .mostImportantErrors()
+            .length %}
+        These errors relate to offences that have relevant remand.
+        <ul class="govuk-list govuk-error-summary__list">
+                {% for error in model
+            .mostImportantErrors()%}
+                    <li>{{error.text}}</li>
+                {% endfor %}
+            </ul>
+
+            {% if model
+                .otherErrors()
+                .length %}
+                {{ govukDetails({
+        summaryText: "There are more errors with nomis data that is unrelated to the given relevant remand",
+        html: unrelatedHtml,
+        classes: "govuk-!-margin-top-6"
+        }) }}
+            {% endif %}
+
+        {% elif model
+                .otherErrors()
+                .length %}
+                 There are errors with nomis data that is unrelated to the given relevant remand.
+        <ul class="govuk-list govuk-error-summary__list">
+                {% for error in model
+            .otherErrors()%}
+                    <li>{{error.text}}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% endset -%}
+
         {{ govukErrorSummary({
           titleText: "There is a problem",
-          errorList: model.errorList()
+          errorList: [],
+          descriptionHtml: errorHtml
     }) }}
     {% endif %}
     <div class="govuk-grid-row">

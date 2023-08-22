@@ -37,6 +37,7 @@ export interface components {
       offenceDate: string
       /** Format: int64 */
       bookingId: number
+      bookNumber: string
       /** Format: date */
       offenceEndDate?: string
       /** Format: int32 */
@@ -46,6 +47,14 @@ export interface components {
       courtCaseRef?: string
       courtLocation?: string
       resultDescription?: string
+    }
+    LegacyDataProblem: {
+      message: string
+      offence: components['schemas']['Offence']
+      /** Format: int64 */
+      bookingId: number
+      bookNumber: string
+      courtCaseRef?: string
     }
     Offence: {
       code: string
@@ -65,7 +74,7 @@ export interface components {
       chargeRemand: components['schemas']['Remand'][]
       sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
-      issuesWithLegacyData: string[]
+      issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
     }
     Sentence: {
       /** Format: int32 */
