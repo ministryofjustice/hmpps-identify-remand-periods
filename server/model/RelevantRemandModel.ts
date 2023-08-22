@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
-import { Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import { LegacyDataProblem, Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 
 export default class RelevantRemandModel {
@@ -62,11 +62,39 @@ export default class RelevantRemandModel {
     }
   }
 
-  public errorList() {
-    return this.relevantRemand.issuesWithLegacyData.map(it => {
-      return {
-        text: it,
-      }
-    })
+  public mostImportantErrors(): { text: string }[] {
+    return this.relevantRemand.issuesWithLegacyData
+      .filter(it => {
+        return this.isImportantError(it)
+      })
+      .map(it => {
+        return {
+          text: it.message,
+        }
+      })
+  }
+
+  private isImportantError(problem: LegacyDataProblem): boolean {
+    return this.relevantRemand.sentenceRemand.some(
+      it =>
+        it.charge.offence.statute === problem.offence.statute ||
+        (it.charge.courtCaseRef && problem.courtCaseRef && problem.courtCaseRef === it.charge.courtCaseRef),
+    )
+  }
+
+  public otherErrors(): { text: string }[] {
+    return this.relevantRemand.issuesWithLegacyData
+      .filter(it => {
+        return !this.isImportantError(it)
+      })
+      .map(it => {
+        return {
+          text: it.message,
+        }
+      })
+  }
+
+  public allErrors() {
+    return this.mostImportantErrors().concat(this.otherErrors())
   }
 }
