@@ -183,11 +183,14 @@
             </div>
         {% endif %}
 
-        <form class="form" method="post">
-            <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+        {% if model
+            .mostImportantErrors()
+            .length == 0 %}
+            <form class="form" method="post">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
-            {% set commentHtml %}
-            {{ govukTextarea({
+                {% set commentHtml %}
+                {{ govukTextarea({
                     name: "comment",
                     id: "comment",
                     value: form.comment,
@@ -200,9 +203,9 @@
                     },
                     errorMessage: form.messageForField('comment')
                     }) }}
-            {% endset -%}
+                {% endset -%}
 
-            {{ govukRadios({
+                {{ govukRadios({
                 name: "decision",
                 fieldset: {
                     legend: {
@@ -229,10 +232,11 @@
                     }
                 ]
                 }) }}
-            <div>
-                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
-            </div>
-        </form>
+                <div>
+                    <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
+                </div>
+            </form>
+        {% endif %}
         <a href="{{model.returnToAdjustments()}}" class="govuk-link">Cancel and return to adjustments</a>
     </div>
 </div>
