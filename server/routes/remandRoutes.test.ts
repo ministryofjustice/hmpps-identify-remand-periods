@@ -57,6 +57,7 @@ describe('GET /{prisonerId}', () => {
           'Recalled at 18 May 2023',
           'Post recall release at 4 Oct 2023',
         ])
+        expect(res.text).not.toContain('Is this remand correct?')
       })
   })
 })
