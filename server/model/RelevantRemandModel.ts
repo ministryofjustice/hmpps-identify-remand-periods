@@ -62,16 +62,10 @@ export default class RelevantRemandModel {
     }
   }
 
-  public mostImportantErrors(): { text: string }[] {
-    return this.relevantRemand.issuesWithLegacyData
-      .filter(it => {
-        return this.isImportantError(it)
-      })
-      .map(it => {
-        return {
-          text: it.message,
-        }
-      })
+  public mostImportantErrors(): LegacyDataProblem[] {
+    return this.relevantRemand.issuesWithLegacyData.filter(it => {
+      return this.isImportantError(it)
+    })
   }
 
   private isImportantError(problem: LegacyDataProblem): boolean {
@@ -82,19 +76,17 @@ export default class RelevantRemandModel {
     )
   }
 
-  public otherErrors(): { text: string }[] {
-    return this.relevantRemand.issuesWithLegacyData
-      .filter(it => {
-        return !this.isImportantError(it)
-      })
-      .map(it => {
-        return {
-          text: it.message,
-        }
-      })
+  public otherErrors(): LegacyDataProblem[] {
+    return this.relevantRemand.issuesWithLegacyData.filter(it => {
+      return !this.isImportantError(it)
+    })
   }
 
   public allErrors() {
     return this.mostImportantErrors().concat(this.otherErrors())
+  }
+
+  public includeBookNumberInMessage(problem: LegacyDataProblem) {
+    return problem.bookingId !== this.prisonerDetail.bookingId
   }
 }

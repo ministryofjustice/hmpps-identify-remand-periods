@@ -26,7 +26,10 @@
         {% set unrelatedHtml %}
         <ul class="govuk-list govuk-error-summary__list">
             {% for error in model.otherErrors() %}
-                <li>{{error.text}}</li>
+                <li>{{error.message}}
+                    {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
+                    {% endif %}
+                </li>
             {% endfor %}
         </ul>
         {% endset -%}
@@ -39,7 +42,10 @@
         <ul class="govuk-list govuk-error-summary__list">
                 {% for error in model
             .mostImportantErrors()%}
-                    <li>{{error.text}}</li>
+                    <li>{{error.message}}
+                        {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
 
@@ -60,7 +66,10 @@
         <ul class="govuk-list govuk-error-summary__list">
                 {% for error in model
             .otherErrors()%}
-                    <li>{{error.text}}</li>
+                    <li>{{error.message}}
+                        {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         {% endif %}
