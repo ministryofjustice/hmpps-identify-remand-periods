@@ -74,10 +74,14 @@ export default class RelevantRemandModel {
     }
   }
 
-  public mostImportantErrors(): LegacyDataProblem[] {
-    return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return this.isImportantError(it)
-    })
+  public mostImportantErrors(): { text: string }[] {
+    return this.relevantRemand.issuesWithLegacyData
+      .filter(it => {
+        return this.isImportantError(it)
+      })
+      .map(it => {
+        return { text: it.message + (this.includeBookNumberInMessage(it) ? ` within booking ${it.bookNumber}` : '') }
+      })
   }
 
   private isImportantError(problem: LegacyDataProblem): boolean {
@@ -88,10 +92,14 @@ export default class RelevantRemandModel {
     )
   }
 
-  public otherErrors(): LegacyDataProblem[] {
-    return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return !this.isImportantError(it)
-    })
+  public otherErrors(): { text: string }[] {
+    return this.relevantRemand.issuesWithLegacyData
+      .filter(it => {
+        return !this.isImportantError(it)
+      })
+      .map(it => {
+        return { text: it.message + (this.includeBookNumberInMessage(it) ? ` within booking ${it.bookNumber}` : '') }
+      })
   }
 
   public allErrors() {

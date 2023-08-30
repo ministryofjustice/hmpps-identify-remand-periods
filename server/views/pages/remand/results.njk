@@ -24,65 +24,13 @@
             </div>
         </div>
     {% elif model
-            .allErrors()
-            .length %}
-        {% set unrelatedHtml %}
-        <ul class="govuk-list govuk-error-summary__list">
-            {% for error in model.otherErrors() %}
-                <li>{{error.message}}
-                    {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-        {% endset -%}
-
-        {% set errorHtml %}
-        {% if model
             .mostImportantErrors()
             .length %}
-        These errors relate to offences that have relevant remand.
-        <ul class="govuk-list govuk-error-summary__list">
-                {% for error in model
-            .mostImportantErrors()%}
-                    <li>{{error.message}}
-                        {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-
-            {% if model
-                .otherErrors()
-                .length %}
-                {{ govukDetails({
-        summaryText: "There are more errors with nomis data that is unrelated to the given relevant remand",
-        html: unrelatedHtml,
-        classes: "govuk-!-margin-top-6"
-        }) }}
-            {% endif %}
-
-        {% elif model
-                .otherErrors()
-                .length %}
-                 There are errors with nomis data that is unrelated to the given relevant remand.
-        <ul class="govuk-list govuk-error-summary__list">
-                {% for error in model
-            .otherErrors()%}
-                    <li>{{error.message}}
-                        {% if model.includeBookNumberInMessage(error)%}within booking {{error.bookNumber}}
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        {% endset -%}
 
         {{ govukErrorSummary({
           titleText: "There is a problem",
-          errorList: [],
-          descriptionHtml: errorHtml
+          errorList: model.mostImportantErrors(),
+          descriptionText: "These errors relate to offences that have relevant remand."
     }) }}
     {% endif %}
     <div class="govuk-grid-row">
@@ -201,13 +149,26 @@
                     </div>
                 </div>
             {% endif %}
-
             {% if model
-                .mostImportantErrors()
-                .length == 0 %}
-                <form class="form" method="post">
-                    <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
-
+            .otherErrors()
+            .length %}
+            {% set unrelatedHtml %}
+            <ul class="govuk-list">
+                {% for error in model.otherErrors() %}
+                    <li>{{error.text}}</li>
+                {% endfor %}
+            </ul>
+            {% endset -%}
+            {{ govukDetails({
+                summaryText: "There are errors with nomis data that may be unrelated to the given relevant remand",
+                html: unrelatedHtml
+            }) }}
+        {% endif %} 
+        {% if model
+            .mostImportantErrors()
+            .length == 0 %}
+            <form class="form" method="post">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
                     {% set commentHtml %}
                     {{ govukTextarea({
                     name: "comment",
