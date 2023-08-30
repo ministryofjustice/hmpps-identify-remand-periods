@@ -56,6 +56,24 @@ const remandResult = {
       },
       days: 48,
     },
+    {
+      from: '2023-02-01',
+      to: '2023-03-20',
+      charge: {
+        chargeId: 2222,
+        offence: { code: 'WR91001', statute: 'WR91', description: 'Abstract water without a licence' },
+        offenceDate: '2022-01-10',
+        bookingId: 1204935,
+        bookNumber: '41938A',
+        offenceEndDate: null,
+        sentenceSequence: 1,
+        sentenceDate: '2023-03-21',
+        courtCaseRef: 'CASE1234',
+        courtLocation: 'Birmingham Crown Court',
+        resultDescription: 'Imprisonment',
+      },
+      days: 48,
+    },
   ],
   sentenceRemand: [
     {

@@ -3,6 +3,9 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "../../macros/remandRow.njk" import remandRow %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -41,106 +44,112 @@
 
                     The rules for applying remand time can be found in the <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.</p>
 
+            {{ govukWarningText({
+                text: "Remand time served alongside a custodiale sentence cannot be counted. A period of relevant remand can only be counted once.",
+                iconFallbackText: "Warning"
+                }) }}
+
         </div>
     </div>
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            <article class="moj-ticket-panel govuk-!-margin-bottom-8" aria-label="Sub navigation 1">
+    {% if model.relevantRemand.sentenceRemand.length %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <article class="moj-ticket-panel govuk-!-margin-bottom-8" aria-label="Sub navigation 1">
 
-                <section class="moj-ticket-panel__content moj-ticket-panel__content--blue" aria-label="Section 1">
-                    <table class="govuk-table">
-                        <caption class="govuk-table__caption govuk-table__caption--m">Remand identified</caption>
+                    <section class="moj-ticket-panel__content moj-ticket-panel__content--blue" aria-label="Section 1">
+                        <table class="govuk-table">
+                            <caption class="govuk-table__caption govuk-table__caption--m">Remand identified</caption>
+                            <thead class="govuk-table__head">
+                                <tr class="govuk-table__row">
+                                    <th scope="col" class="govuk-table__header">From</th>
+                                    <th scope="col" class="govuk-table__header">To</th>
+                                    <th scope="col" class="govuk-table__header">Days</th>
+                                    <th scope="col" class="govuk-table__header">Offences included in this period</th>
+                                </tr>
+                            </thead>
+                            <tbody class="govuk-table__body">
+                                {% for remand in model.relevantRemand.sentenceRemand %}
+                                    <tr class="govuk-table__row">
+                                        <td class="govuk-table__cell">{{remand.from | date('DD MMMM YYYY') }}</td>
+                                        <td class="govuk-table__cell">{{remand.to | date('DD MMMM YYYY') }}</td>
+                                        <td class="govuk-table__cell">{{remand.days}}</td>
+                                        <td class="govuk-table__cell">
+                                            {% for charge in model.sharedRemand(remand) %}
+                                                {{charge.offence.description}}<br/>
+                                                {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
+                        committed from {{ charge.offenceDate | date('DD MMMM YYYY') }} to {{ charge.offenceEndDate | date('DD MMMM YYYY') }}
+                                                {% elif charge.offenceDate %}
+                        committed on {{ charge.offenceDate | date('DD MMMM YYYY') }}
+                                                {% endif %}
+                                                <br/><br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </section>
+
+                </article>
+
+                {{ govukInsetText({
+              text: "Please note that they may not have been remanded for the whole period for every offence; see the deatils section below."
+            }) }}
+
+            </div>
+        </div>
+    {% else %}
+        <p class="govuk-body">No remand identified.</p>
+    {% endif %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+            {% if model.relevantChargeRemand.length or model.notRelevantChargeRemand.length %}
+                <h2 class="govuk-heading-m">Details</h2>
+                {% if model.relevantChargeRemand.length %}
+                    <h3 class="govuk-heading-s">Relevant remand periods</h2>
+                    <table class="govuk-table govuk-!-margin-bottom-8">
                         <thead class="govuk-table__head">
                             <tr class="govuk-table__row">
-                                <th scope="col" class="govuk-table__header">From</th>
-                                <th scope="col" class="govuk-table__header">To</th>
-                                <th scope="col" class="govuk-table__header">Days</th>
-                                <th scope="col" class="govuk-table__header">Offence</th>
+                                <th class="govuk-table__header" scope="col">Remand periods identified from court cases</th>
+                                <th class="govuk-table__header govuk-!-text-align-centre" scope="col">Days</th>
                             </tr>
                         </thead>
                         <tbody class="govuk-table__body">
-                            {% for remand in model.relevantRemand.sentenceRemand %}
-                                <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">{{remand.from | date('DD MMMM YYYY') }}</td>
-                                    <td class="govuk-table__cell">{{remand.to | date('DD MMMM YYYY') }}</td>
-                                    <td class="govuk-table__cell">{{remand.days}}</td>
-                                    <td class="govuk-table__cell">{{remand.charge.offence.description}}<br/>
-                                        {% if (remand.charge.offenceDate and remand.charge.offenceEndDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
-                        committed from {{ remand.charge.offenceDate | date('DD MMMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMMM YYYY') }}
-                                        {% elseif remand.charge.offenceDate %}
-                        committed on {{ remand.charge.offenceDate | date('DD MMMM YYYY') }}
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                            {% for remand in model.relevantChargeRemand %}
+                                {{ remandRow(remand, model, true)}}
                             {% endfor %}
                         </tbody>
                     </table>
+                {% endif %}
+                {% if model.notRelevantChargeRemand.length %}
+                    <h3 class="govuk-heading-s">Non-relevant remand periods</h2>
+                    <table class="govuk-table govuk-!-margin-bottom-8">
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th class="govuk-table__header" scope="col">Remand periods identified from court cases</th>
+                                <th class="govuk-table__header govuk-!-text-align-centre" scope="col">Days</th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            {% for remand in model.notRelevantChargeRemand %}
+                                {{ remandRow(remand, model, false)}}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
 
-                </section>
-
-            </article>
-
-        </div>
-    </div>
-
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Details</h2>
-            <table class="govuk-table govuk-!-margin-bottom-8">
-                <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">
-                        <th class="govuk-table__header" scope="col">Remand periods identified from court events</th>
-                        <th class="govuk-table__header govuk-!-text-align-centre" scope="col">Days</th>
-                    </tr>
-                </thead>
-                <tbody class="govuk-table__body">
-                    {% for remand in model.relevantRemand.chargeRemand %}
-
-                        <tr class="govuk-table__row">
-                            <!-- Dates -->
-                            <td class="govuk-table__cell column-width-seventy-percent">
-                                <span class="govuk-!-padding-top-3">
-                                    <b>Court case number: {{remand.charge.courtCaseRef}}</b>
-                                </span><br>
-                                <span>Court: {{remand.charge.courtLocation}}</span><br>
-                                <span>Case outcome: {{remand.charge.resultDescription}}</span><br>
-                                <span class="govuk-hint">From {{remand.from | date('DD MMMM YYYY') }} - {{remand.to | date('DD MMMM YYYY') }}</span><br>
-                                <ul class="govuk-list">
-                                    <li>{{remand.charge.offence.description}}<br>
-                                        <span class="govuk-hint">
-                                            {% if (remand.charge.offenceDate and remand.charge.offenceEndDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
-                        Committed from {{ remand.charge.offenceDate | date('DD MMMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMMM YYYY') }}
-                                            {% elseif remand.charge.offenceDate %}
-                        Committed on {{ remand.charge.offenceDate | date('DD MMMM YYYY') }}
-                                            {% endif %}
-                                        </span>
-                                    </li>
-                                </ul>
-                            </td>
-                            <!-- Days -->
-                            <td class="govuk-table__cell govuk-!-text-align-centre"><br>{{remand.days}}
-                                {% if model.isNotRelevant(remand) %}
-                                    <br>
-                                    <span class="moj-badge moj-badge--bright-purple">not relevant</span>{% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-
-                </tr>
-
-            </tbody>
-        </table>
-
-        {% if model.relevantRemand.intersectingSentences.length %}
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-full">
-                    {{ govukTable( model.intersectingSentenceTable() )}}
+            {% endif %}
+            {% if model.relevantRemand.intersectingSentences.length %}
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+                        {{ govukTable( model.intersectingSentenceTable() )}}
+                    </div>
                 </div>
-            </div>
-        {% endif %}
-
-        {% if model
+            {% endif %}
+            {% if model
             .otherErrors()
             .length %}
             {% set unrelatedHtml %}
@@ -154,16 +163,14 @@
                 summaryText: "There are errors with nomis data that may be unrelated to the given relevant remand",
                 html: unrelatedHtml
             }) }}
-        {% endif %}
-
+        {% endif %} 
         {% if model
             .mostImportantErrors()
             .length == 0 %}
             <form class="form" method="post">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
-
-                {% set commentHtml %}
-                {{ govukTextarea({
+                    {% set commentHtml %}
+                    {{ govukTextarea({
                     name: "comment",
                     id: "comment",
                     value: form.comment,
@@ -176,9 +183,9 @@
                     },
                     errorMessage: form.messageForField('comment')
                     }) }}
-                {% endset -%}
+                    {% endset -%}
 
-                {{ govukRadios({
+                    {{ govukRadios({
                 name: "decision",
                 fieldset: {
                     legend: {
@@ -187,7 +194,7 @@
                     }
                 },
                 hint: {
-                    text: "Select one option."
+                    text: "By selecting Yes, you are confirming that, to the best of your knowledge, the information is correct. The remand identified will be saved in NOMIS."
                 },
                 errorMessage: form.messageForField('decision'),
                 value: form.decision,
@@ -205,12 +212,12 @@
                     }
                 ]
                 }) }}
-                <div>
-                    <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
-                </div>
-            </form>
-        {% endif %}
-        <a href="{{model.returnToAdjustments()}}" class="govuk-link">Cancel and return to adjustments</a>
+                    <div>
+                        <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
+                    </div>
+                </form>
+            {% endif %}
+            <a href="{{model.returnToAdjustments()}}" class="govuk-link">Cancel and return to adjustments</a>
+        </div>
     </div>
-</div>
 {% endblock %}

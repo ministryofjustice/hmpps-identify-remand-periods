@@ -1,16 +1,28 @@
 import dayjs from 'dayjs'
 import { PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
-import { LegacyDataProblem, Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  Charge,
+  LegacyDataProblem,
+  Remand,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 
 export default class RelevantRemandModel {
+  public relevantChargeRemand: Remand[]
+
+  public notRelevantChargeRemand: Remand[]
+
   constructor(
     public prisonerDetail: PrisonApiPrisoner,
     public relevantRemand: RemandResult,
-  ) {}
+  ) {
+    this.relevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => this.isRelevant(it))
+    this.notRelevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => !this.isRelevant(it))
+  }
 
-  public isNotRelevant(sentenceRemand: Remand): boolean {
-    return !this.relevantRemand.sentenceRemand.find(it => it.charge.chargeId === sentenceRemand.charge.chargeId)
+  public isApplicable(sentenceRemand: Remand): boolean {
+    return this.relevantRemand.sentenceRemand.some(it => it.charge.chargeId === sentenceRemand.charge.chargeId)
   }
 
   public returnToAdjustments(): string {
@@ -96,5 +108,32 @@ export default class RelevantRemandModel {
 
   public includeBookNumberInMessage(problem: LegacyDataProblem) {
     return problem.bookingId !== this.prisonerDetail.bookingId
+  }
+
+  public sharedRemand(remand: Remand): Charge[] {
+    return this.relevantRemand.chargeRemand
+      .filter(it => it.charge.sentenceSequence != null)
+      .filter(it => {
+        return this.overlaps(it, remand)
+      })
+      .map(it => it.charge)
+  }
+
+  private overlaps(one: Remand, two: Remand): boolean {
+    return (
+      (dayjs(one.from).isAfter(two.from) && dayjs(one.from).isBefore(two.to)) ||
+      dayjs(one.from).isSame(two.from) ||
+      (dayjs(one.to).isAfter(two.from) && dayjs(one.to).isBefore(two.to)) ||
+      dayjs(one.to).isSame(two.to)
+    )
+  }
+
+  private isRelevant(remand: Remand) {
+    return (
+      remand.charge.sentenceSequence != null &&
+      this.relevantRemand.sentenceRemand.some(it => {
+        return this.overlaps(it, remand)
+      })
+    )
   }
 }
