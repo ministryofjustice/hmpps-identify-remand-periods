@@ -47,7 +47,7 @@ describe('GET /{prisonerId}', () => {
           'These errors relate to offences that have relevant remand.',
           'This is an important message',
           'This is also important message',
-          'There are more errors with nomis data that is unrelated to the given relevant remand',
+          'There are errors with nomis data that may be unrelated to the given relevant remand',
           'This is not an important message',
         ])
         expect(res.text).toContainInOrder([
