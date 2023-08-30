@@ -48,6 +48,17 @@ export interface components {
       courtLocation?: string
       resultDescription?: string
     }
+    ChargeRemand: {
+      /** Format: date */
+      from: string
+      /** Format: date */
+      to: string
+      fromEvent: string
+      toEvent: string
+      charge: components['schemas']['Charge']
+      /** Format: int64 */
+      days?: number
+    }
     LegacyDataProblem: {
       message: string
       offence: components['schemas']['Offence']
@@ -71,7 +82,7 @@ export interface components {
       days?: number
     }
     RemandResult: {
-      chargeRemand: components['schemas']['Remand'][]
+      chargeRemand: components['schemas']['ChargeRemand'][]
       sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
