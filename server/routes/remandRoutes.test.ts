@@ -51,7 +51,7 @@ describe('GET /{prisonerId}', () => {
           'This is not an important message',
         ])
         expect(res.text).toContainInOrder([
-          'Previous sentences that may intersect remand periods',
+          'Previous sentences that may overlap remand periods',
           'Sentenced at 17 Aug 2022',
           'Release at 16 Nov 2022',
           'Recalled at 18 May 2023',
@@ -60,7 +60,7 @@ describe('GET /{prisonerId}', () => {
         expect(res.text).toContain('Applicable')
         expect(res.text).toContain('Not applicable')
         expect(res.text).toContain('Shared')
-        expect(res.text).not.toContain('Is this remand correct?')
+        expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
 })

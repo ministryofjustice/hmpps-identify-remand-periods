@@ -31,31 +31,30 @@ export default class RelevantRemandModel {
 
   public intersectingSentenceTable() {
     return {
-      caption: 'Previous sentences that may intersect remand periods',
       head: [
         {
           text: 'Sentence',
         },
         {
-          text: 'Start',
+          text: 'From',
         },
         {
-          text: 'End',
+          text: 'To',
         },
       ],
       rows: this.relevantRemand.intersectingSentences.map(it => {
         return [
           {
             html: `${it.charge.offence.description}<br />
-            <span class="govuk-hint">
+            <span class="govuk-hint">Date of offence: 
                 ${
                   it.charge.offenceDate &&
                   it.charge.offenceEndDate &&
                   it.charge.offenceEndDate !== it.charge.offenceDate
-                    ? `Committed from ${dayjs(it.charge.offenceDate).format('D MMM YYYY')} to ${dayjs(
-                        it.charge.offenceEndDate,
-                      ).format('D MMM YYYY')}`
-                    : `Committed on ${dayjs(it.charge.offenceDate).format('D MMMM YYYY')}`
+                    ? `${dayjs(it.charge.offenceDate).format('D MMM YYYY')} to ${dayjs(it.charge.offenceEndDate).format(
+                        'D MMM YYYY',
+                      )}`
+                    : `${dayjs(it.charge.offenceDate).format('D MMM YYYY')}`
                 }
             </span>`,
           },
