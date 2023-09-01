@@ -60,12 +60,12 @@ export default class RelevantRemandModel {
           },
           {
             text:
-              (it.from === it.sentence.sentenceDate ? 'Sentenced at ' : 'Recalled at ') +
+              (it.from === it.sentence.sentenceDate ? 'Sentenced on ' : 'Recalled on ') +
               dayjs(it.from).format('D MMM YYYY'),
           },
           {
             text:
-              (it.from === it.sentence.sentenceDate ? 'Release at ' : 'Post recall release at ') +
+              (it.from === it.sentence.sentenceDate ? 'Release on ' : 'Post recall release on ') +
               dayjs(it.to).format('D MMM YYYY'),
           },
         ]

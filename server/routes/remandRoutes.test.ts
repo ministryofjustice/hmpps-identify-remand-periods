@@ -52,10 +52,10 @@ describe('GET /{prisonerId}', () => {
         ])
         expect(res.text).toContainInOrder([
           'Previous sentences that may overlap remand periods',
-          'Sentenced at 17 Aug 2022',
-          'Release at 16 Nov 2022',
-          'Recalled at 18 May 2023',
-          'Post recall release at 4 Oct 2023',
+          'Sentenced on 17 Aug 2022',
+          'Release on 16 Nov 2022',
+          'Recalled on 18 May 2023',
+          'Post recall release on 4 Oct 2023',
         ])
         expect(res.text).toContain('Applicable')
         expect(res.text).toContain('Not applicable')

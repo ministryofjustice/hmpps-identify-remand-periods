@@ -109,7 +109,7 @@
 
                 {% endif %}
                 {% if model.notRelevantChargeRemand.length %}
-                    <h2 class="govuk-heading-m">Non-relevant remand periods</h2>
+                    <h2 class="govuk-heading-m">Non-relevant remand</h2>
                     {% for remand in model.notRelevantChargeRemand %}
                         {{ remandCard(remand, model, false)}}
                     {% endfor %}
