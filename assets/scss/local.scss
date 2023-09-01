@@ -1,3 +1,14 @@
 .govuk-main-wrapper {
   min-height: 600px;
 }
+
+.moj-ticket-panel__content--inline {
+  display: flex;
+}
+
+.moj-ticket-panel__column {
+  &:first-of-type {
+    width: 40%
+  }
+  width: 60%
+}
