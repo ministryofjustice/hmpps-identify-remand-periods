@@ -2,7 +2,7 @@
     {% set colour = 'red' if not relevant else ('green' if model.isApplicable(remand) else 'blue')%}
     {% set text = 'Not applicable' if not relevant else ('Applicable' if model.isApplicable(remand) else 'Shared')%}
 
-    <article class="moj-ticket-panel govuk-!-margin-bottom-4">
+    <article class="moj-ticket-panel govuk-!-margin-bottom-4 govuk-!-margin-left-6">
 
         <section class="moj-ticket-panel__content moj-ticket-panel__content--{{colour}} moj-ticket-panel__content--inline">
 
