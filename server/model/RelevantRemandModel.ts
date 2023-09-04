@@ -73,40 +73,27 @@ export default class RelevantRemandModel {
     }
   }
 
-  public mostImportantErrors(): { text: string }[] {
-    return this.relevantRemand.issuesWithLegacyData
-      .filter(it => {
-        return this.isImportantError(it)
-      })
-      .map(it => {
-        return { text: it.message + (this.includeBookNumberInMessage(it) ? ` within booking ${it.bookNumber}` : '') }
-      })
+  public mostImportantErrors(): LegacyDataProblem[] {
+    return this.relevantRemand.issuesWithLegacyData.filter(it => {
+      return this.isImportantError(it)
+    })
   }
 
   private isImportantError(problem: LegacyDataProblem): boolean {
-    return this.relevantRemand.sentenceRemand.some(
-      it =>
-        it.charge.offence.statute === problem.offence.statute ||
-        (it.charge.courtCaseRef && problem.courtCaseRef && problem.courtCaseRef === it.charge.courtCaseRef),
+    return (
+      problem.type !== 'UNSUPPORTED_OUTCOME' &&
+      this.relevantRemand.sentenceRemand.some(
+        it =>
+          it.charge.offence.statute === problem.offence.statute ||
+          (it.charge.courtCaseRef && problem.courtCaseRef && problem.courtCaseRef === it.charge.courtCaseRef),
+      )
     )
   }
 
-  public otherErrors(): { text: string }[] {
-    return this.relevantRemand.issuesWithLegacyData
-      .filter(it => {
-        return !this.isImportantError(it)
-      })
-      .map(it => {
-        return { text: it.message + (this.includeBookNumberInMessage(it) ? ` within booking ${it.bookNumber}` : '') }
-      })
-  }
-
-  public allErrors() {
-    return this.mostImportantErrors().concat(this.otherErrors())
-  }
-
-  public includeBookNumberInMessage(problem: LegacyDataProblem) {
-    return problem.bookingId !== this.prisonerDetail.bookingId
+  public otherErrors(): LegacyDataProblem[] {
+    return this.relevantRemand.issuesWithLegacyData.filter(it => {
+      return !this.isImportantError(it)
+    })
   }
 
   public sharedRemand(remand: Remand): Charge[] {

@@ -44,9 +44,10 @@ describe('GET /{prisonerId}', () => {
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContainInOrder([
-          'These errors relate to offences that have relevant remand.',
+          'There is information missing in NOMIS that could impact the remand time.',
           'This is an important message',
           'This is also important message',
+          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
           'There are errors with nomis data that may be unrelated to the given relevant remand',
           'This is not an important message',
         ])
