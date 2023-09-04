@@ -26,11 +26,24 @@
     {% elif model
             .mostImportantErrors()
             .length %}
+        {% set errorBody %}
+        <div class="govuk-error-summary__body">
+            <p>There is information missing in NOMIS that could impact the remand time.</p>
+            <ul class="govuk-list govuk-error-summary__list">
+                {% for error in model.mostImportantErrors() %}
+                    <li>
+                        <p class="govuk-body">{{error.message}}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="govuk-!-margin-top-4">To ensure the remand time is calculated correctly, add the missing information in NOMIS, then <a href="">reload this page</a>.</p>
+        </div>
+        {% endset -%}
 
         {{ govukErrorSummary({
           titleText: "There is a problem",
-          errorList: model.mostImportantErrors(),
-          descriptionText: "These errors relate to offences that have relevant remand."
+          errorList: [],
+          descriptionHtml: errorBody
     }) }}
     {% endif %}
     <div class="govuk-grid-row">
@@ -131,7 +144,7 @@
                 {% set unrelatedHtml %}
                 <ul class="govuk-list">
                     {% for error in model.otherErrors() %}
-                        <li>{{error.text}}</li>
+                        <li>{{error.message}}</li>
                     {% endfor %}
                 </ul>
                 {% endset -%}

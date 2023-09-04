@@ -60,6 +60,8 @@ export interface components {
       days?: number
     }
     LegacyDataProblem: {
+      /** @enum {string} */
+      type: 'MISSING_OFFENCE_DATE' | 'MISSING_COURT_OUTCOME' | 'UNSUPPORTED_OUTCOME'
       message: string
       offence: components['schemas']['Offence']
       /** Format: int64 */
