@@ -108,6 +108,9 @@
                     </tbody>
                 </table>
 
+                {% if model.relevantRemand.unusedDeductions != 0 %}
+                    <h3 class="govuk-heading-s govuk-!-margin-bottom-8">There are {{model.relevantRemand.unusedDeductions}} days of unused remand/tagged bail</h3>
+                {% endif %}
             {% else %}
                 <p class="govuk-body">No remand identified.</p>
             {% endif %}

@@ -88,6 +88,8 @@ export interface components {
       sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
+      /** Format: int32 */
+      unusedDeductions: number
     }
     Sentence: {
       /** Format: int32 */
@@ -117,6 +119,8 @@ export interface components {
       /** Format: date-time */
       decisionOn?: string
       decisionBy?: string
+      decisionByPrisonId?: string
+      decisionByPrisonDescription?: string
     }
   }
   responses: never
