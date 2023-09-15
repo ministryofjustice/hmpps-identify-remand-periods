@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
+import { PrisonApiOffenderSentenceAndOffences, PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
 import {
   Charge,
   LegacyDataProblem,
@@ -13,12 +13,23 @@ export default class RelevantRemandModel {
 
   public notRelevantChargeRemand: Remand[]
 
+  public activeSentenceCourtCases: string[]
+
+  public activeSentenceStatues: string[]
+
   constructor(
     public prisonerDetail: PrisonApiPrisoner,
     public relevantRemand: RemandResult,
+    sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
   ) {
     this.relevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => this.isRelevant(it))
     this.notRelevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => !this.isRelevant(it))
+    this.activeSentenceStatues = sentencesAndOffences
+      .filter(it => it.sentenceStatus === 'A')
+      .flatMap(it => it.offences.map(off => off.offenceStatute))
+    this.activeSentenceCourtCases = sentencesAndOffences
+      .filter(it => it.sentenceStatus === 'A' && !!it.caseReference)
+      .map(it => it.caseReference)
   }
 
   public isApplicable(sentenceRemand: Remand): boolean {
@@ -82,11 +93,8 @@ export default class RelevantRemandModel {
   private isImportantError(problem: LegacyDataProblem): boolean {
     return (
       problem.type !== 'UNSUPPORTED_OUTCOME' &&
-      this.relevantRemand.sentenceRemand.some(
-        it =>
-          it.charge.offence.statute === problem.offence.statute ||
-          (it.charge.courtCaseRef && problem.courtCaseRef && problem.courtCaseRef === it.charge.courtCaseRef),
-      )
+      (this.activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
+        this.activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)
     )
   }
 

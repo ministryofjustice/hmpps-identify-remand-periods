@@ -20,9 +20,10 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
     const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(prisonerDetail.bookingId, token)
 
     return res.render('pages/remand/results', {
-      model: new RelevantRemandModel(prisonerDetail, relevantRemand),
+      model: new RelevantRemandModel(prisonerDetail, relevantRemand, sentencesAndOffences),
       form: new RemandDecisionForm({}),
     })
   }
@@ -35,8 +36,9 @@ export default class RemandRoutes {
     if (form.errors.length) {
       const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
       const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+      const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(prisonerDetail.bookingId, token)
       return res.render('pages/remand/results', {
-        model: new RelevantRemandModel(prisonerDetail, relevantRemand),
+        model: new RelevantRemandModel(prisonerDetail, relevantRemand, sentencesAndOffences),
         form,
       })
     }

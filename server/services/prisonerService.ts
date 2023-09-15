@@ -3,6 +3,7 @@ import PrisonApiClient from '../api/prisonApiClient'
 import {
   PrisonApiBookingAndSentenceAdjustments,
   PrisonApiCourtDateResult,
+  PrisonApiOffenderSentenceAndOffences,
   PrisonApiPrisoner,
 } from '../@types/prisonApi/prisonClientTypes'
 import FullPageError from '../model/FullPageError'
@@ -52,5 +53,9 @@ export default class PrisonerService {
     token: string,
   ): Promise<PrisonApiBookingAndSentenceAdjustments> {
     return new PrisonApiClient(token).getBookingAndSentenceAdjustments(bookingId)
+  }
+
+  async getSentencesAndOffences(bookingId: number, token: string): Promise<PrisonApiOffenderSentenceAndOffences[]> {
+    return new PrisonApiClient(token).getSentencesAndOffences(bookingId)
   }
 }
