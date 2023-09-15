@@ -38,6 +38,17 @@ afterEach(() => {
 describe('GET /{prisonerId}', () => {
   it('should render the results page', () => {
     prisonerService.getPrisonerDetail.mockResolvedValue(stubbedPrisonerData)
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
     return request(app)
       .get(`/${NOMS_ID}`)
