@@ -56,7 +56,19 @@ export default class BulkRemandCalculationService {
           )
         }
       } catch (ex) {
-        csvData.push(this.addRow(nomsId, null, null, null, null, null, null, ex, 'Error fetching data from prison-api'))
+        csvData.push(
+          this.addRow(
+            nomsId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            ex,
+            `Error fetching data from prison-api ${ex.message}`,
+          ),
+        )
       }
     }
     return csvData

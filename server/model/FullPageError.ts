@@ -6,7 +6,7 @@ class FullPageError extends Error {
   status: number
 
   static notInCaseLoadError(): FullPageError {
-    const error = new FullPageError('Prisoner is in caseload')
+    const error = new FullPageError('Prisoner is not in user caseload')
     error.errorKey = FullPageErrorType.NOT_IN_CASELOAD
     error.status = 404
     return error
