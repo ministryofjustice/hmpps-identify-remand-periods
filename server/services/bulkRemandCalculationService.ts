@@ -1,4 +1,4 @@
-import { Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import { Charge, Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiPrisoner,
@@ -28,7 +28,9 @@ export default class BulkRemandCalculationService {
         const prisonDetails = await this.prisonerService.getPrisonerDetailIncludingReleased(nomsId, caseloads, token)
         const bookingId = prisonDetails.bookingId
         const nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, token)
-        const nomisRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'REMAND')
+        const nomisRemand = nomisAdjustments.sentenceAdjustments.filter(
+          it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND',
+        )
         const nomisUnusedRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'UNUSED_REMAND')
         const courtDates = await this.prisonerService.getCourtDateResults(nomsId, token)
 
@@ -54,7 +56,19 @@ export default class BulkRemandCalculationService {
           )
         }
       } catch (ex) {
-        csvData.push(this.addRow(nomsId, null, null, null, null, null, null, ex, 'Error fetching data from prison-api'))
+        csvData.push(
+          this.addRow(
+            nomsId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            ex,
+            `Error fetching data from prison-api ${ex.message}`,
+          ),
+        )
       }
     }
     return csvData
@@ -78,21 +92,21 @@ export default class BulkRemandCalculationService {
       NOMS_ID: nomsId,
       ACTIVE_BOOKING_ID: bookingId,
       AGENCY_LOCATION_ID: prisoner?.agencyId,
-      COURT_DATES_JSON: JSON.stringify(courtDates),
-      CALCULATED_ALL_JSON: JSON.stringify(calculatedRemand),
+      COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
+      CALCULATED_ALL_JSON: JSON.stringify(calculatedRemand, null, 2),
       NOMIS_REMAND_DAYS: this.sumRemandDays(bookingId, nomisRemand),
       NOMIS_UNUSED_REMAND_DAYS: this.sumRemandDays(bookingId, nomisUnusedRemand),
       CALCULATED_REMAND_DAYS: this.sumRemandDays(bookingId, calculatedRemand?.sentenceRemand),
       CALCULATED_UNUSED_DAYS: calculatedRemand?.unusedDeductions,
-      NOMIS_REMAND_JSON: JSON.stringify(nomisRemand),
-      NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemand),
-      CALCULATED_REMAND_JSON: JSON.stringify(calculatedRemand?.sentenceRemand),
+      NOMIS_REMAND_JSON: JSON.stringify(nomisRemand, null, 2),
+      NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemand, null, 2),
+      CALCULATED_REMAND_JSON: JSON.stringify(calculatedRemand?.sentenceRemand, null, 2),
       IS_REMAND_SAME: this.isRemandSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
       IS_DATES_SAME: this.isDatesSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
       IS_DAYS_SAME: this.isDaysSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
-      INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences),
-      NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.join('\n'),
-      ERROR_JSON: JSON.stringify(ex),
+      INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
+      NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.map(it => it.message).join('\n'),
+      ERROR_JSON: JSON.stringify(ex, null, 2),
       ERROR_TEXT: errorText,
     }
   }
@@ -140,18 +154,29 @@ export default class BulkRemandCalculationService {
       : 0
   }
 
-  private sentenceAdjustmentToRemand(bookingId: number, sentenceAdjustments: PrisonApiSentenceAdjustments[]): Remand[] {
+  private sentenceAdjustmentToRemand(
+    bookingId: number,
+    sentenceAdjustments: PrisonApiSentenceAdjustments[],
+  ): RemandDebug[] {
     return sentenceAdjustments
       ? sentenceAdjustments.map(it => {
           return {
             days: it.numberOfDays,
             from: it.fromDate,
             to: it.toDate,
+            type: it.type,
+            active: it.active,
+            sentenceSequence: it.sentenceSequence,
             charge: {
               bookingId,
-            },
-          } as Remand
+            } as Charge,
+          } as RemandDebug
         })
       : []
   }
+}
+
+type RemandDebug = Remand & {
+  type?: string
+  sentenceSequence?: number
 }
