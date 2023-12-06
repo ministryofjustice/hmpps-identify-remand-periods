@@ -15,6 +15,7 @@ type BulkRemandCalculationRow = {
   IS_DAYS_SAME: 'Y' | 'N'
   IS_DATES_SAME: 'Y' | 'N'
   INTERSECTING_SENTENCES: string
+  INTERSECTING_SENTENCES_SOURCE: string
   NOMIS_INPUT_MESSAGES: string
 
   ERROR_TEXT: string
