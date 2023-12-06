@@ -1,11 +1,17 @@
-import { Charge, Remand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  Charge,
+  IntersectingSentence,
+  Remand,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
+  PrisonApiOffenderSentenceAndOffences,
   PrisonApiPrisoner,
   PrisonApiSentenceAdjustments,
 } from '../@types/prisonApi/prisonClientTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
-import { sameMembers } from '../utils/utils'
+import { onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerService from './prisonerService'
 
@@ -36,9 +42,24 @@ export default class BulkRemandCalculationService {
 
         try {
           const calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+          const sentences = await this.findSourceDataForIntersectingSentence(
+            calculatedRemand.intersectingSentences,
+            token,
+          )
 
           csvData.push(
-            this.addRow(nomsId, bookingId, prisonDetails, nomisRemand, nomisUnusedRemand, courtDates, calculatedRemand),
+            this.addRow(
+              nomsId,
+              bookingId,
+              prisonDetails,
+              nomisRemand,
+              nomisUnusedRemand,
+              courtDates,
+              calculatedRemand,
+              sentences,
+              null,
+              null,
+            ),
           )
         } catch (ex) {
           csvData.push(
@@ -50,6 +71,7 @@ export default class BulkRemandCalculationService {
               nomisUnusedRemand,
               courtDates,
               null,
+              null,
               ex,
               'Error calculating remand',
             ),
@@ -59,6 +81,7 @@ export default class BulkRemandCalculationService {
         csvData.push(
           this.addRow(
             nomsId,
+            null,
             null,
             null,
             null,
@@ -83,8 +106,9 @@ export default class BulkRemandCalculationService {
     nomisUnusedRemandSentenceAdjustment: PrisonApiSentenceAdjustments[],
     courtDates: PrisonApiCourtDateResult[],
     calculatedRemand: RemandResult,
-    ex?: unknown,
-    errorText?: string,
+    sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    ex: unknown,
+    errorText: string,
   ): BulkRemandCalculationRow {
     const nomisRemand = this.sentenceAdjustmentToRemand(bookingId, nomisRemandSentenceAdjustment)
     const nomisUnusedRemand = this.sentenceAdjustmentToRemand(bookingId, nomisUnusedRemandSentenceAdjustment)
@@ -103,12 +127,29 @@ export default class BulkRemandCalculationService {
       CALCULATED_REMAND_JSON: JSON.stringify(calculatedRemand?.sentenceRemand, null, 2),
       IS_REMAND_SAME: this.isRemandSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
       IS_DATES_SAME: this.isDatesSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
-      IS_DAYS_SAME: this.isDaysSame(bookingId, nomisRemand, calculatedRemand?.sentenceRemand) ? 'Y' : 'N',
+      IS_DAYS_SAME: this.isDaysSame(bookingId, nomisRemand.concat(nomisUnusedRemand), calculatedRemand?.sentenceRemand)
+        ? 'Y'
+        : 'N',
       INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
+      INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
       NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.map(it => it.message).join('\n'),
       ERROR_JSON: JSON.stringify(ex, null, 2),
       ERROR_TEXT: errorText,
     }
+  }
+
+  private async findSourceDataForIntersectingSentence(
+    intersectingSentences: IntersectingSentence[],
+    token: string,
+  ): Promise<PrisonApiOffenderSentenceAndOffences[]> {
+    if (!intersectingSentences) {
+      return []
+    }
+    const bookingIds = intersectingSentences.map(it => it.charge.bookingId).filter(onlyUnique)
+
+    const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, token))
+
+    return (await Promise.all(sentencesAndOffences)).flatMap(it => it)
   }
 
   private filterForBookingId(bookingId: number, remands: Remand[]): Remand[] {

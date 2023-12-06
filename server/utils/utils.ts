@@ -38,6 +38,14 @@ export const deepEqual = <T>(x: T, y: T): boolean => {
     : x === y
 }
 
+export function onlyUnique<T>(value: T, index: number, array: T[]) {
+  return array.indexOf(value) === index
+}
+
+export const distinct = <T>(all: T[]): T[] => {
+  return all.filter(onlyUnique)
+}
+
 export const fieldHasErrors = (errors: ValidationError[], field: string) => {
   return !!errors.find(error => error.fields.indexOf(field) !== -1)
 }
