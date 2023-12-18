@@ -121,7 +121,6 @@ export default class BulkRemandCalculationService {
       NOMIS_REMAND_DAYS: this.sumRemandDays(bookingId, nomisRemand),
       NOMIS_UNUSED_REMAND_DAYS: this.sumRemandDays(bookingId, nomisUnusedRemand),
       CALCULATED_REMAND_DAYS: this.sumRemandDays(bookingId, calculatedRemand?.sentenceRemand),
-      CALCULATED_UNUSED_DAYS: calculatedRemand?.unusedDeductions,
       NOMIS_REMAND_JSON: JSON.stringify(nomisRemand, null, 2),
       NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemand, null, 2),
       CALCULATED_REMAND_JSON: JSON.stringify(calculatedRemand?.sentenceRemand, null, 2),
