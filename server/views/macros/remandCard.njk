@@ -38,20 +38,16 @@
                 </span><br/>
 
                 <span>
-                    <b>From:</b>
-                    {{remand.from | date('DD MMM YYYY') }}
+                    <b>Period:</b>
+                    {{remand.from | date('DD MMM YYYY') }} to {{remand.to | date('DD MMM YYYY') }}
                 </span><br/>
                 <span>
-                    <b>Hearing outcome:</b>
-                    {{remand.fromEvent}}
+                    <b>Start outcome:</b>
+                    {{remand.fromEvent.description}} on {{remand.fromEvent.date | date('DD MMM YYYY') }}
                 </span><br/>
                 <span>
-                    <b>To:</b>
-                    {{remand.to | date('DD MMM YYYY') }}
-                </span><br/>
-                <span>
-                    <b>Hearing outcome:</b>
-                    {{remand.toEvent}}
+                    <b>Stop outcome:</b>
+                    {{remand.toEvent.description}} on {{remand.toEvent.date | date('DD MMM YYYY') }}
                 </span><br/>
                 <span>
                     <b>Offence outcome:</b>

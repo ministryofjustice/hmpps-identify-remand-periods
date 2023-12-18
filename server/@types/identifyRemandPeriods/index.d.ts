@@ -47,17 +47,23 @@ export interface components {
       courtCaseRef?: string
       courtLocation?: string
       resultDescription?: string
+      isActiveBooking: boolean
     }
     ChargeRemand: {
       /** Format: date */
       from: string
       /** Format: date */
       to: string
-      fromEvent: string
-      toEvent: string
+      fromEvent: components['schemas']['CourtAppearance']
+      toEvent: components['schemas']['CourtAppearance']
       charge: components['schemas']['Charge']
       /** Format: int64 */
       days?: number
+    }
+    CourtAppearance: {
+      /** Format: date */
+      date: string
+      description: string
     }
     LegacyDataProblem: {
       /** @enum {string} */
@@ -88,8 +94,6 @@ export interface components {
       sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
-      /** Format: int32 */
-      unusedDeductions: number
     }
     Sentence: {
       /** Format: int32 */
