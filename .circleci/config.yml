@@ -15,7 +15,7 @@ parameters:
 
   node-version:
     type: string
-    default: 18.15-browsers
+    default: 20.11-browsers
 
 jobs:
   build:
@@ -26,8 +26,7 @@ jobs:
       - checkout
       - run:
           name: Update npm
-          # temporary hard code version until we move to v10
-          command: 'sudo npm install -g npm@9.8.1'
+          command: 'sudo npm install -g npm@latest'
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
@@ -41,8 +40,7 @@ jobs:
       - run:
           command: |
             npm run build
-      - run:
-          # Run linter after build because the integration test code depend on compiled typescript...
+      - run: # Run linter after build because the integration test code depend on compiled typescript...
           name: Linter check
           command: npm run lint
       - persist_to_workspace:
@@ -51,7 +49,7 @@ jobs:
             - node_modules
             - build
             - dist
-            - .cache/Cypress
+            - assets/stylesheets
 
   unit_test:
     executor:
@@ -71,9 +69,8 @@ jobs:
 
   integration_test:
     executor:
-      name: hmpps/node_redis
-      node_tag: << pipeline.parameters.node-version >>
-      redis_tag: "7.0"
+      name: hmpps/node
+      tag: << pipeline.parameters.node-version >>
     steps:
       - checkout
       - attach_workspace:
@@ -85,7 +82,7 @@ jobs:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Get wiremock
-          command: curl -o wiremock.jar https://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.27.1/wiremock-standalone-2.27.1.jar
+          command: curl -o wiremock.jar https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.3.1/wiremock-standalone-3.3.1.jar
       - run:
           name: Run wiremock
           command: java -jar wiremock.jar --port 9091
@@ -103,9 +100,9 @@ jobs:
       - store_test_results:
           path: test_results
       - store_artifacts:
-          path: integration-tests/videos
+          path: integration_tests/videos
       - store_artifacts:
-          path: integration-tests/screenshots
+          path: integration_tests/screenshots
 
 workflows:
   version: 2

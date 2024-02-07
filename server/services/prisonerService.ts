@@ -5,6 +5,7 @@ import {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
   PrisonApiPrisoner,
+  PrisonApiUserCaseloads,
 } from '../@types/prisonApi/prisonClientTypes'
 import FullPageError from '../model/FullPageError'
 
@@ -21,6 +22,10 @@ export default class PrisonerService {
 
   async getPrisonerDetail(nomsId: string, userCaseloads: string[], token: string): Promise<PrisonApiPrisoner> {
     return this.getPrisonerDetailImpl(nomsId, userCaseloads, token, false)
+  }
+
+  async getUsersCaseloads(token: string): Promise<PrisonApiUserCaseloads[]> {
+    return new PrisonApiClient(token).getUsersCaseloads()
   }
 
   private async getPrisonerDetailImpl(

@@ -3,6 +3,7 @@ import { resetStubs } from './integration_tests/mockApis/wiremock'
 import auth from './integration_tests/mockApis/auth'
 import tokenVerification from './integration_tests/mockApis/tokenVerification'
 import prisonApi from './integration_tests/mockApis/prisonApi'
+import manageUsersApi from './integration_tests/mockApis/manageUsersApi'
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -13,17 +14,15 @@ export default defineConfig({
   reporterOptions: {
     configFile: 'reporter-config.json',
   },
-  videoUploadOnPasses: false,
   taskTimeout: 60000,
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
     setupNodeEvents(on) {
       on('task', {
         reset: resetStubs,
         ...auth,
         ...tokenVerification,
         ...prisonApi,
+        ...manageUsersApi,
       })
     },
     baseUrl: 'http://localhost:3007',
