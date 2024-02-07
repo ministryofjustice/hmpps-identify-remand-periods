@@ -34,7 +34,8 @@ export const deepEqual = <T>(x: T, y: T): boolean => {
   const tx = typeof x
   const ty = typeof y
   return x && y && tx === 'object' && tx === ty
-    ? ok(x).length === ok(y).length && ok(x).every(key => deepEqual(x[key], y[key]))
+    ? ok(x).length === ok(y).length &&
+        ok(x).every(key => deepEqual((x as Record<string, unknown>)[key], (y as Record<string, unknown>)[key]))
     : x === y
 }
 

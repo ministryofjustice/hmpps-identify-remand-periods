@@ -17,6 +17,7 @@ generic-service:
     DIGITAL_PRISON_SERVICES_URL: "https://digital.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjust-release-dates.hmpps.service.justice.gov.uk"
     IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api.hmpps.service.justice.gov.uk"
+    MANAGE_USERS_API_URL: "https://manage-users-api.hmpps.service.justice.gov.uk"
 
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service-dev

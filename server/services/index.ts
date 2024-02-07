@@ -6,10 +6,10 @@ import PrisonerService from './prisonerService'
 import UserService from './userService'
 
 export const services = () => {
-  const { hmppsAuthClient, applicationInfo } = dataAccess()
+  const { hmppsAuthClient, applicationInfo, manageUsersApiClient } = dataAccess()
 
-  const userService = new UserService(hmppsAuthClient)
   const prisonerService = new PrisonerService(hmppsAuthClient)
+  const userService = new UserService(manageUsersApiClient, prisonerService)
   const identifyRemandPeriodsService = new IdentifyRemandPeriodsService()
   const bulkRemandCalculationService = new BulkRemandCalculationService(prisonerService, identifyRemandPeriodsService)
   const adjustmentsService = new AdjustmentsService()
