@@ -21,4 +21,5 @@ generic-service:
     ENVIRONMENT_NAME: PRE-PRODUCTION
 
 generic-prometheus-alerts:
+  businessHoursOnly: true
   alertSeverity: legacy-replacement-alerts-non-prod
