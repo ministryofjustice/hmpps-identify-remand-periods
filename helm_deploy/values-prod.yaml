@@ -11,7 +11,7 @@ generic-service:
     INGRESS_URL: "https://identify-remand-periods.hmpps.service.justice.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     TOKEN_VERIFICATION_API_URL: "https://token-verification-api.prison.service.justice.gov.uk"
-    PRISON_API_URL: "https://api.prison.service.justice.gov.uk"
+    PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk"
     ADJUSTMENTS_API_URL: "https://adjustments-api.hmpps.service.justice.gov.uk"
     CALCULATE_RELEASE_DATES_URL: "https://calculate-release-dates.hmpps.service.justice.gov.uk"
     DIGITAL_PRISON_SERVICES_URL: "https://digital.prison.service.justice.gov.uk"
