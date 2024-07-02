@@ -1,21 +1,31 @@
 import { IdentifyRemandDecision, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import IdentifyRemandPeriodsClient from '../api/identifyRemandPeriodsClient'
+import { HmppsAuthClient } from '../data'
 
 export default class IdentifyRemandPeriodsService {
-  public async calculateRelevantRemand(nomsId: string, token: string): Promise<RemandResult> {
-    return new IdentifyRemandPeriodsClient(token).calculateRelevantRemand(nomsId)
+  constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
+
+  public async calculateRelevantRemand(nomsId: string, username: string): Promise<RemandResult> {
+    return new IdentifyRemandPeriodsClient(await this.getSystemClientToken(username)).calculateRelevantRemand(nomsId)
   }
 
   public async saveRemandDecision(
     nomsId: string,
     decision: IdentifyRemandDecision,
-    token: string,
+    username: string,
   ): Promise<IdentifyRemandDecision> {
-    return new IdentifyRemandPeriodsClient(token).saveRemandDecision(nomsId, decision)
+    return new IdentifyRemandPeriodsClient(await this.getSystemClientToken(username)).saveRemandDecision(
+      nomsId,
+      decision,
+    )
   }
 
-  public async getRemandDecision(nomsId: string, token: string): Promise<IdentifyRemandDecision> {
-    const result = new IdentifyRemandPeriodsClient(token).getRemandDecision(nomsId)
+  public async getRemandDecision(nomsId: string, username: string): Promise<IdentifyRemandDecision> {
+    const result = new IdentifyRemandPeriodsClient(await this.getSystemClientToken(username)).getRemandDecision(nomsId)
     return Object.keys(result).length ? result : null
+  }
+
+  private async getSystemClientToken(username: string): Promise<string> {
+    return this.hmppsAuthClient.getSystemClientToken(username)
   }
 }
