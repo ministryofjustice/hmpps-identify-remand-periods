@@ -7,16 +7,18 @@ import {
 import {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
-  PrisonApiPrisoner,
   PrisonApiSentenceAdjustments,
 } from '../@types/prisonApi/prisonClientTypes'
+import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
 import { onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
+import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 
 export default class BulkRemandCalculationService {
   constructor(
+    private readonly prisonerSearchService: PrisonerSearchService,
     private readonly prisonerService: PrisonerService,
     private readonly identifyRemandPeriodsService: IdentifyRemandPeriodsService,
   ) {}
@@ -24,27 +26,27 @@ export default class BulkRemandCalculationService {
   /* eslint-disable */
   public async runCalculations(
     caseloads: string[],
-    token: string,
+    username: string,
     nomsIds: string[],
   ): Promise<BulkRemandCalculationRow[]> {
     const csvData: BulkRemandCalculationRow[] = []
 
     for (const nomsId of nomsIds) {
       try {
-        const prisonDetails = await this.prisonerService.getPrisonerDetailIncludingReleased(nomsId, caseloads, token)
-        const bookingId = prisonDetails.bookingId
-        const nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, token)
+        const prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username)
+        const bookingId = Number(prisonDetails.bookingId)
+        const nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
         const nomisRemand = nomisAdjustments.sentenceAdjustments.filter(
           it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND',
         )
         const nomisUnusedRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'UNUSED_REMAND')
-        const courtDates = await this.prisonerService.getCourtDateResults(nomsId, token)
+        const courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
 
         try {
-          const calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
+          const calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
           const sentences = await this.findSourceDataForIntersectingSentence(
             calculatedRemand.intersectingSentences,
-            token,
+            username,
           )
 
           csvData.push(
@@ -101,7 +103,7 @@ export default class BulkRemandCalculationService {
   private addRow(
     nomsId: string,
     bookingId: number,
-    prisoner: PrisonApiPrisoner,
+    prisoner: PrisonerSearchApiPrisoner,
     nomisRemandSentenceAdjustment: PrisonApiSentenceAdjustments[],
     nomisUnusedRemandSentenceAdjustment: PrisonApiSentenceAdjustments[],
     courtDates: PrisonApiCourtDateResult[],
@@ -115,7 +117,7 @@ export default class BulkRemandCalculationService {
     return {
       NOMS_ID: nomsId,
       ACTIVE_BOOKING_ID: bookingId,
-      AGENCY_LOCATION_ID: prisoner?.agencyId,
+      AGENCY_LOCATION_ID: prisoner?.prisonId,
       COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
       CALCULATED_ALL_JSON: JSON.stringify(calculatedRemand, null, 2),
       NOMIS_REMAND_DAYS: this.sumRemandDays(bookingId, nomisRemand),
@@ -139,14 +141,14 @@ export default class BulkRemandCalculationService {
 
   private async findSourceDataForIntersectingSentence(
     intersectingSentences: IntersectingSentence[],
-    token: string,
+    username: string,
   ): Promise<PrisonApiOffenderSentenceAndOffences[]> {
     if (!intersectingSentences) {
       return []
     }
     const bookingIds = intersectingSentences.map(it => it.charge.bookingId).filter(onlyUnique)
 
-    const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, token))
+    const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, username))
 
     return (await Promise.all(sentencesAndOffences)).flatMap(it => it)
   }

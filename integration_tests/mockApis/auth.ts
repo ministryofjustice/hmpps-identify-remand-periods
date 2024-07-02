@@ -97,7 +97,7 @@ const manageDetails = () =>
     },
   })
 
-const token = (roles: string[] = []) =>
+const token = (roles: string[] = ['ROLE_REMAND_IDENTIFIER']) =>
   stubFor({
     request: {
       method: 'POST',

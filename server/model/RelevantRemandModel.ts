@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { PrisonApiOffenderSentenceAndOffences, PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
+import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import {
   Charge,
   LegacyDataProblem,
@@ -18,7 +18,7 @@ export default class RelevantRemandModel {
   public activeSentenceStatues: string[]
 
   constructor(
-    public prisonerDetail: PrisonApiPrisoner,
+    public prisonerNumber: string,
     public relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
   ) {
@@ -37,7 +37,7 @@ export default class RelevantRemandModel {
   }
 
   public returnToAdjustments(): string {
-    return `${config.services.adjustmentServices.url}/${this.prisonerDetail.offenderNo}`
+    return `${config.services.adjustmentServices.url}/${this.prisonerNumber}`
   }
 
   public intersectingSentenceTable() {
