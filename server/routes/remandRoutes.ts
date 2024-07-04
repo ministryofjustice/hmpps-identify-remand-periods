@@ -16,29 +16,29 @@ export default class RemandRoutes {
   ) {}
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
-    const { caseloads, token } = res.locals.user
+    const { username } = res.locals.user
     const { nomsId } = req.params
-    const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
-    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(prisonerDetail.bookingId, token)
+    const { bookingId, prisonerNumber } = res.locals.prisoner
+    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/results', {
-      model: new RelevantRemandModel(prisonerDetail, relevantRemand, sentencesAndOffences),
+      model: new RelevantRemandModel(prisonerNumber, relevantRemand, sentencesAndOffences),
       form: new RemandDecisionForm({}),
     })
   }
 
   public remandSubmit: RequestHandler = async (req, res): Promise<void> => {
-    const { caseloads, token } = res.locals.user
+    const { username } = res.locals.user
     const { nomsId } = req.params
+    const { bookingId, prisonerNumber } = res.locals.prisoner
     const form = new RemandDecisionForm(req.body)
     form.validate()
     if (form.errors.length) {
-      const prisonerDetail = await this.prisonerService.getPrisonerDetail(nomsId, caseloads, token)
-      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, token)
-      const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(prisonerDetail.bookingId, token)
+      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+      const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/results', {
-        model: new RelevantRemandModel(prisonerDetail, relevantRemand, sentencesAndOffences),
+        model: new RelevantRemandModel(prisonerNumber, relevantRemand, sentencesAndOffences),
         form,
       })
     }
@@ -48,7 +48,7 @@ export default class RemandRoutes {
       rejectComment: form.decision === 'no' ? form.comment : null,
     } as IdentifyRemandDecision
 
-    const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, token)
+    const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
 
     const message = JSON.stringify({
       type: 'REMAND',

@@ -1,7 +1,6 @@
 import type { Express } from 'express'
 import request from 'supertest'
 import { appWithAllRoutes } from './testutils/appSetup'
-import { PrisonApiPrisoner } from '../@types/prisonApi/prisonClientTypes'
 import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
@@ -13,17 +12,9 @@ jest.mock('../services/prisonerService')
 jest.mock('../services/identifyRemandPeriodsService')
 
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
-const identifyRemandPeriodsService = new IdentifyRemandPeriodsService() as jest.Mocked<IdentifyRemandPeriodsService>
+const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
 
 const NOMS_ID = 'ABC123'
-
-const stubbedPrisonerData = {
-  offenderNo: NOMS_ID,
-  firstName: 'Anon',
-  lastName: 'Nobody',
-  dateOfBirth: '24/06/2000',
-  bookingId: 12345,
-} as PrisonApiPrisoner
 
 beforeEach(() => {
   app = appWithAllRoutes({
@@ -37,7 +28,6 @@ afterEach(() => {
 
 describe('GET /{prisonerId}', () => {
   it('should render the results page', () => {
-    prisonerService.getPrisonerDetail.mockResolvedValue(stubbedPrisonerData)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
