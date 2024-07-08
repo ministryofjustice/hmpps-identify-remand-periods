@@ -1,3 +1,4 @@
+import { Readable } from 'stream'
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import type {
@@ -13,6 +14,12 @@ export default class PrisonApiClient {
 
   constructor(token: string) {
     this.restClient = new RestClient('Prison API', config.apis.prisonApi as ApiConfig, token)
+  }
+
+  async getPrisonerImage(prisonerNumber: string): Promise<Readable> {
+    return this.restClient.stream({
+      path: `/api/bookings/offenderNo/${prisonerNumber}/image/data`,
+    })
   }
 
   async getPrisonerDetail(nomsId: string): Promise<PrisonApiPrisoner> {

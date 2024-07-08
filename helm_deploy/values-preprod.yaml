@@ -19,6 +19,8 @@ generic-service:
     IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api-preprod.hmpps.service.justice.gov.uk"
     MANAGE_USERS_API_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
     PRISONER_SEARCH_API_URL: "https://prisoner-search-preprod.prison.service.justice.gov.uk"
+    COMPONENT_API_URL: "https://frontend-components-preprod.hmpps.service.justice.gov.uk"
+    COMMON_COMPONENTS_ENABLED: 'true'
     ENVIRONMENT_NAME: PRE-PRODUCTION
 
 generic-prometheus-alerts:
