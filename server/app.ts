@@ -19,6 +19,7 @@ import setUpWebSession from './middleware/setUpWebSession'
 import routes from './routes'
 import type { Services } from './services'
 import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
+import getFrontendComponents from './middleware/getFeComponents'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
@@ -38,6 +39,7 @@ export default function createApp(services: Services): express.Application {
   app.use(authorisationMiddleware(['REMAND_IDENTIFIER']))
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services))
+  app.get('*', getFrontendComponents(services))
   app.use('/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
 
   app.use(routes(services))

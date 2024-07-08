@@ -116,6 +116,15 @@ export default {
       },
       agent: new AgentConfig(Number(get('PRISONER_SEARCH_API_TIMEOUT', 10000))),
     },
+    frontendComponents: {
+      url: get('COMPONENT_API_URL', 'http://localhost:8082', requiredInProduction),
+      timeout: {
+        response: Number(get('COMPONENT_API_TIMEOUT_SECONDS', 10000)),
+        deadline: Number(get('COMPONENT_API_TIMEOUT_SECONDS', 10000)),
+      },
+      agent: new AgentConfig(Number(get('COMPONENT_API_TIMEOUT_SECONDS', 10000))),
+      enabled: get('COMMON_COMPONENTS_ENABLED', 'false') === 'true',
+    },
   },
   services: {
     calculateReleaseDatesUI: {

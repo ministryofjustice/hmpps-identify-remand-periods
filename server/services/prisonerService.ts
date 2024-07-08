@@ -1,3 +1,4 @@
+import { Readable } from 'stream'
 import type HmppsAuthClient from '../data/hmppsAuthClient'
 import PrisonApiClient from '../api/prisonApiClient'
 import {
@@ -9,6 +10,10 @@ import {
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
+
+  async getPrisonerImage(username: string, prisonerNumber: string): Promise<Readable> {
+    return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(prisonerNumber)
+  }
 
   async getUsersCaseloads(token: string): Promise<PrisonApiUserCaseloads[]> {
     return new PrisonApiClient(token).getUsersCaseloads()

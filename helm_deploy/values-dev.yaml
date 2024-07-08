@@ -19,6 +19,8 @@ generic-service:
     IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api-dev.hmpps.service.justice.gov.uk"
     MANAGE_USERS_API_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     PRISONER_SEARCH_API_URL: "https://prisoner-search-dev.prison.service.justice.gov.uk"
+    COMPONENT_API_URL: "https://frontend-components-dev.hmpps.service.justice.gov.uk"
+    COMMON_COMPONENTS_ENABLED: 'true'
     ENVIRONMENT_NAME: DEV
 
 
