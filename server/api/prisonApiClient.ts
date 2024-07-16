@@ -32,7 +32,7 @@ export default class PrisonApiClient {
 
   async getCourtDateResults(nomsId: string): Promise<PrisonApiCourtDateResult[]> {
     return this.restClient.get({
-      path: `/api/court-date-results/${nomsId}`,
+      path: `/api/court-date-results/by-charge/${nomsId}`,
     }) as Promise<PrisonApiCourtDateResult[]>
   }
 
