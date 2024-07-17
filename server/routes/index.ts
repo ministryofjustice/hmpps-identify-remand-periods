@@ -25,8 +25,8 @@ export default function routes(service: Services): Router {
 
   get('/bulk', remandRoutes.bulkRemand)
   post('/bulk', remandRoutes.submitBulkRemand)
-  get('/:nomsId', remandRoutes.remand)
-  post('/:nomsId', remandRoutes.remandSubmit)
+  get('/prisoner/:nomsId', remandRoutes.remand)
+  post('/prisoner/:nomsId', remandRoutes.remandSubmit)
 
   return router
 }

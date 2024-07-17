@@ -26,7 +26,7 @@ afterEach(() => {
   jest.resetAllMocks()
 })
 
-describe('GET /{prisonerId}', () => {
+describe('GET /prisoner/{prisonerId}', () => {
   it('should render the results page', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -41,7 +41,7 @@ describe('GET /{prisonerId}', () => {
     ])
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
     return request(app)
-      .get(`/${NOMS_ID}`)
+      .get(`/prisoner/${NOMS_ID}`)
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContainInOrder([
