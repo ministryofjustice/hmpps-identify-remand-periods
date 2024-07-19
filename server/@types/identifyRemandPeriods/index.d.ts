@@ -29,6 +29,23 @@ export type webhooks = Record<string, never>
 
 export interface components {
   schemas: {
+    AdjustmentDto: {
+      /** Format: uuid */
+      id?: string
+      /** Format: int64 */
+      bookingId: number
+      /** Format: int32 */
+      sentenceSequence?: number
+      person: string
+      adjustmentType: string
+      /** Format: date */
+      toDate?: string
+      /** Format: date */
+      fromDate?: string
+      remand?: components['schemas']['RemandDto']
+      /** @enum {string} */
+      status: 'ACTIVE' | 'INACTIVE' | 'DELETED' | 'INACTIVE_WHEN_DELETED'
+    }
     Charge: {
       /** Format: int64 */
       chargeId: number
@@ -56,7 +73,10 @@ export interface components {
       to: string
       fromEvent: components['schemas']['CourtAppearance']
       toEvent: components['schemas']['CourtAppearance']
-      charge: components['schemas']['Charge']
+      /** Format: int64 */
+      chargeId: number
+      /** @enum {string} */
+      status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'NOT_YET_SENTENCED'
       /** Format: int64 */
       days?: number
     }
@@ -85,14 +105,25 @@ export interface components {
       from: string
       /** Format: date */
       to: string
-      charge: components['schemas']['Charge']
+      /** Format: int64 */
+      chargeId: number
       /** Format: int64 */
       days?: number
     }
+    /** @description The details of remand adjustment */
+    RemandDto: {
+      /** @description The id of the charges this remand applies to */
+      chargeId: number[]
+    }
     RemandResult: {
+      adjustments: components['schemas']['AdjustmentDto'][]
       chargeRemand: components['schemas']['ChargeRemand'][]
       sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
+      charges: {
+        [key: string]: components['schemas']['Charge']
+      }
+      intersectingSentencesUsingHistoricCalculation: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
     }
     Sentence: {
@@ -111,7 +142,8 @@ export interface components {
       /** Format: date */
       to: string
       sentence: components['schemas']['Sentence']
-      charge: components['schemas']['Charge']
+      /** Format: int64 */
+      chargeId: number
       /** Format: int64 */
       days?: number
     }
@@ -133,6 +165,8 @@ export interface components {
   headers: never
   pathItems: never
 }
+
+export type $defs = Record<string, never>
 
 export type external = Record<string, never>
 

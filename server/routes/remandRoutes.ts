@@ -18,12 +18,13 @@ export default class RemandRoutes {
   public remand: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
     const { nomsId } = req.params
+    const { includeInactive } = req.query as Record<string, string>
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/results', {
-      model: new RelevantRemandModel(prisonerNumber, relevantRemand, sentencesAndOffences),
+      model: new RelevantRemandModel(prisonerNumber, relevantRemand, sentencesAndOffences, includeInactive === 'true'),
       form: new RemandDecisionForm({}),
     })
   }
@@ -32,13 +33,19 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
     const { bookingId, prisonerNumber } = res.locals.prisoner
+    const { includeInactive } = req.query as Record<string, string>
     const form = new RemandDecisionForm(req.body)
     form.validate()
     if (form.errors.length) {
       const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/results', {
-        model: new RelevantRemandModel(prisonerNumber, relevantRemand, sentencesAndOffences),
+        model: new RelevantRemandModel(
+          prisonerNumber,
+          relevantRemand,
+          sentencesAndOffences,
+          includeInactive === 'true',
+        ),
         form,
       })
     }

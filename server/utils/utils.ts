@@ -39,6 +39,9 @@ export const deepEqual = <T>(x: T, y: T): boolean => {
     : x === y
 }
 
+// This date arithmetic is inclusive  of both end boundaries, e.g. 2023-01-01 to 2023-01-01 is 1 day
+export const daysBetween = (from: Date, to: Date) => (to.getTime() - from.getTime()) / (1000 * 3600 * 24) + 1
+
 export function onlyUnique<T>(value: T, index: number, array: T[]) {
   return array.indexOf(value) === index
 }
