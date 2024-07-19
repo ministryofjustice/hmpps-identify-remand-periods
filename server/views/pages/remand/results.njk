@@ -78,7 +78,11 @@
                     <tbody class="govuk-table__body">
                         {% for remand in model.adjustments() %}
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">{{remand.fromDate | date('DD MMM YYYY') }}</td>
+                                <td class="govuk-table__cell">{{remand.fromDate | date('DD MMM YYYY') }}<br />
+                                    {% if remand.status == 'INACTIVE' %}
+                                        <span class="moj-badge moj-badge--red">INACTIVE</span>
+                                    {% endif %}
+                                </td>
                                 <td class="govuk-table__cell">{{remand.toDate | date('DD MMM YYYY') }}</td>
                                 <td class="govuk-table__cell">{{remand.daysBetween}}</td>
 
