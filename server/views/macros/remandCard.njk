@@ -1,6 +1,5 @@
 {% macro remandCard(remand, model, relevant) %}
-    {% set colour = 'red' if not relevant else ('green' if model.isApplicable(remand) else 'blue')%}
-    {% set text = 'Not applicable' if not relevant else ('Applicable' if model.isApplicable(remand) else 'Shared')%}
+    {% set colour = 'red' if not relevant else ('green' if remand.status == 'APPLICABLE' else 'blue')%}
 
     <article class="moj-ticket-panel govuk-!-margin-bottom-4 govuk-!-margin-left-6">
 
@@ -20,7 +19,7 @@
                         {{ remand.charge.offenceDate | date('DD MMM YYYY') }}
                     {% endif %}
                 </span><br/>
-                <span class="moj-badge moj-badge--{{colour}}">{{text}}</span>
+                <span class="moj-badge moj-badge--{{colour}}">{{remand.status}}</span>
             </div>
             <!-- Col 2 -->
             <div class="moj-ticket-panel__column">

@@ -59,9 +59,12 @@
         </div>
     </div>
 
+    {% if model.hasInactivePeriod() %}
+        <p>Inactive periods are currently{% if not model.includeInactive %} not{% endif %} displayed. <a href="/prisoner/{{prisoner.prisonerNumber}}?includeInactive={{not model.includeInactive}}">{% if model.includeInactive %}Hide{% else %}Show{% endif %} inactive</a></p>
+    {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            {% if model.relevantRemand.sentenceRemand.length %}
+            {% if model.relevantRemand.adjustments.length %}
                 <table class="govuk-table">
                     <caption class="govuk-table__caption govuk-table__caption--m">Identified remand</caption>
                     <thead class="govuk-table__head">
@@ -73,11 +76,11 @@
                         </tr>
                     </thead>
                     <tbody class="govuk-table__body">
-                        {% for remand in model.relevantRemand.sentenceRemand %}
+                        {% for remand in model.adjustments() %}
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">{{remand.from | date('DD MMM YYYY') }}</td>
-                                <td class="govuk-table__cell">{{remand.to | date('DD MMM YYYY') }}</td>
-                                <td class="govuk-table__cell">{{remand.days}}</td>
+                                <td class="govuk-table__cell">{{remand.fromDate | date('DD MMM YYYY') }}</td>
+                                <td class="govuk-table__cell">{{remand.toDate | date('DD MMM YYYY') }}</td>
+                                <td class="govuk-table__cell">{{remand.daysBetween}}</td>
 
                                 <td class="govuk-table__cell">
                                     <table class="govuk-table">
@@ -88,7 +91,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="govuk-table__body">
-                                            {% for charge in model.sharedRemand(remand) %}
+                                            {% for charge in model.adjustmentCharges(remand) %}
                                                 <tr class="govuk-table__row">
                                                     <td class="govuk-table__cell">{{charge.offence.description}}</td>
                                                     <td class="govuk-table__cell">

@@ -2,16 +2,23 @@ import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import {
   Charge,
+  ChargeRemand,
   LegacyDataProblem,
   Remand,
   RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
+import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
+import { daysBetween } from '../utils/utils'
+
+type RemandAndCharge = ChargeRemand & {
+  charge: Charge
+}
 
 export default class RelevantRemandModel {
-  public relevantChargeRemand: Remand[]
+  public relevantChargeRemand: RemandAndCharge[]
 
-  public notRelevantChargeRemand: Remand[]
+  public notRelevantChargeRemand: RemandAndCharge[]
 
   public activeSentenceCourtCases: string[]
 
@@ -21,9 +28,19 @@ export default class RelevantRemandModel {
     public prisonerNumber: string,
     public relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    public includeInactive: boolean = false,
   ) {
-    this.relevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => this.isRelevant(it))
-    this.notRelevantChargeRemand = this.relevantRemand.chargeRemand.filter(it => !this.isRelevant(it))
+    const chargeRemandAndCharges = this.relevantRemand.chargeRemand
+      .map(it => this.toRemandAndCharge(it))
+      .filter(it => {
+        if (includeInactive) {
+          return true
+        }
+        return it.status !== 'INACTIVE'
+      })
+
+    this.relevantChargeRemand = chargeRemandAndCharges.filter(it => this.isRelevant(it))
+    this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
     this.activeSentenceStatues = sentencesAndOffences
       .filter(it => it.sentenceStatus === 'A')
       .flatMap(it => it.offences.map(off => off.offenceStatute))
@@ -32,12 +49,25 @@ export default class RelevantRemandModel {
       .map(it => it.caseReference)
   }
 
-  public isApplicable(sentenceRemand: Remand): boolean {
-    return this.relevantRemand.sentenceRemand.some(it => it.charge.chargeId === sentenceRemand.charge.chargeId)
-  }
-
   public returnToAdjustments(): string {
     return `${config.services.adjustmentServices.url}/${this.prisonerNumber}`
+  }
+
+  public adjustments() {
+    return this.filterAdjustments().map(it => {
+      return { ...it, daysBetween: daysBetween(new Date(it.fromDate), new Date(it.toDate)) }
+    })
+  }
+
+  private filterAdjustments() {
+    if (this.includeInactive) {
+      return this.relevantRemand.adjustments
+    }
+    return this.relevantRemand.adjustments.filter(it => it.status === 'ACTIVE')
+  }
+
+  public adjustmentCharges(adjustment: Adjustment) {
+    return adjustment.remand.chargeId.map(it => this.relevantRemand.charges[it])
   }
 
   public intersectingSentenceTable() {
@@ -54,18 +84,17 @@ export default class RelevantRemandModel {
         },
       ],
       rows: this.relevantRemand.intersectingSentences.map(it => {
+        const charge = this.relevantRemand.charges[it.chargeId]
         return [
           {
-            html: `${it.charge.offence.description}<br />
+            html: `${charge.offence.description}<br />
             <span class="govuk-hint">Date of offence: 
                 ${
-                  it.charge.offenceDate &&
-                  it.charge.offenceEndDate &&
-                  it.charge.offenceEndDate !== it.charge.offenceDate
-                    ? `${dayjs(it.charge.offenceDate).format('D MMM YYYY')} to ${dayjs(it.charge.offenceEndDate).format(
+                  charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
+                    ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format(
                         'D MMM YYYY',
                       )}`
-                    : `${dayjs(it.charge.offenceDate).format('D MMM YYYY')}`
+                    : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
                 }
             </span>`,
           },
@@ -104,15 +133,6 @@ export default class RelevantRemandModel {
     })
   }
 
-  public sharedRemand(remand: Remand): Charge[] {
-    return this.relevantRemand.chargeRemand
-      .filter(it => it.charge.sentenceSequence != null)
-      .filter(it => {
-        return this.overlaps(it, remand)
-      })
-      .map(it => it.charge)
-  }
-
   private overlaps(one: Remand, two: Remand): boolean {
     return (
       (dayjs(one.from).isAfter(two.from) && dayjs(one.from).isBefore(two.to)) ||
@@ -122,12 +142,18 @@ export default class RelevantRemandModel {
     )
   }
 
-  private isRelevant(remand: Remand) {
-    return (
-      remand.charge.sentenceSequence != null &&
-      this.relevantRemand.sentenceRemand.some(it => {
-        return this.overlaps(it, remand)
-      })
-    )
+  private isRelevant(remand: RemandAndCharge) {
+    return remand.charge.sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
+  }
+
+  private toRemandAndCharge(it: ChargeRemand): RemandAndCharge {
+    return {
+      ...it,
+      charge: this.relevantRemand.charges[it.chargeId],
+    }
+  }
+
+  public hasInactivePeriod() {
+    return this.relevantRemand.chargeRemand.some(it => it.status === 'INACTIVE')
   }
 }

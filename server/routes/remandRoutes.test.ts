@@ -59,9 +59,9 @@ describe('GET /prisoner/{prisonerId}', () => {
           'Recalled on 18 May 2023',
           'Post recall release on 4 Oct 2023',
         ])
-        expect(res.text).toContain('Applicable')
-        expect(res.text).toContain('Not applicable')
-        expect(res.text).toContain('Shared')
+        expect(res.text).toContain('APPLICABLE')
+        expect(res.text).toContain('NOT_YET_SENTENCED')
+        expect(res.text).toContain('SHARED')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
