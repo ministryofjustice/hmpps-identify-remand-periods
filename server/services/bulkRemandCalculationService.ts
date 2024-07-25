@@ -145,26 +145,28 @@ export default class BulkRemandCalculationService {
   }
 
   private async findSourceDataForIntersectingSentence(
-    relevantReamnd: RemandResult,
+    relevantRemand: RemandResult,
     intersectingSentences: IntersectingSentence[],
     username: string,
   ): Promise<PrisonApiOffenderSentenceAndOffences[]> {
     if (!intersectingSentences) {
       return []
     }
-    const bookingIds = intersectingSentences.map(it => relevantReamnd.charges[it.chargeId].bookingId).filter(onlyUnique)
+    const bookingIds = intersectingSentences.map(it => relevantRemand.charges[it.chargeId].bookingId).filter(onlyUnique)
 
     const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, username))
 
     return (await Promise.all(sentencesAndOffences)).flatMap(it => it)
   }
 
-  private filterForBookingId(relevantReamnd: RemandResult, bookingId: number, remands: Remand[]): Remand[] {
-    return remands ? remands.filter(it => relevantReamnd.charges[it.chargeId].bookingId === bookingId) : remands
+  private filterForBookingId(relevantRemand: RemandResult, bookingId: number, remands: Remand[]): Remand[] {
+    return remands && relevantRemand?.charges
+      ? remands.filter(it => relevantRemand.charges[it.chargeId].bookingId === bookingId)
+      : remands
   }
 
   private isRemandSame(
-    relevantReamnd: RemandResult,
+    relevantRemand: RemandResult,
     bookingId: number,
     nomisRemand: Remand[],
     calculatedRemand: Remand[],
@@ -173,14 +175,14 @@ export default class BulkRemandCalculationService {
       nomisRemand != null &&
       calculatedRemand != null &&
       sameMembers(
-        this.filterForBookingId(relevantReamnd, bookingId, nomisRemand),
-        this.filterForBookingId(relevantReamnd, bookingId, calculatedRemand),
+        this.filterForBookingId(relevantRemand, bookingId, nomisRemand),
+        this.filterForBookingId(relevantRemand, bookingId, calculatedRemand),
       )
     )
   }
 
   private isDaysSame(
-    relevantReamnd: RemandResult,
+    relevantRemand: RemandResult,
     bookingId: number,
     nomisRemand: Remand[],
     calculatedRemand: Remand[],
@@ -188,13 +190,13 @@ export default class BulkRemandCalculationService {
     return (
       nomisRemand != null &&
       calculatedRemand != null &&
-      this.sumRemandDays(relevantReamnd, bookingId, nomisRemand) ===
-        this.sumRemandDays(relevantReamnd, bookingId, calculatedRemand)
+      this.sumRemandDays(relevantRemand, bookingId, nomisRemand) ===
+        this.sumRemandDays(relevantRemand, bookingId, calculatedRemand)
     )
   }
 
   private isDatesSame(
-    relevantReamnd: RemandResult,
+    relevantRemand: RemandResult,
     bookingId: number,
     nomisRemand: Remand[],
     calculatedRemand: Remand[],
@@ -203,19 +205,19 @@ export default class BulkRemandCalculationService {
       nomisRemand != null &&
       calculatedRemand != null &&
       sameMembers(
-        this.filterForBookingId(relevantReamnd, bookingId, nomisRemand).map(it => {
+        this.filterForBookingId(relevantRemand, bookingId, nomisRemand).map(it => {
           return { from: it.from, to: it.to }
         }),
-        this.filterForBookingId(relevantReamnd, bookingId, calculatedRemand).map(it => {
+        this.filterForBookingId(relevantRemand, bookingId, calculatedRemand).map(it => {
           return { from: it.from, to: it.to }
         }),
       )
     )
   }
 
-  private sumRemandDays(relevantReamnd: RemandResult, bookingId: number, remand: Remand[]): number {
+  private sumRemandDays(relevantRemand: RemandResult, bookingId: number, remand: Remand[]): number {
     return remand
-      ? this.filterForBookingId(relevantReamnd, bookingId, remand)
+      ? this.filterForBookingId(relevantRemand, bookingId, remand)
           .map(a => a.days)
           .reduce((sum, current) => sum + current, 0)
       : 0
