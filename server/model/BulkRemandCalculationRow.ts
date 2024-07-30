@@ -19,6 +19,7 @@ type BulkRemandCalculationRow = {
 
   ERROR_TEXT: string
   ERROR_JSON: string
+  ERROR_STACK: string
 }
 
 export default BulkRemandCalculationRow
