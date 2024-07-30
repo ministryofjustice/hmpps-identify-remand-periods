@@ -26,68 +26,57 @@ export default class BulkRemandCalculationService {
   ): Promise<BulkRemandCalculationRow[]> {
     const csvData: BulkRemandCalculationRow[] = []
 
+    let prisonDetails,
+      bookingId,
+      nomisAdjustments,
+      nomisRemand,
+      nomisUnusedRemand,
+      courtDates,
+      calculatedRemand,
+      sentences
     for (const nomsId of nomsIds) {
       try {
-        const prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username)
-        const bookingId = Number(prisonDetails.bookingId)
-        const nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
-        const nomisRemand = nomisAdjustments.sentenceAdjustments.filter(
+        prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username)
+        bookingId = Number(prisonDetails.bookingId)
+        nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
+        nomisRemand = nomisAdjustments.sentenceAdjustments.filter(
           it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND',
         )
-        const nomisUnusedRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'UNUSED_REMAND')
-        const courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
+        nomisUnusedRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'UNUSED_REMAND')
+        courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
 
-        try {
-          const calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
-          const sentences = await this.findSourceDataForIntersectingSentence(
+        calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+        sentences = await this.findSourceDataForIntersectingSentence(
+          calculatedRemand,
+          calculatedRemand.intersectingSentences,
+          username,
+        )
+
+        csvData.push(
+          this.addRow(
+            nomsId,
+            bookingId,
+            prisonDetails,
+            nomisRemand,
+            nomisUnusedRemand,
+            courtDates,
             calculatedRemand,
-            calculatedRemand.intersectingSentences,
-            username,
-          )
-
-          csvData.push(
-            this.addRow(
-              nomsId,
-              bookingId,
-              prisonDetails,
-              nomisRemand,
-              nomisUnusedRemand,
-              courtDates,
-              calculatedRemand,
-              sentences,
-              null,
-              null,
-            ),
-          )
-        } catch (ex) {
-          csvData.push(
-            this.addRow(
-              nomsId,
-              bookingId,
-              prisonDetails,
-              nomisRemand,
-              nomisUnusedRemand,
-              courtDates,
-              null,
-              null,
-              ex,
-              'Error calculating remand',
-            ),
-          )
-        }
+            sentences,
+            null,
+          ),
+        )
       } catch (ex) {
         csvData.push(
           this.addRow(
             nomsId,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
+            bookingId,
+            prisonDetails,
+            nomisRemand,
+            nomisUnusedRemand,
+            courtDates,
+            calculatedRemand,
+            sentences,
             ex,
-            `Error fetching data from prison-api ${ex.message}`,
           ),
         )
       }
@@ -105,8 +94,7 @@ export default class BulkRemandCalculationService {
     courtDates: PrisonApiCourtDateResult[],
     calculatedRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
-    ex: unknown,
-    errorText: string,
+    ex: Error,
   ): BulkRemandCalculationRow {
     const nomisRemand = this.sentenceAdjustmentToRemand(bookingId, nomisRemandSentenceAdjustment)
     const nomisUnusedRemand = this.sentenceAdjustmentToRemand(bookingId, nomisUnusedRemandSentenceAdjustment)
@@ -140,7 +128,8 @@ export default class BulkRemandCalculationService {
       INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
       NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.map(it => it.message).join('\n'),
       ERROR_JSON: JSON.stringify(ex, null, 2),
-      ERROR_TEXT: errorText,
+      ERROR_TEXT: ex?.message,
+      ERROR_STACK: ex?.stack,
     }
   }
 
