@@ -150,7 +150,7 @@ export default class BulkRemandCalculationService {
 
   private filterForBookingId(relevantRemand: RemandResult, bookingId: number, remands: Remand[]): Remand[] {
     return remands && relevantRemand?.charges
-      ? remands.filter(it => relevantRemand.charges[it.chargeId].bookingId === bookingId)
+      ? remands.filter(it => relevantRemand.charges[it.chargeId]?.bookingId === bookingId)
       : remands
   }
 
