@@ -98,6 +98,13 @@ export default class BulkRemandCalculationService {
   ): BulkRemandCalculationRow {
     const nomisRemand = this.sentenceAdjustmentToRemand(bookingId, nomisRemandSentenceAdjustment)
     const nomisUnusedRemand = this.sentenceAdjustmentToRemand(bookingId, nomisUnusedRemandSentenceAdjustment)
+    const isDatesSame = this.isDatesSame(calculatedRemand, bookingId, nomisRemand, calculatedRemand?.sentenceRemand)
+    const isDaysSame = this.isDaysSame(
+      calculatedRemand,
+      bookingId,
+      nomisRemand.concat(nomisUnusedRemand),
+      calculatedRemand?.sentenceRemand,
+    )
     return {
       NOMS_ID: nomsId,
       ACTIVE_BOOKING_ID: bookingId,
@@ -110,20 +117,9 @@ export default class BulkRemandCalculationService {
       NOMIS_REMAND_JSON: JSON.stringify(nomisRemand, null, 2),
       NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemand, null, 2),
       CALCULATED_REMAND_JSON: JSON.stringify(calculatedRemand?.sentenceRemand, null, 2),
-      IS_REMAND_SAME: this.isRemandSame(calculatedRemand, bookingId, nomisRemand, calculatedRemand?.sentenceRemand)
-        ? 'Y'
-        : 'N',
-      IS_DATES_SAME: this.isDatesSame(calculatedRemand, bookingId, nomisRemand, calculatedRemand?.sentenceRemand)
-        ? 'Y'
-        : 'N',
-      IS_DAYS_SAME: this.isDaysSame(
-        calculatedRemand,
-        bookingId,
-        nomisRemand.concat(nomisUnusedRemand),
-        calculatedRemand?.sentenceRemand,
-      )
-        ? 'Y'
-        : 'N',
+      IS_REMAND_SAME: isDatesSame && isDaysSame ? 'Y' : 'N',
+      IS_DATES_SAME: isDatesSame ? 'Y' : 'N',
+      IS_DAYS_SAME: isDaysSame ? 'Y' : 'N',
       INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
       INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
       NOMIS_INPUT_MESSAGES: calculatedRemand?.issuesWithLegacyData?.map(it => it.message).join('\n'),
@@ -150,24 +146,17 @@ export default class BulkRemandCalculationService {
 
   private filterForBookingId(relevantRemand: RemandResult, bookingId: number, remands: Remand[]): Remand[] {
     return remands && relevantRemand?.charges
-      ? remands.filter(it => relevantRemand.charges[it.chargeId]?.bookingId === bookingId)
+      ? remands.filter(it => {
+          let filterBookingId = null
+          if ('bookingId' in it) {
+            filterBookingId = it.bookingId
+          } else {
+            const charge = relevantRemand.charges[it.chargeId]
+            filterBookingId = charge?.bookingId
+          }
+          return filterBookingId === bookingId
+        })
       : remands
-  }
-
-  private isRemandSame(
-    relevantRemand: RemandResult,
-    bookingId: number,
-    nomisRemand: Remand[],
-    calculatedRemand: Remand[],
-  ): boolean {
-    return (
-      nomisRemand != null &&
-      calculatedRemand != null &&
-      sameMembers(
-        this.filterForBookingId(relevantRemand, bookingId, nomisRemand),
-        this.filterForBookingId(relevantRemand, bookingId, calculatedRemand),
-      )
-    )
   }
 
   private isDaysSame(
@@ -225,6 +214,7 @@ export default class BulkRemandCalculationService {
             type: it.type,
             active: it.active,
             sentenceSequence: it.sentenceSequence,
+            bookingId,
             chargeId: 1,
           } as RemandDebug
         })
@@ -235,4 +225,5 @@ export default class BulkRemandCalculationService {
 type RemandDebug = Remand & {
   type?: string
   sentenceSequence?: number
+  bookingId: number
 }
