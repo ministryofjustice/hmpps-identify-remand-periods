@@ -20,7 +20,11 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const { includeInactive } = req.query as Record<string, string>
     const { bookingId, prisonerNumber } = res.locals.prisoner
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+      nomsId,
+      { includeRemandCalculation: false },
+      username,
+    )
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/results', {
@@ -37,7 +41,11 @@ export default class RemandRoutes {
     const form = new RemandDecisionForm(req.body)
     form.validate()
     if (form.errors.length) {
-      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+        nomsId,
+        { includeRemandCalculation: false },
+        username,
+      )
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/results', {
         model: new RelevantRemandModel(

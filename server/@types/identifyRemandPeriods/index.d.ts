@@ -29,6 +29,9 @@ export type webhooks = Record<string, never>
 
 export interface components {
   schemas: {
+    RemandCalculationRequestOptions: {
+      includeRemandCalculation: boolean
+    }
     AdjustmentDto: {
       /** Format: uuid */
       id?: string
@@ -66,6 +69,10 @@ export interface components {
       resultDescription?: string
       isActiveBooking: boolean
     }
+    ChargeAndEvents: {
+      charge: components['schemas']['Charge']
+      dates: components['schemas']['CourtDate'][]
+    }
     ChargeRemand: {
       /** Format: date */
       from: string
@@ -84,6 +91,16 @@ export interface components {
       /** Format: date */
       date: string
       description: string
+    }
+    CourtDate: {
+      /** Format: date */
+      date: string
+      /** @enum {string} */
+      type: 'START' | 'STOP' | 'CONTINUE'
+      description: string
+      final: boolean
+      isRecallEvent: boolean
+      isCustodial: boolean
     }
     LegacyDataProblem: {
       /** @enum {string} */
@@ -110,6 +127,16 @@ export interface components {
       /** Format: int64 */
       days?: number
     }
+    RemandCalculation: {
+      prisonerId: string
+      chargesAndEvents: components['schemas']['ChargeAndEvents'][]
+      chargeIdsWithActiveSentence: number[]
+      issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
+      includeCalculationInResult: boolean
+      charges: {
+        [key: string]: components['schemas']['Charge']
+      }
+    }
     /** @description The details of remand adjustment */
     RemandDto: {
       /** @description The id of the charges this remand applies to */
@@ -123,8 +150,9 @@ export interface components {
       charges: {
         [key: string]: components['schemas']['Charge']
       }
-      intersectingSentencesUsingHistoricCalculation: components['schemas']['SentencePeriod'][]
+      periodsServingSentenceUsingCRDS: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
+      remandCalculation?: components['schemas']['RemandCalculation']
     }
     Sentence: {
       /** Format: int32 */
@@ -183,6 +211,11 @@ export interface operations {
          * @example A1234AB
          */
         prisonerId: string
+      }
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['RemandCalculationRequestOptions']
       }
     }
     responses: {
