@@ -45,7 +45,11 @@ export default class BulkRemandCalculationService {
         nomisUnusedRemand = nomisAdjustments.sentenceAdjustments.filter(it => it.type === 'UNUSED_REMAND')
         courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
 
-        calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(nomsId, username)
+        calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+          nomsId,
+          { includeRemandCalculation: true },
+          username,
+        )
         sentences = await this.findSourceDataForIntersectingSentence(
           calculatedRemand,
           calculatedRemand.intersectingSentences,

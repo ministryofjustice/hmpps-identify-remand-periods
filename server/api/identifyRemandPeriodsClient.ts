@@ -1,4 +1,8 @@
-import { IdentifyRemandDecision, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  IdentifyRemandDecision,
+  RemandCalculationRequestOptions,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 
@@ -13,8 +17,8 @@ export default class IdentifyRemandPeriodsClient {
     )
   }
 
-  async calculateRelevantRemand(nomsId: string): Promise<RemandResult> {
-    return this.restClient.post({ path: `/relevant-remand/${nomsId}` }) as Promise<RemandResult>
+  async calculateRelevantRemand(nomsId: string, options: RemandCalculationRequestOptions): Promise<RemandResult> {
+    return this.restClient.post({ path: `/relevant-remand/${nomsId}`, data: options }) as Promise<RemandResult>
   }
 
   async getRemandDecision(nomsId: string): Promise<IdentifyRemandDecision> {

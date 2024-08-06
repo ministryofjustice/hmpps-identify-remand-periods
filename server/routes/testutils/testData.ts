@@ -138,6 +138,7 @@ const remandResult = {
       days: 140,
     } as IntersectingSentence,
   ],
+  periodsServingSentenceUsingCRDS: [],
   issuesWithLegacyData: [
     {
       message: 'This is an important message',
