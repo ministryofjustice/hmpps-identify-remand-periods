@@ -15,29 +15,28 @@
 
             <!-- Col 1 -->
             <div class="moj-ticket-panel__column">
-                <span>
-                    <b>Offence:</b>
-                    {{remand.charge.offence.description}}
-                </span><br/>
-                <span>
-                    <b>Date of offence:</b>
-                    {% if (remand.charge.offenceDate and remand.charge.offenceEndDate and remand.charge.offenceEndDate !== remand.charge.offenceDate) %}
-                        {{ remand.charge.offenceDate | date('DD MMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMM YYYY') }}
-                    {% elseif remand.charge.offenceDate %}
-                        {{ remand.charge.offenceDate | date('DD MMM YYYY') }}
-                    {% endif %}
-                </span><br/>
+                {% for charge in remand.charges %}
+                    <span>
+                        <strong>{{charge.offence.description}}</strong> committed on
+                        {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
+                            {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMM YYYY') }}
+                        {% elseif charge.offenceDate %}
+                            {{ charge.offenceDate | date('DD MMM YYYY') }}
+                        {% endif %}
+                    </span><br/>
+                {% endfor %}
                 <span class="moj-badge moj-badge--{{colour}}">{{remand.status}}</span>
             </div>
+            {% set charge = remand.charges[0] %}
             <!-- Col 2 -->
             <div class="moj-ticket-panel__column">
 
                 <span>
                     <b>Court:</b>
-                    {{remand.charge.courtLocation}}
+                    {{charge.courtLocation}}
                     <span class="govuk-!-margin-right-4"></span>
                     <b>Case number:</b>
-                    {{remand.charge.courtCaseRef}}
+                    {{charge.courtCaseRef}}
                 </span><br/>
                 <span>
                     <b>Remand:</b>
@@ -58,7 +57,7 @@
                 </span><br/>
                 <span>
                     <b>Offence outcome:</b>
-                    {{remand.charge.resultDescription}}
+                    {{charge.resultDescription}}
                 </span><br/>
             </div>
         </section>

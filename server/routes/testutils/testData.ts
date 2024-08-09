@@ -3,7 +3,6 @@ import {
   ChargeRemand,
   IntersectingSentence,
   LegacyDataProblem,
-  Remand,
   RemandResult,
 } from '../../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 
@@ -82,45 +81,31 @@ const remandResult = {
       from: '2022-11-23',
       to: '2022-12-15',
       days: 23,
-      chargeId: 3933924,
+      chargeIds: [3933924],
       status: 'NOT_YET_SENTENCED',
     } as ChargeRemand,
     {
       from: '2023-01-10',
       to: '2023-01-20',
       days: 11,
-      chargeId: 3933870,
+      chargeIds: [3933870],
       status: 'APPLICABLE',
     } as ChargeRemand,
     {
       from: '2023-02-01',
       to: '2023-03-20',
       days: 48,
-      chargeId: 3933870,
+      chargeIds: [3933870],
       status: 'APPLICABLE',
     } as ChargeRemand,
 
     {
       from: '2023-02-01',
       to: '2023-03-20',
-      chargeId: 2222,
+      chargeIds: [2222],
       days: 48,
       status: 'SHARED',
     } as ChargeRemand,
-  ],
-  sentenceRemand: [
-    {
-      from: '2023-01-10',
-      to: '2023-01-20',
-      chargeId: 3933870,
-      days: 11,
-    } as Remand,
-    {
-      from: '2023-02-01',
-      to: '2023-03-20',
-      chargeId: 3933870,
-      days: 48,
-    } as Remand,
   ],
   intersectingSentences: [
     {

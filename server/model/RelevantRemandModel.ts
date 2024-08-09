@@ -4,7 +4,6 @@ import {
   Charge,
   ChargeRemand,
   LegacyDataProblem,
-  Remand,
   RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
@@ -12,7 +11,7 @@ import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { daysBetween } from '../utils/utils'
 
 type RemandAndCharge = ChargeRemand & {
-  charge: Charge
+  charges: Charge[]
 }
 
 export default class RelevantRemandModel {
@@ -133,23 +132,14 @@ export default class RelevantRemandModel {
     })
   }
 
-  private overlaps(one: Remand, two: Remand): boolean {
-    return (
-      (dayjs(one.from).isAfter(two.from) && dayjs(one.from).isBefore(two.to)) ||
-      dayjs(one.from).isSame(two.from) ||
-      (dayjs(one.to).isAfter(two.from) && dayjs(one.to).isBefore(two.to)) ||
-      dayjs(one.to).isSame(two.to)
-    )
-  }
-
   private isRelevant(remand: RemandAndCharge) {
-    return remand.charge.sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
+    return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
   }
 
   private toRemandAndCharge(it: ChargeRemand): RemandAndCharge {
     return {
       ...it,
-      charge: this.relevantRemand.charges[it.chargeId],
+      charges: it.chargeIds.map(chargeId => this.relevantRemand.charges[chargeId]),
     }
   }
 
