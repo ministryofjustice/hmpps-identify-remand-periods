@@ -80,8 +80,7 @@ export interface components {
       to: string
       fromEvent: components['schemas']['CourtAppearance']
       toEvent: components['schemas']['CourtAppearance']
-      /** Format: int64 */
-      chargeId: number
+      chargeIds: number[]
       /** @enum {string} */
       status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'NOT_YET_SENTENCED'
       /** Format: int64 */
@@ -117,25 +116,12 @@ export interface components {
       statute: string
       description: string
     }
-    Remand: {
-      /** Format: date */
-      from: string
-      /** Format: date */
-      to: string
-      /** Format: int64 */
-      chargeId: number
-      /** Format: int64 */
-      days?: number
-    }
     RemandCalculation: {
       prisonerId: string
       chargesAndEvents: components['schemas']['ChargeAndEvents'][]
       chargeIdsWithActiveSentence: number[]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
       includeCalculationInResult: boolean
-      charges: {
-        [key: string]: components['schemas']['Charge']
-      }
     }
     /** @description The details of remand adjustment */
     RemandDto: {
@@ -145,7 +131,6 @@ export interface components {
     RemandResult: {
       adjustments: components['schemas']['AdjustmentDto'][]
       chargeRemand: components['schemas']['ChargeRemand'][]
-      sentenceRemand: components['schemas']['Remand'][]
       intersectingSentences: components['schemas']['SentencePeriod'][]
       charges: {
         [key: string]: components['schemas']['Charge']
