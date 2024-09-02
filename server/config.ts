@@ -87,16 +87,16 @@ export default {
     prisonApi: {
       url: get('PRISON_API_URL', 'http://localhost:8080', requiredInProduction),
       timeout: {
-        response: get('PRISON_API_TIMEOUT_RESPONSE', 10000),
-        deadline: get('PRISON_API_TIMEOUT_DEADLINE', 10000),
+        response: get('PRISON_API_TIMEOUT_RESPONSE', 20000),
+        deadline: get('PRISON_API_TIMEOUT_DEADLINE', 20000),
       },
       agent: new AgentConfig(Number(get('PRISON_API_AGENT_TIMEOUT', 20000))),
     },
     identifyRemandPeriods: {
       url: get('IDENTIFY_REMAND_PERIODS_API_URL', 'http://localhost:8080', requiredInProduction),
       timeout: {
-        response: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_RESPONSE', 10000),
-        deadline: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_DEADLINE', 10000),
+        response: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_RESPONSE', 20000),
+        deadline: get('IDENTIFY_REMAND_PERIODS_API_TIMEOUT_DEADLINE', 20000),
       },
       agent: new AgentConfig(Number(get('IDENTIFY_REMAND_PERIODS_API_AGENT_TIMEOUT', 20000))),
     },
