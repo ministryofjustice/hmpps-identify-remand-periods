@@ -103,9 +103,9 @@ export default class BulkRemandCalculationService {
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     ex: Error,
   ): BulkRemandCalculationRow {
-    const calculatedActiveAdjustments = calculatedRemand?.adjustments
+    const calculatedActiveAdjustments = (calculatedRemand?.adjustments
       ?.filter(it => it.status === 'ACTIVE')
-      ?.filter(it => it.bookingId === bookingId) as Adjustment[]
+      ?.filter(it => it.bookingId === bookingId) || []) as Adjustment[]
     const nomisDays =
       this.sumRemandDaysNOMISAdjustment(nomisRemandSentenceAdjustment) +
       this.sumRemandDaysNOMISAdjustment(nomisUnusedRemandSentenceAdjustment)
@@ -159,17 +159,13 @@ export default class BulkRemandCalculationService {
   }
 
   private isDatesSame(nomisRemand: PrisonApiSentenceAdjustments[], calculatedRemand: Adjustment[]): boolean {
-    return (
-      nomisRemand != null &&
-      calculatedRemand != null &&
-      sameMembers(
-        nomisRemand.map(it => {
-          return { from: it.fromDate, to: it.toDate }
-        }),
-        calculatedRemand.map(it => {
-          return { from: it.fromDate, to: it.toDate }
-        }),
-      )
+    return sameMembers(
+      nomisRemand.map(it => {
+        return { from: it.fromDate, to: it.toDate }
+      }),
+      calculatedRemand.map(it => {
+        return { from: it.fromDate, to: it.toDate }
+      }),
     )
   }
 
