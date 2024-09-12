@@ -80,7 +80,7 @@ export default class RemandRoutes {
   public submitBulkRemand: RequestHandler = async (req, res) => {
     if (req.body.single) {
       const prisonerId = req.body['single-prisoner']
-      return res.redirect(`/${prisonerId}`)
+      return res.redirect(`/prisoner/${prisonerId}`)
     }
 
     const { caseloads, token } = res.locals.user
