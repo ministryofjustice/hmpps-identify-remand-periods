@@ -26,7 +26,7 @@ export default class RelevantRemandModel {
   constructor(
     public prisonerNumber: string,
     public relevantRemand: RemandResult,
-    sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    private sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public includeInactive: boolean = false,
   ) {
     const chargeRemandAndCharges = this.relevantRemand.chargeRemand
@@ -146,4 +146,36 @@ export default class RelevantRemandModel {
   public hasInactivePeriod() {
     return this.relevantRemand.chargeRemand.some(it => it.status === 'INACTIVE')
   }
+
+  public isRecall(charge: ChargeRemand): boolean {
+    const sentence = this.sentencesAndOffences.find(it =>
+      it.offences.some(off => charge.chargeIds.includes(off.offenderChargeId)),
+    )
+    return sentence && RelevantRemandModel.recallTypes.includes(sentence.sentenceCalculationType)
+  }
+
+  public static recallTypes = [
+    'LR',
+    'LR_ORA',
+    'LR_YOI_ORA',
+    'LR_SEC91_ORA',
+    'LRSEC250_ORA',
+    'LR_EDS18',
+    'LR_EDS21',
+    'LR_EDSU18',
+    'LR_LASPO_AR',
+    'LR_LASPO_DR',
+    'LR_SEC236A',
+    'LR_SOPC18',
+    'LR_SOPC21',
+    '14FTR_ORA',
+    'FTR',
+    'FTR_ORA',
+    'FTR_SCH15',
+    'FTRSCH15_ORA',
+    'FTRSCH18',
+    'FTRSCH18_ORA',
+    '14FTRHDC_ORA',
+    'FTR_HDC_ORA',
+  ]
 }
