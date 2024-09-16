@@ -1,5 +1,9 @@
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { IntersectingSentence, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  IntersectingSentence,
+  LegacyDataProblem,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
@@ -58,6 +62,9 @@ export default class BulkRemandCalculationService {
           calculatedRemand.intersectingSentences,
           username,
         )
+        if (!sentences.length) {
+          sentences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+        }
 
         csvData.push(
           this.addRow(
@@ -135,8 +142,9 @@ export default class BulkRemandCalculationService {
       CALCULATED_REMAND_DAYS: dpsDays,
       INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
       INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-      VALIDATION_MESSAGES: calculatedRemand?.issuesWithLegacyData?.map(it => it.message).join('\n'),
-
+      VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData, sentencesAndOffences)
+        ?.map(it => it.message)
+        .join('\n'),
       ERROR_JSON: JSON.stringify(ex, null, 2),
       ERROR_TEXT: ex?.message,
       ERROR_STACK: ex?.stack,
@@ -177,5 +185,26 @@ export default class BulkRemandCalculationService {
 
   private sumRemandDaysNOMISAdjustment(remand: PrisonApiSentenceAdjustments[]): number {
     return remand.map(a => a.numberOfDays).reduce((sum, current) => sum + current, 0)
+  }
+
+  private importantErrors(
+    problems: LegacyDataProblem[],
+    sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+  ): LegacyDataProblem[] {
+    const activeSentenceCourtCases = sentencesAndOffences
+      .filter(it => it.sentenceStatus === 'A' && !!it.caseReference)
+      .map(it => it.caseReference)
+
+    const activeSentenceStatues = sentencesAndOffences
+      .filter(it => it.sentenceStatus === 'A')
+      .flatMap(it => it.offences.map(off => off.offenceStatute))
+
+    return problems.filter(problem => {
+      return (
+        problem.type !== 'UNSUPPORTED_OUTCOME' &&
+        (activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
+          activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)
+      )
+    })
   }
 }
