@@ -3,6 +3,7 @@ import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prison
 import {
   Charge,
   ChargeRemand,
+  IntersectingSentence,
   LegacyDataProblem,
   RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
@@ -86,7 +87,7 @@ export default class RelevantRemandModel {
         const charge = this.relevantRemand.charges[it.chargeId]
         return [
           {
-            html: `${charge.offence.description}<br />
+            html: `${charge.offence.description}${this.bookNumberForIntersectingSentenceText(it)}<br />
             <span class="govuk-hint">Date of offence: 
                 ${
                   charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
@@ -110,6 +111,18 @@ export default class RelevantRemandModel {
         ]
       }),
     }
+  }
+
+  private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
+    const numberOfSentencesWithSameFromDate = this.relevantRemand.intersectingSentences.filter(
+      it => it.from === sentence.from,
+    ).length
+
+    if (numberOfSentencesWithSameFromDate > 1) {
+      const charge = this.relevantRemand.charges[sentence.chargeId]
+      return ` within booking ${charge.bookNumber}`
+    }
+    return ''
   }
 
   public mostImportantErrors(): LegacyDataProblem[] {
