@@ -19,7 +19,7 @@
                     <span>
                         <strong>{{charge.offence.description}}</strong> committed on
                         {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
-                            {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ emand.charge.offenceEndDate | date('DD MMM YYYY') }}
+                            {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ charge.offenceEndDate | date('DD MMM YYYY') }}
                         {% elseif charge.offenceDate %}
                             {{ charge.offenceDate | date('DD MMM YYYY') }}
                         {% endif %}
