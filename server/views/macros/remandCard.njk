@@ -26,7 +26,7 @@
                     </span><br/>
                 {% endfor %}
                 <span class="moj-badge moj-badge--{{colour}}">{{remand.status}}</span>
-                {% if model.isRecall(remand) %}<span class="moj-badge moj-badge--black">Recall</span>{% endif %}
+                {% if model.isRecallChargeRemand(remand) %}<span class="moj-badge moj-badge--black">Recall</span>{% endif %}
             </div>
             {% set charge = remand.charges[0] %}
             <!-- Col 2 -->

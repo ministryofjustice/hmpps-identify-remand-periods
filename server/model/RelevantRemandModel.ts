@@ -160,9 +160,17 @@ export default class RelevantRemandModel {
     return this.relevantRemand.chargeRemand.some(it => it.status === 'INACTIVE')
   }
 
-  public isRecall(charge: ChargeRemand): boolean {
+  public isRecallChargeRemand(charge: ChargeRemand): boolean {
+    return this.isRecallCharge(charge.chargeIds)
+  }
+
+  public isRecallAdjustment(adjustment: Adjustment): boolean {
+    return this.isRecallCharge(adjustment.remand.chargeId)
+  }
+
+  private isRecallCharge(chargeIds: number[]): boolean {
     const sentence = this.sentencesAndOffences.find(it =>
-      it.offences.some(off => charge.chargeIds.includes(off.offenderChargeId)),
+      it.offences.some(off => chargeIds.includes(off.offenderChargeId)),
     )
     return sentence && RelevantRemandModel.recallTypes.includes(sentence.sentenceCalculationType)
   }
