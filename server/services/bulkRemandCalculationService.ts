@@ -41,7 +41,7 @@ export default class BulkRemandCalculationService {
       sentences
     for (const nomsId of nomsIds) {
       try {
-        prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username)
+        prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username, true)
         bookingId = Number(prisonDetails.bookingId)
         nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
         nomisRemand = nomisAdjustments.sentenceAdjustments
