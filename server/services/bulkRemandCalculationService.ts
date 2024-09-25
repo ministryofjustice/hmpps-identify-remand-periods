@@ -85,11 +85,11 @@ export default class BulkRemandCalculationService {
             nomsId,
             bookingId,
             prisonDetails,
-            nomisRemand,
-            nomisUnusedRemand,
-            courtDates,
+            nomisRemand || [],
+            nomisUnusedRemand || [],
+            courtDates || [],
             calculatedRemand,
-            sentences,
+            sentences || [],
             ex,
           ),
         )
@@ -110,44 +110,52 @@ export default class BulkRemandCalculationService {
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     ex: Error,
   ): BulkRemandCalculationRow {
-    const calculatedActiveAdjustments = (calculatedRemand?.adjustments
-      ?.filter(it => it.status === 'ACTIVE')
-      ?.filter(it => it.bookingId === bookingId) || []) as Adjustment[]
-    const nomisDays =
-      this.sumRemandDaysNOMISAdjustment(nomisRemandSentenceAdjustment) +
-      this.sumRemandDaysNOMISAdjustment(nomisUnusedRemandSentenceAdjustment)
-    const dpsDays = this.sumRemandDaysDPSAdjustment(calculatedActiveAdjustments)
-    const isDatesSame = this.isDatesSame(nomisRemandSentenceAdjustment, calculatedActiveAdjustments)
-    const isDaysSame = nomisDays === dpsDays
-    return {
-      NOMS_ID: nomsId,
-      ACTIVE_BOOKING_ID: bookingId,
-      AGENCY_LOCATION_ID: prisoner?.prisonId,
-      COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
+    try {
+      const calculatedActiveAdjustments = (calculatedRemand?.adjustments
+        ?.filter(it => it.status === 'ACTIVE')
+        ?.filter(it => it.bookingId === bookingId) || []) as Adjustment[]
+      const nomisDays =
+        this.sumRemandDaysNOMISAdjustment(nomisRemandSentenceAdjustment) +
+        this.sumRemandDaysNOMISAdjustment(nomisUnusedRemandSentenceAdjustment)
+      const dpsDays = this.sumRemandDaysDPSAdjustment(calculatedActiveAdjustments)
+      const isDatesSame = this.isDatesSame(nomisRemandSentenceAdjustment, calculatedActiveAdjustments)
+      const isDaysSame = nomisDays === dpsDays
+      return {
+        NOMS_ID: nomsId,
+        ACTIVE_BOOKING_ID: bookingId,
+        AGENCY_LOCATION_ID: prisoner?.prisonId,
+        COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
 
-      IS_REMAND_SAME: isDatesSame && isDaysSame ? 'Y' : 'N',
-      IS_DATES_SAME: isDatesSame ? 'Y' : 'N',
-      IS_DAYS_SAME: isDaysSame ? 'Y' : 'N',
+        IS_REMAND_SAME: isDatesSame && isDaysSame ? 'Y' : 'N',
+        IS_DATES_SAME: isDatesSame ? 'Y' : 'N',
+        IS_DAYS_SAME: isDaysSame ? 'Y' : 'N',
 
-      NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
-      NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
-      NOMIS_REMAND_DAYS: nomisDays,
+        NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
+        NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
+        NOMIS_REMAND_DAYS: nomisDays,
 
-      REMAND_TOOL_INPUT: JSON.stringify({ remandCalculation: calculatedRemand.remandCalculation }, null, 2),
-      REMAND_TOOL_OUTPUT: JSON.stringify(
-        { ...calculatedRemand, remandCalculation: undefined, charges: undefined },
-        null,
-        2,
-      ),
-      CALCULATED_REMAND_DAYS: dpsDays,
-      INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
-      INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-      VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData, sentencesAndOffences)
-        ?.map(it => it.message)
-        .join('\n'),
-      ERROR_JSON: JSON.stringify(ex, null, 2),
-      ERROR_TEXT: ex?.message,
-      ERROR_STACK: ex?.stack,
+        REMAND_TOOL_INPUT: JSON.stringify({ remandCalculation: calculatedRemand.remandCalculation }, null, 2),
+        REMAND_TOOL_OUTPUT: JSON.stringify(
+          { ...calculatedRemand, remandCalculation: undefined, charges: undefined },
+          null,
+          2,
+        ),
+        CALCULATED_REMAND_DAYS: dpsDays,
+        INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
+        INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
+        VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData, sentencesAndOffences)
+          ?.map(it => it.message)
+          .join('\n'),
+        ERROR_JSON: JSON.stringify(ex, null, 2),
+        ERROR_TEXT: ex?.message,
+        ERROR_STACK: ex?.stack,
+      }
+    } catch (error) {
+      return {
+        ERROR_JSON: 'Developer code error in processing adding row.',
+        ERROR_TEXT: error?.message,
+        ERROR_STACK: error?.stack,
+      } as BulkRemandCalculationRow
     }
   }
 
