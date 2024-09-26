@@ -134,7 +134,7 @@ export default class BulkRemandCalculationService {
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
         NOMIS_REMAND_DAYS: nomisDays,
 
-        REMAND_TOOL_INPUT: JSON.stringify({ remandCalculation: calculatedRemand.remandCalculation }, null, 2),
+        REMAND_TOOL_INPUT: JSON.stringify({ remandCalculation: calculatedRemand?.remandCalculation }, null, 2),
         REMAND_TOOL_OUTPUT: JSON.stringify(
           { ...calculatedRemand, remandCalculation: undefined, charges: undefined },
           null,
