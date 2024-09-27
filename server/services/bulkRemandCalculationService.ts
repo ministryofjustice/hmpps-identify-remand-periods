@@ -1,9 +1,5 @@
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import {
-  IntersectingSentence,
-  LegacyDataProblem,
-  RemandResult,
-} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
@@ -57,11 +53,7 @@ export default class BulkRemandCalculationService {
           { includeRemandCalculation: true },
           username,
         )
-        sentences = await this.findSourceDataForIntersectingSentence(
-          calculatedRemand,
-          calculatedRemand.intersectingSentences,
-          username,
-        )
+        sentences = await this.findSourceDataForIntersectingSentence(calculatedRemand, username)
         if (!sentences.length) {
           sentences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
         }
@@ -126,9 +118,9 @@ export default class BulkRemandCalculationService {
         AGENCY_LOCATION_ID: prisoner?.prisonId,
         COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
 
-        IS_REMAND_SAME: isDatesSame && isDaysSame ? 'Y' : 'N',
-        IS_DATES_SAME: isDatesSame ? 'Y' : 'N',
-        IS_DAYS_SAME: isDaysSame ? 'Y' : 'N',
+        IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
+        IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
+        IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -143,7 +135,7 @@ export default class BulkRemandCalculationService {
         CALCULATED_REMAND_DAYS: dpsDays,
         INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
         INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-        VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData, sentencesAndOffences)
+        VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData || [], sentencesAndOffences)
           ?.map(it => it.message)
           .join('\n'),
         ERROR_JSON: JSON.stringify(ex, null, 2),
@@ -161,13 +153,14 @@ export default class BulkRemandCalculationService {
 
   private async findSourceDataForIntersectingSentence(
     relevantRemand: RemandResult,
-    intersectingSentences: IntersectingSentence[],
     username: string,
   ): Promise<PrisonApiOffenderSentenceAndOffences[]> {
-    if (!intersectingSentences) {
+    if (!relevantRemand?.intersectingSentences?.length) {
       return []
     }
-    const bookingIds = intersectingSentences.map(it => relevantRemand.charges[it.chargeId].bookingId).filter(onlyUnique)
+    const bookingIds = relevantRemand.intersectingSentences
+      .map(it => relevantRemand.charges[it.chargeId].bookingId)
+      .filter(onlyUnique)
 
     const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, username))
 
