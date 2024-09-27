@@ -16,7 +16,7 @@ export default class PrisonerSearchService {
       const prisonerDetails = await new PrisonerSearchApiClient(
         await this.getSystemClientToken(username),
       ).getPrisonerDetails(nomsId)
-      if (!overrideCaseloadCheck && userCaseloads.includes(prisonerDetails.prisonId)) {
+      if (userCaseloads.includes(prisonerDetails.prisonId) || overrideCaseloadCheck) {
         return prisonerDetails
       }
       throw FullPageError.notInCaseLoadError()
