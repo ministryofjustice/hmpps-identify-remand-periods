@@ -10,12 +10,13 @@ export default class PrisonerSearchService {
     nomsId: string,
     userCaseloads: string[],
     username: string,
+    overrideCaseloadCheck: boolean = false,
   ): Promise<PrisonerSearchApiPrisoner> {
     try {
       const prisonerDetails = await new PrisonerSearchApiClient(
         await this.getSystemClientToken(username),
       ).getPrisonerDetails(nomsId)
-      if (userCaseloads.includes(prisonerDetails.prisonId)) {
+      if (userCaseloads.includes(prisonerDetails.prisonId) || overrideCaseloadCheck) {
         return prisonerDetails
       }
       throw FullPageError.notInCaseLoadError()
