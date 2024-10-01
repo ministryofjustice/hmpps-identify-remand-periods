@@ -15,6 +15,7 @@ export default function routes(service: Services): Router {
     service.prisonerService,
     service.identifyRemandPeriodsService,
     service.bulkRemandCalculationService,
+    service.selectedApplicableRemandStoreService,
   )
   const prisonerImageRoutes = new PrisonerImageRoutes(service.prisonerService)
   get('/:nomsId/image', prisonerImageRoutes.getImage)
@@ -27,6 +28,9 @@ export default function routes(service: Services): Router {
   post('/bulk', remandRoutes.submitBulkRemand)
   get('/prisoner/:nomsId', remandRoutes.remand)
   post('/prisoner/:nomsId', remandRoutes.remandSubmit)
+  get('/prisoner/:nomsId/select-applicable', remandRoutes.selectApplicable)
+  post('/prisoner/:nomsId/select-applicable', remandRoutes.submitApplicable)
+  get('/prisoner/:nomsId/select-applicable/remove', remandRoutes.removeSelection)
 
   return router
 }

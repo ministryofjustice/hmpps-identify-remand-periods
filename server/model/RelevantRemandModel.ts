@@ -5,17 +5,15 @@ import {
   ChargeRemand,
   IntersectingSentence,
   LegacyDataProblem,
+  RemandApplicableUserSelection,
   RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { daysBetween } from '../utils/utils'
+import RemandCardModel, { RemandAndCharge } from './RemandCardModel'
 
-type RemandAndCharge = ChargeRemand & {
-  charges: Charge[]
-}
-
-export default class RelevantRemandModel {
+export default class RelevantRemandModel extends RemandCardModel {
   public relevantChargeRemand: RemandAndCharge[]
 
   public notRelevantChargeRemand: RemandAndCharge[]
@@ -26,10 +24,12 @@ export default class RelevantRemandModel {
 
   constructor(
     public prisonerNumber: string,
-    public relevantRemand: RemandResult,
-    private sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    relevantRemand: RemandResult,
+    sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public includeInactive: boolean = false,
+    public selections: RemandApplicableUserSelection[],
   ) {
+    super(relevantRemand, sentencesAndOffences)
     const chargeRemandAndCharges = this.relevantRemand.chargeRemand
       .map(it => this.toRemandAndCharge(it))
       .filter(it => {
@@ -89,13 +89,7 @@ export default class RelevantRemandModel {
           {
             html: `${charge.offence.description}${this.bookNumberForIntersectingSentenceText(it)}<br />
             <span class="govuk-hint">Date of offence: 
-                ${
-                  charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
-                    ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format(
-                        'D MMM YYYY',
-                      )}`
-                    : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
-                }
+                ${this.offenceDateText(charge)}
             </span>`,
           },
           {
@@ -111,6 +105,49 @@ export default class RelevantRemandModel {
         ]
       }),
     }
+  }
+
+  public selectionTable() {
+    return {
+      head: [
+        {
+          text: 'Charges',
+        },
+        {
+          text: 'Applicable to',
+        },
+        {
+          html: '<span class="govuk-visually-hidden">Remove this selection</span>',
+        },
+      ],
+      rows: this.selections.map(it => {
+        const charges = it.chargeIdsToMakeApplicable.map(charge => this.relevantRemand.charges[charge])
+        const target = this.relevantRemand.charges[it.targetChargeId]
+        return [
+          {
+            html: charges
+              .map(
+                charge => `<strong>${charge.offence.description}</strong> commited on ${this.offenceDateText(charge)}`,
+              )
+              .join('<br/>'),
+          },
+          {
+            html: `<strong>${target.offence.description}</strong> commited on ${this.offenceDateText(target)}`,
+          },
+          {
+            html: `<a href="/prisoner/${this.prisonerNumber}/select-applicable/remove?chargeIds=${it.chargeIdsToMakeApplicable.join(',')}">Remove</a>`,
+          },
+        ]
+      }),
+    }
+  }
+
+  private offenceDateText(charge: Charge) {
+    return `${
+      charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
+        ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format('D MMM YYYY')}`
+        : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
+    }`
   }
 
   private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
@@ -145,58 +182,15 @@ export default class RelevantRemandModel {
     })
   }
 
-  private isRelevant(remand: RemandAndCharge) {
-    return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
-  }
-
-  private toRemandAndCharge(it: ChargeRemand): RemandAndCharge {
-    return {
-      ...it,
-      charges: it.chargeIds.map(chargeId => this.relevantRemand.charges[chargeId]),
-    }
-  }
-
   public hasInactivePeriod() {
     return this.relevantRemand.chargeRemand.some(it => it.status === 'INACTIVE')
   }
 
-  public isRecallChargeRemand(charge: ChargeRemand): boolean {
-    return this.isRecallCharge(charge.chargeIds)
+  public canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
+    return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
   }
 
-  public isRecallAdjustment(adjustment: Adjustment): boolean {
-    return this.isRecallCharge(adjustment.remand.chargeId)
+  public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
+    return remand.charges.map(it => it.chargeId)
   }
-
-  private isRecallCharge(chargeIds: number[]): boolean {
-    const sentence = this.sentencesAndOffences.find(it =>
-      it.offences.some(off => chargeIds.includes(off.offenderChargeId)),
-    )
-    return sentence && RelevantRemandModel.recallTypes.includes(sentence.sentenceCalculationType)
-  }
-
-  public static recallTypes = [
-    'LR',
-    'LR_ORA',
-    'LR_YOI_ORA',
-    'LR_SEC91_ORA',
-    'LRSEC250_ORA',
-    'LR_EDS18',
-    'LR_EDS21',
-    'LR_EDSU18',
-    'LR_LASPO_AR',
-    'LR_LASPO_DR',
-    'LR_SEC236A',
-    'LR_SOPC18',
-    'LR_SOPC21',
-    '14FTR_ORA',
-    'FTR',
-    'FTR_ORA',
-    'FTR_SCH15',
-    'FTRSCH15_ORA',
-    'FTRSCH18',
-    'FTRSCH18_ORA',
-    '14FTRHDC_ORA',
-    'FTR_HDC_ORA',
-  ]
 }

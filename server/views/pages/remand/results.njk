@@ -136,6 +136,14 @@
                     </div>
                 </div>
             {% endif %}
+            {% if model.selections.length %}
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+                        <h2 class="govuk-heading-m">These charges have been selected as applicable</h2>
+                        {{ govukTable( model.selectionTable() )}}
+                    </div>
+                </div>
+            {% endif %}
             {% if model
                 .otherErrors()
                 .length %}

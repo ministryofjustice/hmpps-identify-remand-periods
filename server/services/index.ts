@@ -4,6 +4,7 @@ import FeComponentsService from './feComponentsService'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
+import SelectedApplicableRemandStoreService from './selectedApplicableRemandStoreService'
 import UserService from './userService'
 
 export const services = () => {
@@ -18,6 +19,7 @@ export const services = () => {
     prisonerService,
     identifyRemandPeriodsService,
   )
+  const selectedApplicableRemandStoreService = new SelectedApplicableRemandStoreService()
   const feComponentsService = new FeComponentsService(feComponentsClient)
   return {
     applicationInfo,
@@ -27,6 +29,7 @@ export const services = () => {
     bulkRemandCalculationService,
     prisonerSearchService,
     feComponentsService,
+    selectedApplicableRemandStoreService,
   }
 }
 

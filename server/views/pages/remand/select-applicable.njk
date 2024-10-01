@@ -1,0 +1,66 @@
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "../../macros/remandCard.njk" import remandCard %}
+
+{% extends "../../partials/layout.njk" %}
+
+{% set pageTitle = applicationName + " - Home" %}
+{% set mainClasses = "app-container govuk-body" %}
+
+{% block content %}
+
+    {% if form.errors.length %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: form.errorList()
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+            <h1 class="govuk-heading-l">
+                <span class="govuk-caption-xl">Adjustments</span>Select applicable charge for these remand periods</h1>
+            </p>
+        </div>
+    </div>
+    
+
+    {% for remand in model.chargeRemand %}
+        {{ remandCard(remand, model, false)}}
+    {% endfor %}
+
+
+
+    <form class="form" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+            {{ govukRadios({
+                name: "selection",
+                fieldset: {
+                    legend: {
+                    text: "Select any charge this remand applies to",
+                    classes: "govuk-fieldset__legend--m"
+                    }
+                },
+                errorMessage: form.messageForField('selection'),
+                value: form.selection,
+                items: model.radioItems()
+            
+                }) }}
+            <div>
+                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
+            </div>
+        </form>
+            <a href="/prisoner/{{model.prisonerNumber}}" class="govuk-link">Cancel</a>
+        </div>
+    </div>
+{% endblock %}
