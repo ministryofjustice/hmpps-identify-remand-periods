@@ -29,8 +29,14 @@ export type webhooks = Record<string, never>
 
 export interface components {
   schemas: {
+    RemandApplicableUserSelection: {
+      chargeIdsToMakeApplicable: number[]
+      /** Format: int64 */
+      targetChargeId: number
+    }
     RemandCalculationRequestOptions: {
       includeRemandCalculation: boolean
+      userSelections: components['schemas']['RemandApplicableUserSelection'][]
     }
     AdjustmentDto: {
       /** Format: uuid */
@@ -67,11 +73,15 @@ export interface components {
       courtCaseRef?: string
       courtLocation?: string
       resultDescription?: string
+      final: boolean
       isActiveBooking: boolean
+      isRecallSentence: boolean
     }
     ChargeAndEvents: {
       charge: components['schemas']['Charge']
       dates: components['schemas']['CourtDate'][]
+      similarCharges: number[]
+      userCombinedCharges: number[]
     }
     ChargeRemand: {
       /** Format: date */
@@ -82,7 +92,7 @@ export interface components {
       toEvent: components['schemas']['CourtAppearance']
       chargeIds: number[]
       /** @enum {string} */
-      status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'NOT_YET_SENTENCED'
+      status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'CASE_NOT_CONCLUDED' | 'NOT_SENTENCED'
       /** Format: int64 */
       days?: number
     }
@@ -103,13 +113,19 @@ export interface components {
     }
     LegacyDataProblem: {
       /** @enum {string} */
-      type: 'MISSING_OFFENCE_DATE' | 'MISSING_COURT_OUTCOME' | 'UNSUPPORTED_OUTCOME'
+      type:
+        | 'MISSING_OFFENCE_DATE'
+        | 'MISSING_COURT_OUTCOME'
+        | 'UNSUPPORTED_OUTCOME'
+        | 'RELEASE_DATE_CALCULATION'
+        | 'MISSING_RECALL_EVENT'
       message: string
       offence: components['schemas']['Offence']
       /** Format: int64 */
       bookingId: number
       bookNumber: string
       courtCaseRef?: string
+      developerMessage?: string
     }
     Offence: {
       code: string
@@ -135,7 +151,6 @@ export interface components {
       charges: {
         [key: string]: components['schemas']['Charge']
       }
-      periodsServingSentenceUsingCRDS: components['schemas']['SentencePeriod'][]
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
       remandCalculation?: components['schemas']['RemandCalculation']
     }
@@ -144,8 +159,7 @@ export interface components {
       sequence: number
       /** Format: date */
       sentenceDate: string
-      /** Format: date */
-      recallDate?: string
+      recallDates: string[]
       /** Format: int64 */
       bookingId: number
     }
@@ -157,12 +171,16 @@ export interface components {
       sentence: components['schemas']['Sentence']
       /** Format: int64 */
       chargeId: number
+      service: string
+      errors: string[]
+      calculationIds: number[]
       /** Format: int64 */
       days?: number
     }
     IdentifyRemandDecisionDto: {
       accepted: boolean
       rejectComment?: string
+      options?: components['schemas']['RemandCalculationRequestOptions']
       /** Format: int32 */
       days?: number
       /** Format: date-time */

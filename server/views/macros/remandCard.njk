@@ -60,6 +60,9 @@
                     <b>Offence outcome:</b>
                     {{charge.resultDescription}}
                 </span><br/>
+                {% if model.canBeMarkedAsApplicable(remand) %}
+                    <span><a href="/prisoner/{{model.prisonerNumber}}/select-applicable?chargeIds={{model.chargeIdsOfRemand(remand)}}">This remand has been incorrectly marked as non-relevant.</a></span>
+                {% endif %}
             </div>
         </section>
     </article>

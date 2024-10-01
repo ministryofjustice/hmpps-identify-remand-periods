@@ -50,7 +50,7 @@ export default class BulkRemandCalculationService {
 
         calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
           nomsId,
-          { includeRemandCalculation: true },
+          { includeRemandCalculation: true, userSelections: [] },
           username,
         )
         sentences = await this.findSourceDataForIntersectingSentence(calculatedRemand, username)

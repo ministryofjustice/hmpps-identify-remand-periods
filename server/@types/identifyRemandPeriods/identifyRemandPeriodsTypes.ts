@@ -9,3 +9,4 @@ export type IdentifyRemandDecision = components['schemas']['IdentifyRemandDecisi
 export type LegacyDataProblem = components['schemas']['LegacyDataProblem']
 export type RemandCalculationRequestOptions = components['schemas']['RemandCalculationRequestOptions']
 export type RemandCalculation = components['schemas']['RemandCalculation']
+export type RemandApplicableUserSelection = components['schemas']['RemandApplicableUserSelection']
