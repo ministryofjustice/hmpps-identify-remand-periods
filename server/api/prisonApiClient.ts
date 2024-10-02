@@ -36,13 +36,13 @@ export default class PrisonApiClient {
     }) as Promise<PrisonApiCourtDateResult[]>
   }
 
-  async getBookingAndSentenceAdjustments(bookingId: number): Promise<PrisonApiBookingAndSentenceAdjustments> {
+  async getBookingAndSentenceAdjustments(bookingId: string): Promise<PrisonApiBookingAndSentenceAdjustments> {
     return this.restClient.get({
       path: `/api/adjustments/${bookingId}/sentence-and-booking`,
     }) as Promise<PrisonApiBookingAndSentenceAdjustments>
   }
 
-  async getSentencesAndOffences(bookingId: number): Promise<PrisonApiOffenderSentenceAndOffences[]> {
+  async getSentencesAndOffences(bookingId: string): Promise<PrisonApiOffenderSentenceAndOffences[]> {
     return this.restClient.get({
       path: `/api/offender-sentences/booking/${bookingId}/sentences-and-offences`,
     }) as Promise<PrisonApiOffenderSentenceAndOffences[]>

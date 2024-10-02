@@ -38,7 +38,7 @@ export default class BulkRemandCalculationService {
     for (const nomsId of nomsIds) {
       try {
         prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username, true)
-        bookingId = Number(prisonDetails.bookingId)
+        bookingId = prisonDetails.bookingId
         nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
         nomisRemand = nomisAdjustments.sentenceAdjustments
           .filter(it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND')
@@ -93,7 +93,7 @@ export default class BulkRemandCalculationService {
 
   private addRow(
     nomsId: string,
-    bookingId: number,
+    bookingId: string,
     prisoner: PrisonerSearchApiPrisoner,
     nomisRemandSentenceAdjustment: PrisonApiSentenceAdjustments[],
     nomisUnusedRemandSentenceAdjustment: PrisonApiSentenceAdjustments[],
@@ -105,7 +105,7 @@ export default class BulkRemandCalculationService {
     try {
       const calculatedActiveAdjustments = (calculatedRemand?.adjustments
         ?.filter(it => it.status === 'ACTIVE')
-        ?.filter(it => it.bookingId === bookingId) || []) as Adjustment[]
+        ?.filter(it => it.bookingId, toString() === bookingId) || []) as Adjustment[]
       const nomisDays =
         this.sumRemandDaysNOMISAdjustment(nomisRemandSentenceAdjustment) +
         this.sumRemandDaysNOMISAdjustment(nomisUnusedRemandSentenceAdjustment)
@@ -162,7 +162,9 @@ export default class BulkRemandCalculationService {
       .map(it => relevantRemand.charges[it.chargeId].bookingId)
       .filter(onlyUnique)
 
-    const sentencesAndOffences = bookingIds.map(it => this.prisonerService.getSentencesAndOffences(it, username))
+    const sentencesAndOffences = bookingIds.map(it =>
+      this.prisonerService.getSentencesAndOffences(it.toString(), username),
+    )
 
     return (await Promise.all(sentencesAndOffences)).flatMap(it => it)
   }

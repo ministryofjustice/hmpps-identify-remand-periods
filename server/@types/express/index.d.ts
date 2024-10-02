@@ -1,4 +1,5 @@
 import type { UserDetails } from '../../services/userService'
+import { PrisonerSearchApiPrisoner } from '../prisonerSearchApi/prisonerSearchTypes'
 
 export default {}
 
@@ -26,6 +27,7 @@ export declare global {
 
     interface Locals {
       user: Express.User
+      prisoner: PrisonerSearchApiPrisoner
     }
   }
 }
