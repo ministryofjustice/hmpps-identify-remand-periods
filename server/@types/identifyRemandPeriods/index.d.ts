@@ -80,8 +80,8 @@ export interface components {
     ChargeAndEvents: {
       charge: components['schemas']['Charge']
       dates: components['schemas']['CourtDate'][]
-      similarCharges: number[]
-      userCombinedCharges: number[]
+      relatedCharges: number[]
+      userSelectedCharges: number[]
     }
     ChargeRemand: {
       /** Format: date */
@@ -93,6 +93,7 @@ export interface components {
       chargeIds: number[]
       /** @enum {string} */
       status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'CASE_NOT_CONCLUDED' | 'NOT_SENTENCED'
+      replacedCharges: number[]
       /** Format: int64 */
       days?: number
     }

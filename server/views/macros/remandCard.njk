@@ -15,18 +15,18 @@
 
             <!-- Col 1 -->
             <div class="moj-ticket-panel__column">
+                {% if remand.replacedCharges.length %}
+                    {% for replacedCharge in remand.replacedCharges %}
+                        <span><strong>{{replacedCharge.offence.description}}</strong> committed on {{model.offenceDateText(replacedCharge)}}</span><br/>
+                    {% endfor %}
+                    <strong>Replaced by:</strong><br/>
+                {% endif %}
                 {% for charge in remand.charges %}
-                    <span>
-                        <strong>{{charge.offence.description}}</strong> committed on
-                        {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
-                            {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ charge.offenceEndDate | date('DD MMM YYYY') }}
-                        {% elseif charge.offenceDate %}
-                            {{ charge.offenceDate | date('DD MMM YYYY') }}
-                        {% endif %}
-                    </span><br/>
+                    <span><strong>{{charge.offence.description}}</strong> committed on {{model.offenceDateText(charge)}}</span><br/>
                 {% endfor %}
                 <span class="moj-badge moj-badge--{{colour}}">{{remand.status}}</span>
                 {% if model.isRecallChargeRemand(remand) %}<span class="moj-badge moj-badge--black">Recall</span>{% endif %}
+                {% if remand.replacedCharges.length %}<span class="moj-badge moj-badge--bright-purple">Selected</span>{% endif %}
             </div>
             {% set charge = remand.charges[0] %}
             <!-- Col 2 -->
