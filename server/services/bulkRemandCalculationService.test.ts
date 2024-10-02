@@ -104,7 +104,7 @@ describe('Bulk calculation service test', () => {
     const row = removeWhitespaceFromRow((await service.runCalculations([], 'user', [prisonerNumber]))[0])
 
     expect(row).toStrictEqual({
-      ACTIVE_BOOKING_ID: 123,
+      ACTIVE_BOOKING_ID: '123',
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 0,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',
@@ -215,7 +215,7 @@ describe('Bulk calculation service test', () => {
     const row = removeWhitespaceFromRow((await service.runCalculations([], 'user', [prisonerNumber]))[0])
 
     expect(row).toStrictEqual({
-      ACTIVE_BOOKING_ID: 123,
+      ACTIVE_BOOKING_ID: '123',
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 25,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',

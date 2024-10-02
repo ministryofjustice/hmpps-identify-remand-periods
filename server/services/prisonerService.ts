@@ -24,13 +24,13 @@ export default class PrisonerService {
   }
 
   async getBookingAndSentenceAdjustments(
-    bookingId: number,
+    bookingId: string,
     username: string,
   ): Promise<PrisonApiBookingAndSentenceAdjustments> {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getBookingAndSentenceAdjustments(bookingId)
   }
 
-  async getSentencesAndOffences(bookingId: number, username: string): Promise<PrisonApiOffenderSentenceAndOffences[]> {
+  async getSentencesAndOffences(bookingId: string, username: string): Promise<PrisonApiOffenderSentenceAndOffences[]> {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getSentencesAndOffences(bookingId)
   }
 

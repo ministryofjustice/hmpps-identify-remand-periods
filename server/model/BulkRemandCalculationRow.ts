@@ -1,7 +1,7 @@
 type BulkRemandCalculationRow = {
   // Inputs
   NOMS_ID: string
-  ACTIVE_BOOKING_ID: number
+  ACTIVE_BOOKING_ID: string
   AGENCY_LOCATION_ID: string
   COURT_DATES_JSON: string
 

@@ -10,7 +10,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
   constructor(
     public prisonerNumber: string,
-    bookingId: number,
+    bookingId: string,
     relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public chargeIds: number[],
@@ -26,7 +26,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
       return sameMembers(it.chargeIds, this.chargeIds)
     })
     this.chargesToSelect = Object.values(relevantRemand.charges).filter(
-      it => it.sentenceSequence !== null && it.bookingId === bookingId,
+      it => it.sentenceSequence !== null && it.bookingId.toString() === bookingId,
     )
   }
 
