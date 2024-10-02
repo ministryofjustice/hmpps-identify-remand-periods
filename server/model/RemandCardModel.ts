@@ -1,9 +1,11 @@
+import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import { Charge, ChargeRemand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 
 export type RemandAndCharge = ChargeRemand & {
   charges: Charge[]
+  replacedCharges: Charge[]
 }
 
 export default abstract class RemandCardModel {
@@ -16,7 +18,8 @@ export default abstract class RemandCardModel {
     return {
       ...it,
       charges: it.chargeIds.map(chargeId => this.relevantRemand.charges[chargeId]),
-    }
+      replacedCharges: it.replacedCharges?.map(chargeId => this.relevantRemand.charges[chargeId]),
+    } as RemandAndCharge
   }
 
   public isRelevant(remand: RemandAndCharge) {
@@ -44,6 +47,14 @@ export default abstract class RemandCardModel {
       it.offences.some(off => chargeIds.includes(off.offenderChargeId)),
     )
     return sentence && RemandCardModel.recallTypes.includes(sentence.sentenceCalculationType)
+  }
+
+  protected offenceDateText(charge: Charge) {
+    return `${
+      charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
+        ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format('D MMM YYYY')}`
+        : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
+    }`
   }
 
   public static recallTypes = [

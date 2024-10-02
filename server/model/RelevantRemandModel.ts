@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import {
-  Charge,
   ChargeRemand,
   IntersectingSentence,
   LegacyDataProblem,
@@ -140,14 +139,6 @@ export default class RelevantRemandModel extends RemandCardModel {
         ]
       }),
     }
-  }
-
-  private offenceDateText(charge: Charge) {
-    return `${
-      charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
-        ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format('D MMM YYYY')}`
-        : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
-    }`
   }
 
   private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
