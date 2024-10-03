@@ -194,13 +194,8 @@ export default class BulkRemandCalculationService {
     problems: LegacyDataProblem[],
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
   ): LegacyDataProblem[] {
-    const activeSentenceCourtCases = sentencesAndOffences
-      .filter(it => it.sentenceStatus === 'A' && !!it.caseReference)
-      .map(it => it.caseReference)
-
-    const activeSentenceStatues = sentencesAndOffences
-      .filter(it => it.sentenceStatus === 'A')
-      .flatMap(it => it.offences.map(off => off.offenceStatute))
+    const activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
+    const activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
 
     return problems.filter(problem => {
       return (
