@@ -40,12 +40,8 @@ export default class RelevantRemandModel extends RemandCardModel {
 
     this.relevantChargeRemand = chargeRemandAndCharges.filter(it => this.isRelevant(it))
     this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
-    this.activeSentenceStatues = sentencesAndOffences
-      .filter(it => it.sentenceStatus === 'A')
-      .flatMap(it => it.offences.map(off => off.offenceStatute))
-    this.activeSentenceCourtCases = sentencesAndOffences
-      .filter(it => it.sentenceStatus === 'A' && !!it.caseReference)
-      .map(it => it.caseReference)
+    this.activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
+    this.activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
   }
 
   public returnToAdjustments(): string {
