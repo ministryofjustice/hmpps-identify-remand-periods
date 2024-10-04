@@ -60,8 +60,12 @@ describe('GET /prisoner/{prisonerId}', () => {
           'Previous sentences that may overlap remand periods',
           'Sentenced on 17 Aug 2022',
           'Release on 16 Nov 2022',
+          'Escape from lawful custody within booking 46201A',
           'Recalled on 18 May 2023',
           'Post recall release on 4 Oct 2023',
+          'Escape from lawful custody within booking 46201X',
+          'Recalled on 18 May 2023',
+          'Post recall release on 1 Oct 2023',
         ])
         expect(res.text).toContain('APPLICABLE')
         expect(res.text).toContain('CASE_NOT_CONCLUDED')
