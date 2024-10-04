@@ -197,9 +197,10 @@ export default class BulkRemandCalculationService {
 
     return problems.filter(problem => {
       return (
-        problem.type !== 'UNSUPPORTED_OUTCOME' &&
-        (activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
-          activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)
+        (problem.type !== 'UNSUPPORTED_OUTCOME' &&
+          (activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
+            activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)) ||
+        problem.type === 'MISSING_RECALL_EVENT'
       )
     })
   }

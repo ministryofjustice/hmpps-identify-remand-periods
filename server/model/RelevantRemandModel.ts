@@ -158,9 +158,10 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   private isImportantError(problem: LegacyDataProblem): boolean {
     return (
-      problem.type !== 'UNSUPPORTED_OUTCOME' &&
-      (this.activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
-        this.activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)
+      (problem.type !== 'UNSUPPORTED_OUTCOME' &&
+        (this.activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
+          this.activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)) ||
+      problem.type === 'MISSING_RECALL_EVENT'
     )
   }
 
