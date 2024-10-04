@@ -10,6 +10,7 @@ import { IdentifyRemandDecision } from '../@types/identifyRemandPeriods/identify
 import SelectedApplicableRemandStoreService from '../services/selectedApplicableRemandStoreService'
 import SelectApplicableRemandModel from '../model/SelectApplicableRemandModel'
 import SelectApplicableRemandForm from '../model/SelectApplicableRemandForm'
+import { UserDetails } from '../services/userService'
 
 export default class RemandRoutes {
   constructor(
@@ -185,12 +186,12 @@ export default class RemandRoutes {
       return res.redirect(`/prisoner/${prisonerId}`)
     }
 
-    const { caseloads, token } = res.locals.user
+    const user = res.locals.user as UserDetails
     const { prisonerIds } = req.body
     const nomsIds = prisonerIds.split(/\r?\n/)
     if (nomsIds.length > 500) return res.redirect(`/remand/`)
 
-    const results = await this.bulkRemandCalculationService.runCalculations(caseloads, token, nomsIds)
+    const results = await this.bulkRemandCalculationService.runCalculations(user, nomsIds)
     const fileName = `download-remand-dates.csv`
     res.setHeader('Content-Type', 'text/csv')
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)

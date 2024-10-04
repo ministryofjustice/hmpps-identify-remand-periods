@@ -11,6 +11,7 @@ import BulkRemandCalculationService from './bulkRemandCalculationService'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
+import { UserDetails } from './userService'
 
 jest.mock('../services/prisonerService')
 jest.mock('../services/prisonerSearchService')
@@ -28,7 +29,9 @@ describe('Bulk calculation service test', () => {
   it('Prison API Error', async () => {
     prisonerSearchService.getPrisonerDetails.mockRejectedValue({ error: 'THIS IS A PRISON API ERROR' })
 
-    const row = removeWhitespaceFromRow((await service.runCalculations([], 'user', [prisonerNumber]))[0])
+    const row = removeWhitespaceFromRow(
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+    )
 
     expect(row).toStrictEqual({
       ACTIVE_BOOKING_ID: undefined,
@@ -101,7 +104,9 @@ describe('Bulk calculation service test', () => {
       error: 'THIS IS AN ERROR IN CALCULATION',
     })
 
-    const row = removeWhitespaceFromRow((await service.runCalculations([], 'user', [prisonerNumber]))[0])
+    const row = removeWhitespaceFromRow(
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+    )
 
     expect(row).toStrictEqual({
       ACTIVE_BOOKING_ID: '123',
@@ -212,7 +217,9 @@ describe('Bulk calculation service test', () => {
       ],
     } as RemandResult)
 
-    const row = removeWhitespaceFromRow((await service.runCalculations([], 'user', [prisonerNumber]))[0])
+    const row = removeWhitespaceFromRow(
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+    )
 
     expect(row).toStrictEqual({
       ACTIVE_BOOKING_ID: '123',
