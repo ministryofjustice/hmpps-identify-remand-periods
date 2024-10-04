@@ -78,7 +78,7 @@ export default class RelevantRemandModel extends RemandCardModel {
           text: 'To',
         },
       ],
-      rows: this.relevantRemand.intersectingSentences.map(it => {
+      rows: this.filterDuplicatedBookNumberSentences(this.relevantRemand.intersectingSentences).map(it => {
         const charge = this.relevantRemand.charges[it.chargeId]
         return [
           {
@@ -179,5 +179,27 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
     return remand.charges.map(it => it.chargeId)
+  }
+
+  private filterDuplicatedBookNumberSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
+    const groupedByFromAndBookNumber: Record<string, IntersectingSentence[]> = {}
+    intersectingSentences.forEach(it => {
+      const charge = this.relevantRemand.charges[it.chargeId]
+      const fromAndBookNo = `${it.from}${charge.bookNumber}`
+      if (!groupedByFromAndBookNumber[fromAndBookNo]) {
+        groupedByFromAndBookNumber[fromAndBookNo] = []
+      }
+      groupedByFromAndBookNumber[fromAndBookNo].push(it)
+    })
+
+    const results: IntersectingSentence[] = []
+    Object.values(groupedByFromAndBookNumber).forEach(sentences => {
+      if (sentences.length > 1) {
+        results.push(sentences.sort((a, b) => (new Date(a.to) > new Date(b.to) ? -1 : 1))[0])
+      } else {
+        results.push(sentences[0])
+      }
+    })
+    return results
   }
 }
