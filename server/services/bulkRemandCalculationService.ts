@@ -11,6 +11,7 @@ import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
+import { UserDetails } from './userService'
 
 export default class BulkRemandCalculationService {
   constructor(
@@ -20,12 +21,9 @@ export default class BulkRemandCalculationService {
   ) {}
 
   /* eslint-disable */
-  public async runCalculations(
-    caseloads: string[],
-    username: string,
-    nomsIds: string[],
-  ): Promise<BulkRemandCalculationRow[]> {
+  public async runCalculations(user: UserDetails, nomsIds: string[]): Promise<BulkRemandCalculationRow[]> {
     const csvData: BulkRemandCalculationRow[] = []
+    const { username } = user
 
     let prisonDetails,
       bookingId,
@@ -37,7 +35,7 @@ export default class BulkRemandCalculationService {
       sentences
     for (const nomsId of nomsIds) {
       try {
-        prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, caseloads, username, true)
+        prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, user)
         bookingId = prisonDetails.bookingId
         nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
         nomisRemand = nomisAdjustments.sentenceAdjustments
