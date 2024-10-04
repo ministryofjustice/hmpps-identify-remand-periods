@@ -21,6 +21,8 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   public activeSentenceStatues: string[]
 
+  private intersectingSentences: IntersectingSentence[]
+
   constructor(
     public prisonerNumber: string,
     relevantRemand: RemandResult,
@@ -42,6 +44,7 @@ export default class RelevantRemandModel extends RemandCardModel {
     this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
     this.activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
     this.activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
+    this.intersectingSentences = this.filterDuplicatedBookNumberSentences(this.relevantRemand.intersectingSentences)
   }
 
   public returnToAdjustments(): string {
@@ -78,7 +81,7 @@ export default class RelevantRemandModel extends RemandCardModel {
           text: 'To',
         },
       ],
-      rows: this.filterDuplicatedBookNumberSentences(this.relevantRemand.intersectingSentences).map(it => {
+      rows: this.intersectingSentences.map(it => {
         const charge = this.relevantRemand.charges[it.chargeId]
         return [
           {
@@ -138,9 +141,7 @@ export default class RelevantRemandModel extends RemandCardModel {
   }
 
   private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
-    const numberOfSentencesWithSameFromDate = this.relevantRemand.intersectingSentences.filter(
-      it => it.from === sentence.from,
-    ).length
+    const numberOfSentencesWithSameFromDate = this.intersectingSentences.filter(it => it.from === sentence.from).length
 
     if (numberOfSentencesWithSameFromDate > 1) {
       const charge = this.relevantRemand.charges[sentence.chargeId]
