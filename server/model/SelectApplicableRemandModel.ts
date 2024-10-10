@@ -38,7 +38,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     return this.chargesToSelect.map(it => {
       return {
         value: it.chargeId,
-        text: `<strong>${it.offence.description}</strong> ${this.offenceDateText(it)}`,
+        html: `<strong>${it.offence.description}</strong> commited on ${this.offenceDateText(it)}`,
       }
     })
   }
