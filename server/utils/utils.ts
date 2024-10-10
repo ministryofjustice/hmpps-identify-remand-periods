@@ -1,3 +1,4 @@
+import { LegacyDataProblem } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import ValidationError from '../model/validationError'
 
 const properCase = (word: string): string =>
@@ -52,4 +53,20 @@ export const distinct = <T>(all: T[]): T[] => {
 
 export const fieldHasErrors = (errors: ValidationError[], field: string) => {
   return !!errors.find(error => error.fields.indexOf(field) !== -1)
+}
+
+export const isImportantError = (
+  problem: LegacyDataProblem,
+  activeSentenceCourtCases: string[],
+  activeSentenceStatues: string[],
+): boolean => {
+  if (['UNSUPPORTED_OUTCOME', 'MISSING_COURT_OUTCOME'].includes(problem.type)) {
+    return false
+  }
+  if (problem.type === 'MISSING_RECALL_EVENT') {
+    return true
+  }
+  return (
+    activeSentenceStatues.includes(problem.offence.statute) || activeSentenceCourtCases.includes(problem.courtCaseRef)
+  )
 }

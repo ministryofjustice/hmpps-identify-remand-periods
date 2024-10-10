@@ -7,7 +7,7 @@ import {
 } from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
-import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
+import { daysBetween, isImportantError, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
@@ -195,13 +195,6 @@ export default class BulkRemandCalculationService {
     const activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
     const activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
 
-    return problems.filter(problem => {
-      return (
-        (problem.type !== 'UNSUPPORTED_OUTCOME' &&
-          (activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
-            activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)) ||
-        problem.type === 'MISSING_RECALL_EVENT'
-      )
-    })
+    return problems.filter(problem => isImportantError(problem, activeSentenceCourtCases, activeSentenceStatues))
   }
 }
