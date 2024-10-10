@@ -9,7 +9,7 @@ import {
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { daysBetween } from '../utils/utils'
+import { daysBetween, isImportantError } from '../utils/utils'
 import RemandCardModel, { RemandAndCharge } from './RemandCardModel'
 
 export default class RelevantRemandModel extends RemandCardModel {
@@ -152,22 +152,13 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   public mostImportantErrors(): LegacyDataProblem[] {
     return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return this.isImportantError(it)
+      return isImportantError(it, this.activeSentenceCourtCases, this.activeSentenceStatues)
     })
-  }
-
-  private isImportantError(problem: LegacyDataProblem): boolean {
-    return (
-      (problem.type !== 'UNSUPPORTED_OUTCOME' &&
-        (this.activeSentenceStatues.indexOf(problem.offence.statute) !== -1 ||
-          this.activeSentenceCourtCases.indexOf(problem.courtCaseRef) !== -1)) ||
-      problem.type === 'MISSING_RECALL_EVENT'
-    )
   }
 
   public otherErrors(): LegacyDataProblem[] {
     return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return !this.isImportantError(it)
+      return !isImportantError(it, this.activeSentenceCourtCases, this.activeSentenceStatues)
     })
   }
 
