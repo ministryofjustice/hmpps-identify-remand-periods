@@ -109,7 +109,7 @@
     "csv-stringify": "^6.5.1",
     "dayjs": "^1.11.13",
     "express": "^4.19.2",
-    "express-prom-bundle": "^7.0.0",
+    "express-prom-bundle": "^8.0.0",
     "express-session": "^1.18.0",
     "govuk-frontend": "^5.6.0",
     "helmet": "^8.0.0",
