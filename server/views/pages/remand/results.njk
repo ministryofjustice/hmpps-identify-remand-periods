@@ -5,6 +5,7 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "../../macros/remandCard.njk" import remandCard %}
 
 {% extends "../../partials/layout.njk" %}
@@ -47,12 +48,25 @@
     }) }}
     {% endif %}
     <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-
+        <div class="govuk-grid-column-full">
             <h1 class="govuk-heading-l">
                 <span class="govuk-caption-xl">Adjustments</span>Check remand details for {{prisoner.firstName | title}}
                 {{prisoner.lastName | title}}</h1>
 
+                {% if model.changesNumberOfDays() %}
+                    {% set html %}
+                        <h3 class="govuk-notification-banner__heading">The number of remand days recorded has changed</h3>
+                        <p class="govuk-body">The number of remand days does not match what was originally recorded. Make sure the remand information is correct, before continuing.</p>
+                    {% endset %}
+
+                    {{ govukNotificationBanner({
+                        html: html
+                    }) }}
+                {% endif %}
+        </div>
+    </div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
             <p class="govuk-!-margin-bottom-8">Based on the court case information in NOMIS, the following remand has been counted as relevant remand.
                 The rules for applying remand time can be found in the <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
             </p>

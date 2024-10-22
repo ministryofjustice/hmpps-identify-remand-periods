@@ -11,6 +11,7 @@ import SelectedApplicableRemandStoreService from '../services/selectedApplicable
 import SelectApplicableRemandModel from '../model/SelectApplicableRemandModel'
 import SelectApplicableRemandForm from '../model/SelectApplicableRemandForm'
 import { UserDetails } from '../services/userService'
+import AdjustmentsService from '../services/adjustmentsService'
 
 export default class RemandRoutes {
   constructor(
@@ -18,6 +19,7 @@ export default class RemandRoutes {
     private readonly identifyRemandPeriodsService: IdentifyRemandPeriodsService,
     private readonly bulkRemandCalculationService: BulkRemandCalculationService,
     private readonly selectedApplicableRemandStoreService: SelectedApplicableRemandStoreService,
+    private readonly adjustmentsService: AdjustmentsService,
   ) {}
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
@@ -43,6 +45,7 @@ export default class RemandRoutes {
         sentencesAndOffences,
         includeInactive === 'true',
         selections,
+        await this.adjustmentsService.findByPerson(nomsId, username),
       ),
       form: new RemandDecisionForm({}),
     })
@@ -73,6 +76,7 @@ export default class RemandRoutes {
           sentencesAndOffences,
           includeInactive === 'true',
           selections,
+          await this.adjustmentsService.findByPerson(nomsId, username),
         ),
         form,
       })

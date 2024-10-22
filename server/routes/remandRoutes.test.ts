@@ -6,13 +6,17 @@ import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsServi
 import './testutils/toContainInOrder'
 import remandResult from './testutils/testData'
 import SelectedApplicableRemandStoreService from '../services/selectedApplicableRemandStoreService'
+import AdjustmentsService from '../services/adjustmentsService'
+import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 
 let app: Express
 
 jest.mock('../services/prisonerService')
 jest.mock('../services/identifyRemandPeriodsService')
 jest.mock('../services/selectedApplicableRemandStoreService')
+jest.mock('../services/adjustmentsService')
 
+const adjustmentsService = new AdjustmentsService(null) as jest.Mocked<AdjustmentsService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
 const selectedApplicableRemandStoreService =
@@ -22,7 +26,12 @@ const NOMS_ID = 'ABC123'
 
 beforeEach(() => {
   app = appWithAllRoutes({
-    services: { prisonerService, identifyRemandPeriodsService, selectedApplicableRemandStoreService },
+    services: {
+      prisonerService,
+      identifyRemandPeriodsService,
+      selectedApplicableRemandStoreService,
+      adjustmentsService,
+    },
   })
 })
 
@@ -44,6 +53,11 @@ describe('GET /prisoner/{prisonerId}', () => {
       },
     ])
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+      } as Adjustment,
+    ])
     return request(app)
       .get(`/prisoner/${NOMS_ID}`)
       .expect('Content-Type', /html/)
@@ -71,6 +85,7 @@ describe('GET /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('CASE_NOT_CONCLUDED')
         expect(res.text).toContain('This remand has been incorrectly marked as non-relevant.')
         expect(res.text).toContain('SHARED')
+        expect(res.text).toContain('The number of remand days recorded has changed')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
