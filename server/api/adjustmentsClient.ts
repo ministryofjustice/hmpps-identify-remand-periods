@@ -12,4 +12,14 @@ export default class AdjustmentsClient {
   async create(adjustment: Adjustment): Promise<CreateResponse> {
     return this.restClient.post({ path: `/adjustments`, data: adjustment }) as Promise<CreateResponse>
   }
+
+  async findByPerson(person: string, earliestSentenceDate?: string): Promise<Adjustment[]> {
+    let url = `/adjustments?person=${person}`
+    if (earliestSentenceDate) {
+      url += `&sentenceEnvelopeDate=${earliestSentenceDate}`
+    }
+    return this.restClient.get({
+      path: url,
+    }) as Promise<Adjustment[]>
+  }
 }

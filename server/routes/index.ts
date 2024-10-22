@@ -16,6 +16,7 @@ export default function routes(service: Services): Router {
     service.identifyRemandPeriodsService,
     service.bulkRemandCalculationService,
     service.selectedApplicableRemandStoreService,
+    service.adjustmentsService,
   )
   const prisonerImageRoutes = new PrisonerImageRoutes(service.prisonerService)
   get('/:nomsId/image', prisonerImageRoutes.getImage)

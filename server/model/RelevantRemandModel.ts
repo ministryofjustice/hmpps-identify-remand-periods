@@ -29,6 +29,7 @@ export default class RelevantRemandModel extends RemandCardModel {
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public includeInactive: boolean = false,
     public selections: RemandApplicableUserSelection[],
+    private existingAdjustments: Adjustment[],
   ) {
     super(relevantRemand, sentencesAndOffences)
     const chargeRemandAndCharges = this.relevantRemand.chargeRemand
@@ -194,5 +195,15 @@ export default class RelevantRemandModel extends RemandCardModel {
       }
     })
     return results
+  }
+
+  public changesNumberOfDays(): boolean {
+    const adjustmentDays = this.existingAdjustments.map(a => a.days).reduce((sum, current) => sum + current, 0)
+    const identifiedDays = this.adjustments()
+      .filter(a => a.adjustmentType === 'REMAND')
+      .map(a => a.daysBetween)
+      .reduce((sum, current) => sum + current, 0)
+
+    return adjustmentDays !== 0 && adjustmentDays !== identifiedDays
   }
 }

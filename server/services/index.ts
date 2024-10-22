@@ -1,4 +1,5 @@
 import { dataAccess } from '../data'
+import AdjustmentsService from './adjustmentsService'
 import BulkRemandCalculationService from './bulkRemandCalculationService'
 import FeComponentsService from './feComponentsService'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
@@ -21,6 +22,7 @@ export const services = () => {
   )
   const selectedApplicableRemandStoreService = new SelectedApplicableRemandStoreService()
   const feComponentsService = new FeComponentsService(feComponentsClient)
+  const adjustmentsService = new AdjustmentsService(hmppsAuthClient)
   return {
     applicationInfo,
     userService,
@@ -30,6 +32,7 @@ export const services = () => {
     prisonerSearchService,
     feComponentsService,
     selectedApplicableRemandStoreService,
+    adjustmentsService,
   }
 }
 
