@@ -1,3 +1,4 @@
+import { Adjustment } from '../../@types/adjustments/adjustmentsTypes'
 import {
   Charge,
   ChargeRemand,
@@ -87,7 +88,16 @@ const remandResult = {
       resultDescription: 'Recall to Prison',
     } as Charge,
   },
-  adjustments: [],
+  adjustments: [
+    {
+      fromDate: '2023-01-10',
+      toDate: '2023-01-20',
+      remand: {
+        chargeId: [3933870],
+      },
+      days: 11,
+    } as Adjustment,
+  ],
   intersectingSentencesUsingHistoricCalculation: [],
   chargeRemand: [
     {

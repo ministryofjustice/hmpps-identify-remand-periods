@@ -12,6 +12,9 @@ import SelectApplicableRemandModel from '../model/SelectApplicableRemandModel'
 import SelectApplicableRemandForm from '../model/SelectApplicableRemandForm'
 import { UserDetails } from '../services/userService'
 import AdjustmentsService from '../services/adjustmentsService'
+import CalculateReleaseDatesService from '../services/calculateReleaseDatesService'
+import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
+import ConfirmAndSaveModel from '../model/ConfirmAndSaveModel'
 
 export default class RemandRoutes {
   constructor(
@@ -20,6 +23,7 @@ export default class RemandRoutes {
     private readonly bulkRemandCalculationService: BulkRemandCalculationService,
     private readonly selectedApplicableRemandStoreService: SelectedApplicableRemandStoreService,
     private readonly adjustmentsService: AdjustmentsService,
+    private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
   ) {}
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
@@ -82,9 +86,12 @@ export default class RemandRoutes {
       })
     }
 
+    if (form.decision === 'yes') {
+      return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
+    }
     const decision = {
-      accepted: form.decision === 'yes',
-      rejectComment: form.decision === 'no' ? form.comment : null,
+      accepted: false,
+      rejectComment: form.comment,
       options: {
         includeRemandCalculation: false,
         userSelections: selections,
@@ -96,7 +103,7 @@ export default class RemandRoutes {
     const message = JSON.stringify({
       type: 'REMAND',
       days: result.days,
-      action: form.decision === 'yes' ? 'CREATE' : 'REJECTED',
+      action: 'REJECTED',
     })
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
   }
@@ -160,7 +167,7 @@ export default class RemandRoutes {
 
     this.selectedApplicableRemandStoreService.storeSelection(req, nomsId, {
       chargeIdsToMakeApplicable: chargeIds.split(',').map(it => Number(it)),
-      targetChargeId: form.selection,
+      targetChargeId: Number(form.selection),
     })
 
     return res.redirect(`/prisoner/${prisonerNumber}`)
@@ -202,5 +209,58 @@ export default class RemandRoutes {
     return stringify(results, {
       header: true,
     }).pipe(res)
+  }
+
+  public confirmAndSave: RequestHandler = async (req, res): Promise<void> => {
+    const { username } = res.locals.user
+    const { nomsId } = req.params
+    const { bookingId } = res.locals.prisoner
+
+    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+      nomsId,
+      {
+        includeRemandCalculation: false,
+        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
+      },
+      username,
+    )
+
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+
+    const adjustments = await this.adjustmentsService.findByPerson(nomsId, username)
+    const unusedDeductions = await this.calculateReleaseDatesService.unusedDeductionsHandlingCRDError(
+      relevantRemand.adjustments as Adjustment[],
+      adjustments,
+      sentencesAndOffences,
+      nomsId,
+      username,
+    )
+
+    return res.render('pages/remand/confirm-and-save', {
+      model: new ConfirmAndSaveModel(relevantRemand.adjustments as Adjustment[], unusedDeductions?.unusedDeductions),
+    })
+  }
+
+  public submitConfirmAndSave: RequestHandler = async (req, res): Promise<void> => {
+    const { username } = res.locals.user
+    const { nomsId } = req.params
+
+    const decision = {
+      accepted: true,
+      rejectComment: null,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
+      },
+    } as IdentifyRemandDecision
+
+    const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
+
+    const message = JSON.stringify({
+      type: 'REMAND',
+      days: result.days,
+      action: 'CREATE',
+    })
+    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
   }
 }

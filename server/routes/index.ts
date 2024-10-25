@@ -17,6 +17,7 @@ export default function routes(service: Services): Router {
     service.bulkRemandCalculationService,
     service.selectedApplicableRemandStoreService,
     service.adjustmentsService,
+    service.calculateReleaseDatesService,
   )
   const prisonerImageRoutes = new PrisonerImageRoutes(service.prisonerService)
   get('/:nomsId/image', prisonerImageRoutes.getImage)
@@ -32,6 +33,8 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/select-applicable', remandRoutes.selectApplicable)
   post('/prisoner/:nomsId/select-applicable', remandRoutes.submitApplicable)
   get('/prisoner/:nomsId/select-applicable/remove', remandRoutes.removeSelection)
+  get('/prisoner/:nomsId/confirm-and-save', remandRoutes.confirmAndSave)
+  post('/prisoner/:nomsId/confirm-and-save', remandRoutes.submitConfirmAndSave)
 
   return router
 }
