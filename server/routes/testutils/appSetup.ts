@@ -34,7 +34,7 @@ const defaultPrisoner: PrisonerSearchApiPrisoner = {
   firstName: 'Anon',
   lastName: 'Nobody',
   dateOfBirth: '24/06/2000',
-  bookingId: '12345',
+  bookingId: '1204935',
   prisonId: 'LDS',
   imprisonmentStatusDescription: 'Life imprisonment',
 } as PrisonerSearchApiPrisoner
