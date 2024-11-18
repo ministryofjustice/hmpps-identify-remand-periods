@@ -191,7 +191,8 @@ export default class RemandRoutes {
     return res.render('pages/remand/bulk')
   }
 
-  public submitBulkRemand: RequestHandler = async (req, res) => {
+  // eslint-disable-next-line consistent-return
+  public submitBulkRemand: RequestHandler = async (req, res): Promise<void> => {
     if (req.body.single) {
       const prisonerId = req.body['single-prisoner']
       return res.redirect(`/prisoner/${prisonerId}`)
@@ -206,7 +207,7 @@ export default class RemandRoutes {
     const fileName = `download-remand-dates.csv`
     res.setHeader('Content-Type', 'text/csv')
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-    return stringify(results, {
+    stringify(results, {
       header: true,
     }).pipe(res)
   }
