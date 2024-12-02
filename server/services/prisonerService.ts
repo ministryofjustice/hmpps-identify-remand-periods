@@ -5,6 +5,7 @@ import {
   PrisonApiBookingAndSentenceAdjustments,
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
+  PrisonApiSentenceCalculationSummary,
   PrisonApiUserCaseloads,
 } from '../@types/prisonApi/prisonClientTypes'
 
@@ -32,6 +33,10 @@ export default class PrisonerService {
 
   async getSentencesAndOffences(bookingId: string, username: string): Promise<PrisonApiOffenderSentenceAndOffences[]> {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getSentencesAndOffences(bookingId)
+  }
+
+  async getCalculations(nomsId: string, username: string): Promise<PrisonApiSentenceCalculationSummary[]> {
+    return new PrisonApiClient(await this.getSystemClientToken(username)).getCalculations(nomsId)
   }
 
   private async getSystemClientToken(username: string): Promise<string> {

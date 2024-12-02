@@ -4,6 +4,7 @@ import {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
   PrisonApiSentenceAdjustments,
+  PrisonApiSentenceCalculationSummary,
 } from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
@@ -32,7 +33,8 @@ export default class BulkRemandCalculationService {
       nomisUnusedRemand,
       courtDates,
       calculatedRemand,
-      sentences
+      sentences,
+      calculations
     for (const nomsId of nomsIds) {
       try {
         prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, user)
@@ -45,6 +47,7 @@ export default class BulkRemandCalculationService {
           .filter(it => it.type === 'UNUSED_REMAND')
           .filter(it => it.active)
         courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
+        calculations = await this.prisonerService.getCalculations(nomsId, username)
 
         calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
           nomsId,
@@ -66,6 +69,7 @@ export default class BulkRemandCalculationService {
             courtDates,
             calculatedRemand,
             sentences,
+            calculations,
             null,
           ),
         )
@@ -80,6 +84,7 @@ export default class BulkRemandCalculationService {
             courtDates || [],
             calculatedRemand,
             sentences || [],
+            calculations || [],
             ex,
           ),
         )
@@ -98,6 +103,7 @@ export default class BulkRemandCalculationService {
     courtDates: PrisonApiCourtDateResult[],
     calculatedRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    calculations: PrisonApiSentenceCalculationSummary[],
     ex: Error,
   ): BulkRemandCalculationRow {
     try {
@@ -115,10 +121,13 @@ export default class BulkRemandCalculationService {
         ACTIVE_BOOKING_ID: bookingId,
         AGENCY_LOCATION_ID: prisoner?.prisonId,
         COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
+        CALCULATIONS: JSON.stringify(calculations, null, 2),
 
         IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
         IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
         IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
+        HAS_CALCULATION_IN_REMAND_PERIOD:
+          !ex && this.hasCalculationDuringRemand(calculatedActiveAdjustments, calculations) ? 'Y' : 'N',
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -147,6 +156,20 @@ export default class BulkRemandCalculationService {
         ERROR_STACK: error?.stack,
       } as BulkRemandCalculationRow
     }
+  }
+
+  private hasCalculationDuringRemand(
+    adjustments: Adjustment[],
+    calculations: PrisonApiSentenceCalculationSummary[],
+  ): boolean {
+    return adjustments.some(adjustment => {
+      const from = new Date(adjustment.fromDate)
+      const to = new Date(adjustment.toDate)
+      return calculations.some(calculation => {
+        const calculationDate = new Date(calculation.calculationDate)
+        return calculationDate > from && calculationDate < to
+      })
+    })
   }
 
   private async findSourceDataForIntersectingSentence(

@@ -4,7 +4,11 @@ import {
   RemandResult,
   RemandResultAdjustment,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
-import { PrisonApiCourtDateResult, PrisonApiSentenceAdjustments } from '../@types/prisonApi/prisonClientTypes'
+import {
+  PrisonApiCourtDateResult,
+  PrisonApiSentenceAdjustments,
+  PrisonApiSentenceCalculationSummary,
+} from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
 import BulkRemandCalculationService from './bulkRemandCalculationService'
@@ -38,6 +42,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 0,
       COURT_DATES_JSON: '[]',
+      CALCULATIONS: '[]',
       ERROR_JSON: '{"error":"THIS IS A PRISON API ERROR"}',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -46,6 +51,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
+      HAS_CALCULATION_IN_REMAND_PERIOD: 'N',
       NOMIS_REMAND_DAYS: 0,
       NOMIS_REMAND_JSON: '[]',
       NOMIS_UNUSED_REMAND_JSON: '[]',
@@ -87,6 +93,10 @@ describe('Bulk calculation service test', () => {
       { courtData: 'DATA' } as unknown as PrisonApiCourtDateResult,
     ])
 
+    prisonerService.getCalculations.mockResolvedValue([
+      { calculationDate: '2023-02-10' } as unknown as PrisonApiSentenceCalculationSummary,
+    ])
+
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -113,6 +123,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 0,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',
+      CALCULATIONS: '[{"calculationDate":"2023-02-10"}]',
       ERROR_JSON: '{"error":"THIS IS AN ERROR IN CALCULATION"}',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -121,6 +132,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
+      HAS_CALCULATION_IN_REMAND_PERIOD: 'N',
       NOMIS_REMAND_DAYS: 29,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -162,6 +174,10 @@ describe('Bulk calculation service test', () => {
 
     prisonerService.getCourtDateResults.mockResolvedValue([
       { courtData: 'DATA' } as unknown as PrisonApiCourtDateResult,
+    ])
+
+    prisonerService.getCalculations.mockResolvedValue([
+      { calculationDate: '2023-02-10' } as unknown as PrisonApiSentenceCalculationSummary,
     ])
 
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -226,6 +242,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 25,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',
+      CALCULATIONS: '[{"calculationDate":"2023-02-10"}]',
       ERROR_JSON: 'null',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -235,6 +252,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'Y',
       IS_DAYS_SAME: 'Y',
       IS_REMAND_SAME: 'Y',
+      HAS_CALCULATION_IN_REMAND_PERIOD: 'Y',
       NOMIS_REMAND_DAYS: 25,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -253,6 +271,7 @@ function removeWhitespaceFromRow(row: BulkRemandCalculationRow): BulkRemandCalcu
   return {
     ...row,
     COURT_DATES_JSON: JSON.stringify(JSON.parse(row.COURT_DATES_JSON)),
+    CALCULATIONS: JSON.stringify(JSON.parse(row.CALCULATIONS)),
     INTERSECTING_SENTENCES_SOURCE: JSON.stringify(JSON.parse(row.INTERSECTING_SENTENCES_SOURCE)),
     NOMIS_REMAND_JSON: JSON.stringify(JSON.parse(row.NOMIS_REMAND_JSON)),
     NOMIS_UNUSED_REMAND_JSON: JSON.stringify(JSON.parse(row.NOMIS_UNUSED_REMAND_JSON)),

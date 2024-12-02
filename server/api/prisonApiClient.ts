@@ -6,6 +6,7 @@ import type {
   PrisonApiCourtDateResult,
   PrisonApiOffenderSentenceAndOffences,
   PrisonApiPrisoner,
+  PrisonApiSentenceCalculationSummary,
   PrisonApiUserCaseloads,
 } from '../@types/prisonApi/prisonClientTypes'
 
@@ -46,5 +47,11 @@ export default class PrisonApiClient {
     return this.restClient.get({
       path: `/api/offender-sentences/booking/${bookingId}/sentences-and-offences`,
     }) as Promise<PrisonApiOffenderSentenceAndOffences[]>
+  }
+
+  async getCalculations(nomsId: string) {
+    return this.restClient.get({
+      path: `/api/offender-dates/calculations/${nomsId}?latestOnly=false`,
+    }) as Promise<PrisonApiSentenceCalculationSummary[]>
   }
 }

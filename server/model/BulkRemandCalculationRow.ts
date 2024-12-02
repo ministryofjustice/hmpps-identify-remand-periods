@@ -4,11 +4,13 @@ type BulkRemandCalculationRow = {
   ACTIVE_BOOKING_ID: string
   AGENCY_LOCATION_ID: string
   COURT_DATES_JSON: string
+  CALCULATIONS: string
 
   // Matching
   IS_REMAND_SAME: 'Y' | 'N'
   IS_DAYS_SAME: 'Y' | 'N'
   IS_DATES_SAME: 'Y' | 'N'
+  HAS_CALCULATION_IN_REMAND_PERIOD: 'Y' | 'N'
 
   // NOMIS
   NOMIS_REMAND_DAYS: number
