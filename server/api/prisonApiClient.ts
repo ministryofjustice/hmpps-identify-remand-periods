@@ -4,6 +4,7 @@ import RestClient from '../data/restClient'
 import type {
   PrisonApiBookingAndSentenceAdjustments,
   PrisonApiCourtDateResult,
+  PrisonApiImprisonmentStatusHistoryDto,
   PrisonApiOffenderSentenceAndOffences,
   PrisonApiPrisoner,
   PrisonApiUserCaseloads,
@@ -46,5 +47,11 @@ export default class PrisonApiClient {
     return this.restClient.get({
       path: `/api/offender-sentences/booking/${bookingId}/sentences-and-offences`,
     }) as Promise<PrisonApiOffenderSentenceAndOffences[]>
+  }
+
+  async getImprisonmentStatuses(nomsId: string) {
+    return this.restClient.get({
+      path: `/api/imprisonment-status-history/${nomsId}`,
+    }) as Promise<PrisonApiImprisonmentStatusHistoryDto[]>
   }
 }

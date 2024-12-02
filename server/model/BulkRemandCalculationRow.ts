@@ -4,6 +4,7 @@ type BulkRemandCalculationRow = {
   ACTIVE_BOOKING_ID: string
   AGENCY_LOCATION_ID: string
   COURT_DATES_JSON: string
+  IMPRISONMENT_STATUSES: string
 
   // Matching
   IS_REMAND_SAME: 'Y' | 'N'

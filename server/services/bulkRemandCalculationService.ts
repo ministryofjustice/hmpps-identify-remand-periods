@@ -2,6 +2,7 @@ import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
+  PrisonApiImprisonmentStatusHistoryDto,
   PrisonApiOffenderSentenceAndOffences,
   PrisonApiSentenceAdjustments,
 } from '../@types/prisonApi/prisonClientTypes'
@@ -32,7 +33,8 @@ export default class BulkRemandCalculationService {
       nomisUnusedRemand,
       courtDates,
       calculatedRemand,
-      sentences
+      sentences,
+      imprisonmentStatuses
     for (const nomsId of nomsIds) {
       try {
         prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, user)
@@ -45,6 +47,7 @@ export default class BulkRemandCalculationService {
           .filter(it => it.type === 'UNUSED_REMAND')
           .filter(it => it.active)
         courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
+        imprisonmentStatuses = await this.prisonerService.getImprisonmentStatuses(nomsId, username)
 
         calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
           nomsId,
@@ -66,6 +69,7 @@ export default class BulkRemandCalculationService {
             courtDates,
             calculatedRemand,
             sentences,
+            imprisonmentStatuses,
             null,
           ),
         )
@@ -80,6 +84,7 @@ export default class BulkRemandCalculationService {
             courtDates || [],
             calculatedRemand,
             sentences || [],
+            imprisonmentStatuses || [],
             ex,
           ),
         )
@@ -98,6 +103,7 @@ export default class BulkRemandCalculationService {
     courtDates: PrisonApiCourtDateResult[],
     calculatedRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    imprisonmentStatuses: PrisonApiImprisonmentStatusHistoryDto[],
     ex: Error,
   ): BulkRemandCalculationRow {
     try {
@@ -115,6 +121,7 @@ export default class BulkRemandCalculationService {
         ACTIVE_BOOKING_ID: bookingId,
         AGENCY_LOCATION_ID: prisoner?.prisonId,
         COURT_DATES_JSON: JSON.stringify(courtDates, null, 2),
+        IMPRISONMENT_STATUSES: JSON.stringify(imprisonmentStatuses, null, 2),
 
         IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
         IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
