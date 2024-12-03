@@ -85,6 +85,14 @@ export interface paths {
     /** Transfer a prisoner into a prison from court. Must be an out prisoner in currently in transfer status, requires the TRANSFER_PRISONER role */
     put: operations['courtTransferIn']
   }
+  '/api/offenders/{offenderNo}/birth-place': {
+    /** Update the prisoner's birth place on the current alias. Requires the PRISON_API__PRISONER_PROFILE__RW role. */
+    put: operations['updateBirthPlaceOfCurrentAlias']
+  }
+  '/api/offenders/{offenderNo}/birth-country': {
+    /** Update the prisoner's birth country on the current alias. Requires the PRISON_API__PRISONER_PROFILE__RW role. */
+    put: operations['updateBirthCountryOfCurrentAlias']
+  }
   '/api/offender-sentences/booking/{bookingId}/home-detention-curfews/latest/checks-passed': {
     /** Set the HDC checks passed flag */
     put: operations['setCurfewChecks']
@@ -323,6 +331,13 @@ export interface paths {
     /** Deactivates a prison for the given service */
     delete: operations['removeServicePrison']
   }
+  '/api/schedules/{prisonId}/events-by-location-path': {
+    /**
+     * Get all events for given date for prisoners in listed cells. Note secondary sort is by start time
+     * @description Get all events for given date for prisoners in listed cells. Note secondary sort is by start time<p>This endpoint uses the REPLICA database.</p>
+     */
+    post: operations['getEventsByLocationPath']
+  }
   '/api/schedules/{agencyId}/visits': {
     /** @description <p>This endpoint uses the REPLICA database.</p> */
     post: operations['getVisits']
@@ -334,6 +349,7 @@ export interface paths {
   '/api/schedules/{agencyId}/events-by-location-ids': {
     /**
      * Get all events for given date for prisoners in listed cells. Note secondary sort is by start time
+     * @deprecated
      * @description Get all events for given date for prisoners in listed cells. Note secondary sort is by start time<p>This endpoint uses the REPLICA database.</p>
      */
     post: operations['getEventsByLocationId']
@@ -373,12 +389,12 @@ export interface paths {
      * List of offenders matching specified criteria.
      * @description List of offenders matching specified criteria. Requires GLOBAL_SEARCH role.<p>This endpoint uses the REPLICA database.</p>
      */
-    get: operations['getPrisoners_1']
+    get: operations['getPrisoners']
     /**
      * List of offenders matching specified criteria. (POST version)
      * @description List of offenders matching specified criteria. Requires GLOBAL_SEARCH role.<p>This endpoint uses the REPLICA database.</p>
      */
-    post: operations['getPrisoners']
+    post: operations['getPrisoners_1']
   }
   '/api/offenders': {
     /** Creates a prisoner and optional receives them into a prison by creating a new booking. BOOKING_CREATE role */
@@ -601,7 +617,7 @@ export interface paths {
      * Personal Care Needs
      * @description Personal Care Need. Requires booking access (via caseload) or GLOBAL_SEARCH or VIEW_PRISONER_DATA role.
      */
-    get: operations['getPersonalCareNeeds_1']
+    get: operations['getPersonalCareNeeds']
     /**
      * Personal Care Needs
      * @description Requires role MAINTAIN_HEALTH_PROBLEMS and scope write
@@ -650,7 +666,7 @@ export interface paths {
      * Personal Care Needs  - POST version to allow for large numbers of offenders
      * @description Requires role VIEW_PRISONER_DATA or GLOBAL_SEARCH
      */
-    post: operations['getPersonalCareNeeds']
+    post: operations['getPersonalCareNeeds_1']
   }
   '/api/bookings/offenderNo/personal-care-needs/count': {
     /**
@@ -1089,6 +1105,13 @@ export interface paths {
      */
     get: operations['getPrisonRollCountSummary']
   }
+  '/api/prison/roll-count/{prisonId}/movement-count': {
+    /**
+     * Provide the IN/OUT movements and en-route counts for today
+     * @description Requires role ESTABLISHMENT_ROLL or agency in caseload.
+     */
+    get: operations['getRollCountMovementInformation']
+  }
   '/api/prison/roll-count/{prisonId}/cells-only/{locationId}': {
     /**
      * Provides the list of cells with roll counts under a specified location provided
@@ -1125,7 +1148,7 @@ export interface paths {
     get: operations['getPersonAddresses']
   }
   '/api/offenders/{offenderNo}': {
-    /** Full details about the current state of an offender */
+    /** Full details about the current state of an offender. Requires GLOBAL_SEARCH, VIEW_PRISONER_DATA or a user token with valid offender access */
     get: operations['getOffender_1']
   }
   '/api/offenders/{offenderNo}/transaction-history': {
@@ -1612,6 +1635,17 @@ export interface paths {
      * @description Requires the VIEW_INCIDENTS role.
      */
     get: operations['getIncident']
+  }
+  '/api/incidents/configuration': {
+    /**
+     * Returns incident type configuration data sets for incident reports
+     * @description No additional role required<p>This endpoint uses the REPLICA database.</p>
+     */
+    get: operations['getQuestionnaires']
+  }
+  '/api/imprisonment-status-history/{offenderNo}': {
+    /** Returns the details of all the historic imprisonment statuses for an offender. */
+    get: operations['getImprisonmentStatusHistory']
   }
   '/api/images/{imageId}': {
     /**
@@ -2278,6 +2312,196 @@ export interface components {
        */
       commentText?: string
     }
+    /** @description An Address */
+    AddressDto: {
+      /**
+       * Format: int64
+       * @description Address Id
+       * @example 543524
+       */
+      addressId?: number
+      /**
+       * @description Address Type. Note: Reference domain is ADDR_TYPE
+       * @example BUS
+       */
+      addressType?: string
+      /**
+       * @description Flat
+       * @example 3B
+       */
+      flat?: string
+      /**
+       * @description Premise
+       * @example Liverpool Prison
+       */
+      premise?: string
+      /**
+       * @description Street
+       * @example Slinn Street
+       */
+      street?: string
+      /**
+       * @description Locality
+       * @example Brincliffe
+       */
+      locality?: string
+      /**
+       * @description Town/City. Note: Reference domain is CITY
+       * @example Liverpool
+       */
+      town?: string
+      /**
+       * @description Postal Code
+       * @example LI1 5TH
+       */
+      postalCode?: string
+      /**
+       * @description County. Note: Reference domain is COUNTY
+       * @example HEREFORD
+       */
+      county?: string
+      /**
+       * @description Country. Note: Reference domain is COUNTRY
+       * @example ENG
+       */
+      country?: string
+      /**
+       * @description Comment
+       * @example This is a comment text
+       */
+      comment?: string
+      /**
+       * @description Primary Address
+       * @example false
+       */
+      primary: boolean
+      /**
+       * @description Mail Address
+       * @example false
+       */
+      mail: boolean
+      /**
+       * @description No Fixed Address
+       * @example false
+       */
+      noFixedAddress: boolean
+      /**
+       * Format: date
+       * @description Date Added
+       * @example 2005-05-12
+       */
+      startDate?: string
+      /**
+       * Format: date
+       * @description Date ended
+       * @example 2021-02-12
+       */
+      endDate?: string
+      /** @description The phone number associated with the address */
+      phones?: components['schemas']['Telephone'][]
+      /** @description The address usages/types */
+      addressUsages?: components['schemas']['AddressUsageDto'][]
+    }
+    /** @description An Offender's address usage */
+    AddressUsageDto: {
+      /**
+       * Format: int64
+       * @description Address ID of the associated address
+       * @example 23422313
+       */
+      addressId?: number
+      /**
+       * @description The address usages
+       * @example HDC
+       */
+      addressUsage?: string
+      /**
+       * @description The address usages description
+       * @example HDC Address
+       */
+      addressUsageDescription?: string
+      /**
+       * @description Active Flag
+       * @example true
+       */
+      activeFlag?: boolean
+    }
+    /** @description Agency Details */
+    Agency: {
+      /**
+       * @description Agency identifier.
+       * @example MDI
+       */
+      agencyId: string
+      /**
+       * @description Agency description.
+       * @example Moorland (HMP & YOI)
+       */
+      description: string
+      /**
+       * @description Long description of the agency
+       * @example Moorland (HMP & YOI)
+       */
+      longDescription?: string
+      /**
+       * @description Agency type.  Reference domain is AGY_LOC_TYPE
+       * @example INST
+       * @enum {string}
+       */
+      agencyType:
+        | 'CRC'
+        | 'POLSTN'
+        | 'INST'
+        | 'COMM'
+        | 'APPR'
+        | 'CRT'
+        | 'POLICE'
+        | 'IMDC'
+        | 'TRN'
+        | 'OUT'
+        | 'YOT'
+        | 'SCH'
+        | 'STC'
+        | 'HOST'
+        | 'AIRPORT'
+        | 'HSHOSP'
+        | 'HOSPITAL'
+        | 'PECS'
+        | 'PAR'
+        | 'PNP'
+        | 'PSY'
+      /**
+       * @description Indicates the Agency is active
+       * @example true
+       */
+      active: boolean
+      /**
+       * @description Court Type.  Reference domain is JURISDICTION
+       * @example CC
+       * @enum {string|null}
+       */
+      courtType?: 'CACD' | 'CB' | 'CC' | 'CO' | 'DCM' | 'GCM' | 'IMM' | 'MC' | 'OTHER' | 'YC' | null
+      /**
+       * @description Court Type description.  Reference domain is JURISDICTION. Not always present for all end points
+       * @example Crown Court
+       */
+      courtTypeDescription?: string | null
+      /**
+       * Format: date
+       * @description Date agency became inactive
+       * @example 2012-01-12
+       */
+      deactivationDate?: string
+      /** @description List of addresses associated with agency */
+      addresses?: components['schemas']['AddressDto'][]
+      /** @description List of phones associated with agency */
+      phones?: components['schemas']['Telephone'][]
+      /** @description List of emails associated with agency */
+      emails?: components['schemas']['Email'][]
+      area?: components['schemas']['RefCodeAndDescription']
+      region?: components['schemas']['RefCodeAndDescription']
+      geographicalRegion?: components['schemas']['RefCodeAndDescription']
+    }
     /** @description Alert */
     Alert: {
       /**
@@ -2415,6 +2639,11 @@ export interface components {
        */
       ethnicity?: string
       /**
+       * @description Ethnicity Code
+       * @example M2
+       */
+      raceCode?: string
+      /**
        * @description Type of Alias
        * @example Alias Name
        */
@@ -2532,6 +2761,11 @@ export interface components {
       description?: string
       /** @description Name of the agency where this living unit resides */
       agencyName?: string
+    }
+    /** @description An Email Address */
+    Email: {
+      /** @description Email */
+      email?: string
     }
     /** @description Inmate Detail */
     InmateDetail: {
@@ -2683,6 +2917,12 @@ export interface components {
        * @example CA
        */
       lastMovementReasonCode?: string
+      lastMovementToAgency?: components['schemas']['Agency']
+      /**
+       * @description Last Movement comment
+       * @example Scheduled visit to dentist
+       */
+      lastMovementComment?: string
       /**
        * @description Legal Status. Note: Only returned when requesting extra details
        * @example REMAND
@@ -2798,6 +3038,14 @@ export interface components {
        * @example 100
        */
       offenceSeverityRanking?: number
+      /**
+       * Format: date
+       * @description Start date of sentence - null if there is no associated sentence. This will not be populated if called from /offenderNo/{offenderNo}/offenceHistory, /offenders/{offenderNo} or /bookings/offenderNo/{offenderNo}
+       * @example 2018-03-10
+       */
+      sentenceStartDate?: string
+      /** @description Primary sentence - true if it is not a consecutive sentence, false if it is a consecutive sentence, null if no sentence found for the charge. This will not be populated if called from /offenderNo/{offenderNo}/offenceHistory, /offenders/{offenderNo} or /bookings/offenderNo/{offenderNo} */
+      primarySentence?: boolean
     }
     /** @description Offender Identifier */
     OffenderIdentifier: {
@@ -3094,6 +3342,19 @@ export interface components {
       /** @description Profile Result Answer */
       resultValue?: string
     }
+    /** @description Reference code and description */
+    RefCodeAndDescription: {
+      /**
+       * @description Reference code
+       * @example code
+       */
+      code: string
+      /**
+       * @description Reference description
+       * @example description
+       */
+      description: string
+    }
     /** @description Sentence Calculation Dates */
     SentenceCalcDates: {
       /**
@@ -3386,16 +3647,40 @@ export interface components {
       ltdCalculatedDate?: string
       /**
        * Format: date
-       * @description Top-up supervision start date for offender - calculated as licence end date + 1 day or releaseDate if licence end date not set.
-       * @example 2019-04-01
-       */
-      topupSupervisionStartDate?: string
-      /**
-       * Format: date
        * @description Offender's home detention curfew end date - calculated as one day before the releaseDate.
        * @example 2019-04-01
        */
       homeDetentionCurfewEndDate?: string
+      /**
+       * Format: date
+       * @description Top-up supervision start date for offender - calculated as licence end date + 1 day or releaseDate if licence end date not set.
+       * @example 2019-04-01
+       */
+      topupSupervisionStartDate?: string
+    }
+    /** @description Telephone Details */
+    Telephone: {
+      /**
+       * Format: int64
+       * @description Phone Id
+       * @example 2234232
+       */
+      phoneId?: number
+      /**
+       * @description Telephone number
+       * @example 0114 2345678
+       */
+      number: string
+      /**
+       * @description Telephone type
+       * @example TEL
+       */
+      type: string
+      /**
+       * @description Telephone extension number
+       * @example 123
+       */
+      ext?: string
     }
     /** @description Represents the data required for receiving a prisoner transfer */
     RequestToTransferIn: {
@@ -3686,6 +3971,22 @@ export interface components {
        * @example 2021-07-05T10:35:17
        */
       dateTime: string
+    }
+    /** @description Update to prisoner birth place (city or town of birth) */
+    UpdateBirthPlace: {
+      /**
+       * @description Birth place (city or town of birth)
+       * @example SHEFFIELD
+       */
+      birthPlace: string
+    }
+    /** @description Update to prisoner birth country */
+    UpdateBirthCountry: {
+      /**
+       * @description Country code
+       * @example GBR
+       */
+      countryCode: string
     }
     /** @description HDC Curfew Check */
     HdcChecks: {
@@ -4038,188 +4339,6 @@ export interface components {
        */
       hearingDateTime: string
     }
-    /** @description An Address */
-    AddressDto: {
-      /**
-       * Format: int64
-       * @description Address Id
-       * @example 543524
-       */
-      addressId?: number
-      /**
-       * @description Address Type. Note: Reference domain is ADDR_TYPE
-       * @example BUS
-       */
-      addressType?: string
-      /**
-       * @description Flat
-       * @example 3B
-       */
-      flat?: string
-      /**
-       * @description Premise
-       * @example Liverpool Prison
-       */
-      premise?: string
-      /**
-       * @description Street
-       * @example Slinn Street
-       */
-      street?: string
-      /**
-       * @description Locality
-       * @example Brincliffe
-       */
-      locality?: string
-      /**
-       * @description Town/City. Note: Reference domain is CITY
-       * @example Liverpool
-       */
-      town?: string
-      /**
-       * @description Postal Code
-       * @example LI1 5TH
-       */
-      postalCode?: string
-      /**
-       * @description County. Note: Reference domain is COUNTY
-       * @example HEREFORD
-       */
-      county?: string
-      /**
-       * @description Country. Note: Reference domain is COUNTRY
-       * @example ENG
-       */
-      country?: string
-      /**
-       * @description Comment
-       * @example This is a comment text
-       */
-      comment?: string
-      /**
-       * @description Primary Address
-       * @example false
-       */
-      primary: boolean
-      /**
-       * @description Mail Address
-       * @example false
-       */
-      mail: boolean
-      /**
-       * @description No Fixed Address
-       * @example false
-       */
-      noFixedAddress: boolean
-      /**
-       * Format: date
-       * @description Date Added
-       * @example 2005-05-12
-       */
-      startDate?: string
-      /**
-       * Format: date
-       * @description Date ended
-       * @example 2021-02-12
-       */
-      endDate?: string
-      /** @description The phone number associated with the address */
-      phones?: components['schemas']['Telephone'][]
-      /** @description The address usages/types */
-      addressUsages?: components['schemas']['AddressUsageDto'][]
-    }
-    /** @description An Offender's address usage */
-    AddressUsageDto: {
-      /**
-       * Format: int64
-       * @description Address ID of the associated address
-       * @example 23422313
-       */
-      addressId?: number
-      /**
-       * @description The address usages
-       * @example HDC
-       */
-      addressUsage?: string
-      /**
-       * @description The address usages description
-       * @example HDC Address
-       */
-      addressUsageDescription?: string
-      /**
-       * @description Active Flag
-       * @example true
-       */
-      activeFlag?: boolean
-    }
-    /** @description Agency Details */
-    Agency: {
-      /**
-       * @description Agency identifier.
-       * @example MDI
-       */
-      agencyId: string
-      /**
-       * @description Agency description.
-       * @example Moorland (HMP & YOI)
-       */
-      description: string
-      /**
-       * @description Long description of the agency
-       * @example Moorland (HMP & YOI)
-       */
-      longDescription?: string
-      /**
-       * @description Agency type.  Reference domain is AGY_LOC_TYPE
-       * @example INST
-       * @enum {string}
-       */
-      agencyType:
-        | 'CRC'
-        | 'POLSTN'
-        | 'INST'
-        | 'COMM'
-        | 'APPR'
-        | 'CRT'
-        | 'POLICE'
-        | 'IMDC'
-        | 'TRN'
-        | 'OUT'
-        | 'YOT'
-        | 'SCH'
-        | 'STC'
-        | 'HOST'
-        | 'AIRPORT'
-        | 'HSHOSP'
-        | 'HOSPITAL'
-        | 'PECS'
-        | 'PAR'
-        | 'PNP'
-        | 'PSY'
-      /**
-       * @description Indicates the Agency is active
-       * @example true
-       */
-      active: boolean
-      /**
-       * @description Court Type.  Reference domain is JURISDICTION
-       * @example CC
-       * @enum {string}
-       */
-      courtType?: 'CACD' | 'CB' | 'CC' | 'CO' | 'DCM' | 'GCM' | 'IMM' | 'MC' | 'OTHER' | 'YC'
-      /**
-       * Format: date
-       * @description Date agency became inactive
-       * @example 2012-01-12
-       */
-      deactivationDate?: string
-      /** @description List of addresses associated with agency */
-      addresses?: components['schemas']['AddressDto'][]
-      /** @description List of phones associated with agency */
-      phones?: components['schemas']['Telephone'][]
-      /** @description List of emails associated with agency */
-      emails?: components['schemas']['Email'][]
-    }
     /** @description Represents a court hearing for an offender court case. */
     CourtHearing: {
       /**
@@ -4234,35 +4353,6 @@ export interface components {
        */
       dateTime?: string
       location?: components['schemas']['Agency']
-    }
-    /** @description An Email Address */
-    Email: {
-      /** @description Email */
-      email?: string
-    }
-    /** @description Telephone Details */
-    Telephone: {
-      /**
-       * Format: int64
-       * @description Phone Id
-       * @example 2234232
-       */
-      phoneId?: number
-      /**
-       * @description Telephone number
-       * @example 0114 2345678
-       */
-      number: string
-      /**
-       * @description Telephone type
-       * @example TEL
-       */
-      type: string
-      /**
-       * @description Telephone extension number
-       * @example 123
-       */
-      ext?: string
     }
     /** @description Alert details */
     AlertChanges: {
@@ -7441,7 +7531,7 @@ export interface components {
       content?: string[]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -7450,7 +7540,7 @@ export interface components {
     PageableObject: {
       /** Format: int64 */
       offset?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       pageSize?: number
       paged?: boolean
@@ -7459,11 +7549,9 @@ export interface components {
       unpaged?: boolean
     }
     SortObject: {
-      direction?: string
-      nullHandling?: string
-      ascending?: boolean
-      property?: string
-      ignoreCase?: boolean
+      empty?: boolean
+      sorted?: boolean
+      unsorted?: boolean
     }
     /** @description Prisoner details required by Prisoner Search */
     PrisonerSearchDetails: {
@@ -7644,6 +7732,11 @@ export interface components {
        * @example true
        */
       active?: boolean
+      /**
+       * @description The user comments for this adjustment
+       * @example This is an adjustment
+       */
+      comment?: string
     }
     /** @description The active sentence envelope is a combination of the person information, the active booking and calculable sentences at a particular establishment */
     CalculableSentenceEnvelope: {
@@ -7833,7 +7926,7 @@ export interface components {
       content?: components['schemas']['CalculableSentenceEnvelope'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -7888,6 +7981,11 @@ export interface components {
        * @example true
        */
       active?: boolean
+      /**
+       * @description The user comments for this adjustment
+       * @example This is an adjustment
+       */
+      comment?: string
     }
     /** @description Summary of cell usage for this level */
     LocationRollCount: {
@@ -8026,6 +8124,28 @@ export interface components {
        * @description Current population
        */
       numCurrentPopulation: number
+    }
+    /** @description Establishment roll count in and out numbers */
+    MovementCount: {
+      /**
+       * Format: int32
+       * @description Number of prisoners arrived so far on given date
+       */
+      in: number
+      /**
+       * Format: int32
+       * @description Number of prisoners that have left so far on given date
+       */
+      out: number
+    }
+    /** @description Summary movements in and out of a prison today */
+    PrisonRollMovementInfo: {
+      inOutMovementsToday: components['schemas']['MovementCount']
+      /**
+       * Format: int32
+       * @description Prisoner en-route count for today
+       */
+      enRouteToday: number
     }
     /** @description PersonIdentifier */
     PersonIdentifier: {
@@ -9059,16 +9179,16 @@ export interface components {
       tariffEarlyRemovalSchemeEligibilityDate?: string
       /**
        * Format: date
-       * @description Top-up supervision start date for offender - calculated as licence end date + 1 day or releaseDate if licence end date not set.
-       * @example 2019-04-01
-       */
-      topupSupervisionStartDate?: string
-      /**
-       * Format: date
        * @description Offender's home detention curfew end date - calculated as one day before the releaseDate.
        * @example 2019-04-01
        */
       homeDetentionCurfewEndDate?: string
+      /**
+       * Format: date
+       * @description Top-up supervision start date for offender - calculated as licence end date + 1 day or releaseDate if licence end date not set.
+       * @example 2019-04-01
+       */
+      topupSupervisionStartDate?: string
     }
     /** @description Prison Term */
     PrisonTerm: {
@@ -9856,7 +9976,7 @@ export interface components {
       content?: components['schemas']['OffenceDto'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -10361,19 +10481,6 @@ export interface components {
       /** @description List of confirmed movements */
       movements?: components['schemas']['MovementSummary'][]
     }
-    /** @description Establishment roll count in and out numbers */
-    MovementCount: {
-      /**
-       * Format: int32
-       * @description Number of prisoners arrived so far on given date
-       */
-      in: number
-      /**
-       * Format: int32
-       * @description Number of prisoners that have left so far on given date
-       */
-      out: number
-    }
     /** @description Summary of an offender counted as Establishment Roll - Reception */
     OffenderInReception: {
       /** @description Display Prisoner Number */
@@ -10484,6 +10591,143 @@ export interface components {
        */
       numberAllocated: number
     }
+    /** @description Incident Type Answer */
+    IncidentTypeAnswer: {
+      /**
+       * Format: int64
+       * @description ID for this Answer
+       */
+      questionnaireAnsId: number
+      /**
+       * Format: int32
+       * @description Sequence for this answer
+       * @example 1
+       */
+      answerSeq: number
+      /**
+       * @description Answer Text
+       * @example YES
+       */
+      answerDesc: string
+      /**
+       * Format: int32
+       * @description Answer Sequence
+       * @example 1
+       */
+      answerListSeq: number
+      /**
+       * @description Indicates this answer is active
+       * @example true
+       */
+      answerActiveFlag: boolean
+      /**
+       * Format: date
+       * @description Date expired (not used)
+       */
+      answerExpiryDate: string
+      /**
+       * @description Should the answer include date information?
+       * @example false
+       */
+      dateRequiredFlag: boolean
+      /**
+       * @description Should the answer include comment?
+       * @example false
+       */
+      commentRequiredFlag: boolean
+      /**
+       * Format: int64
+       * @description Next questionnaire question ID
+       */
+      nextQuestionnaireQueId: number
+    }
+    /** @description Incident Type Configuration */
+    IncidentTypeConfiguration: {
+      /**
+       * @description Incident type of this configuration
+       * @example DRONE1
+       */
+      incidentType: string
+      /**
+       * @description Incident type description
+       * @example Drone Sighting
+       */
+      incidentTypeDescription?: string
+      /**
+       * Format: int64
+       * @description ID internal of this question set for this incident type
+       * @example 123412
+       */
+      questionnaireId: number
+      /** @description List of questions (with answers) for this incident type */
+      questions: components['schemas']['IncidentTypeQuestion'][]
+      /** @description List of roles that can apply to a prisoner in this incident type */
+      prisonerRoles: components['schemas']['IncidentTypePrisonerRole'][]
+      /** @description Indicates this incident type is still usable */
+      active: boolean
+      /**
+       * Format: date
+       * @description Date the incident type was expired
+       */
+      expiryDate?: string
+    }
+    /** @description Incident type prisoner role */
+    IncidentTypePrisonerRole: {
+      /** @description Role type for this question set */
+      prisonerRole: string
+      /** @description If a single party can have this role in the question set */
+      singleRole: boolean
+      /** @description Indicates this role is active */
+      active: boolean
+      /**
+       * Format: date
+       * @description Indicates the date the role was made inactive
+       */
+      expiryDate: string
+    }
+    /** @description Incident type question */
+    IncidentTypeQuestion: {
+      /**
+       * Format: int64
+       * @description Question ID
+       */
+      questionnaireQueId: number
+      /**
+       * Format: int32
+       * @description Question sequence number
+       */
+      questionSeq: number
+      /** @description Question description */
+      questionDesc: string
+      /**
+       * Format: int32
+       * @description Question list sequence
+       */
+      questionListSeq: number
+      /** @description Indicates question is active */
+      questionActiveFlag: boolean
+      /**
+       * Format: date
+       * @description Date question was retired
+       */
+      questionExpiryDate: string
+      /** @description Indicate multiple responses can be given */
+      multipleAnswerFlag: boolean
+      /** @description Order list of answers */
+      answers: components['schemas']['IncidentTypeAnswer'][]
+    }
+    /** @description Represents an offenders imprisonment status at a point in history */
+    ImprisonmentStatusHistoryDto: {
+      /** @description The imprisonment status */
+      status: string
+      /**
+       * Format: date
+       * @description The date the status was effective from
+       */
+      effectiveDate: string
+      /** @description The agency the status was set by */
+      agencyId: string
+    }
     /** @description Gang Member Detail */
     GangMemberDetail: {
       /**
@@ -10578,7 +10822,7 @@ export interface components {
       content?: components['schemas']['Education'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -10638,8 +10882,14 @@ export interface components {
        * @description The sentence date
        */
       sentenceDate?: string
+      /** @description The sentence type */
+      sentenceType?: string
+      /** @description The result code of the charge */
+      resultCode?: string
       /** @description The result description of the charge */
       resultDescription?: string
+      /** @description The disposition code of the result of the charge */
+      resultDispositionCode?: string
       /** @description Is this charge active in NOMIS. */
       active?: boolean
     }
@@ -10714,8 +10964,14 @@ export interface components {
        * @description The sentence date
        */
       sentenceDate?: string
+      /** @description The sentence type */
+      sentenceType?: string
+      /** @description The result code of the charge */
+      resultCode?: string
       /** @description The result description of the charge */
       resultDescription?: string
+      /** @description The disposition code of the result of the charge */
+      resultDispositionCode?: string
       /**
        * Format: int64
        * @description The id of the booking this court date was linked to
@@ -10883,7 +11139,7 @@ export interface components {
       content?: components['schemas']['VisitWithVisitors'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -11253,7 +11509,7 @@ export interface components {
       content?: components['schemas']['BedAssignment'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -11311,7 +11567,7 @@ export interface components {
       content?: components['schemas']['Alert'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -11329,7 +11585,7 @@ export interface components {
       content?: components['schemas']['PrisonerBookingSummary'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject'][]
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
       pageable?: components['schemas']['PageableObject']
@@ -12428,6 +12684,82 @@ export interface operations {
       }
     }
   }
+  /** Update the prisoner's birth place on the current alias. Requires the PRISON_API__PRISONER_PROFILE__RW role. */
+  updateBirthPlaceOfCurrentAlias: {
+    parameters: {
+      path: {
+        /** @description The prisoner number */
+        offenderNo: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateBirthPlace']
+      }
+    }
+    responses: {
+      /** @description The birth place has been updated. */
+      204: {
+        content: never
+      }
+      /** @description Invalid request. */
+      400: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Requested resource not found. */
+      404: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Unrecoverable error occurred whilst processing request. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  /** Update the prisoner's birth country on the current alias. Requires the PRISON_API__PRISONER_PROFILE__RW role. */
+  updateBirthCountryOfCurrentAlias: {
+    parameters: {
+      path: {
+        /** @description The prisoner number */
+        offenderNo: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateBirthCountry']
+      }
+    }
+    responses: {
+      /** @description The birth country has been updated. */
+      204: {
+        content: never
+      }
+      /** @description Invalid request. */
+      400: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Requested resource not found. */
+      404: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Unrecoverable error occurred whilst processing request. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   /** Set the HDC checks passed flag */
   setCurfewChecks: {
     parameters: {
@@ -13356,6 +13688,8 @@ export interface operations {
         withAddresses?: boolean
         /** @description Don't format the location */
         skipFormatLocation?: boolean
+        /** @description Returns area and region information */
+        withAreas?: boolean
       }
       path: {
         /** @description The ID of the agency */
@@ -13974,6 +14308,61 @@ export interface operations {
       }
     }
   }
+  /**
+   * Get all events for given date for prisoners in listed cells. Note secondary sort is by start time
+   * @description Get all events for given date for prisoners in listed cells. Note secondary sort is by start time<p>This endpoint uses the REPLICA database.</p>
+   */
+  getEventsByLocationPath: {
+    parameters: {
+      query?: {
+        /** @description Date of whereabouts list, default today */
+        date?: string
+        /** @description AM, PM or ED */
+        timeSlot?: 'AM' | 'PM' | 'ED'
+      }
+      header?: {
+        /** @description Comma separated list of one or more of the following fields - <b>cellLocation or lastName</b> */
+        'Sort-Fields'?: string
+        /** @description Sort order (ASC or DESC) - defaults to ASC. */
+        'Sort-Order'?: 'ASC' | 'DESC'
+      }
+      path: {
+        /** @description The prison Id */
+        prisonId: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': string[]
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        content: {
+          'application/json': components['schemas']['PrisonerSchedule'][]
+        }
+      }
+      /** @description Invalid request. */
+      400: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Requested resource not found. */
+      404: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Unrecoverable error occurred whilst processing request. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   /** @description <p>This endpoint uses the REPLICA database.</p> */
   getVisits: {
     parameters: {
@@ -14028,6 +14417,7 @@ export interface operations {
   }
   /**
    * Get all events for given date for prisoners in listed cells. Note secondary sort is by start time
+   * @deprecated
    * @description Get all events for given date for prisoners in listed cells. Note secondary sort is by start time<p>This endpoint uses the REPLICA database.</p>
    */
   getEventsByLocationId: {
@@ -14321,7 +14711,7 @@ export interface operations {
    * List of offenders matching specified criteria.
    * @description List of offenders matching specified criteria. Requires GLOBAL_SEARCH role.<p>This endpoint uses the REPLICA database.</p>
    */
-  getPrisoners_1: {
+  getPrisoners: {
     parameters: {
       query?: {
         /** @description If true the result set should include a row for every matched alias.  If the request includes some combination of firstName, lastName and dateOfBirth then this will be a subset of the OFFENDERS records for one or more offenders. Otherwise it will be every OFFENDERS record for each match on the other search criteria. Default is false. */
@@ -14397,7 +14787,7 @@ export interface operations {
    * List of offenders matching specified criteria. (POST version)
    * @description List of offenders matching specified criteria. Requires GLOBAL_SEARCH role.<p>This endpoint uses the REPLICA database.</p>
    */
-  getPrisoners: {
+  getPrisoners_1: {
     parameters: {
       header?: {
         /** @description Requested offset of first record in returned collection of prisoner records. */
@@ -15531,7 +15921,7 @@ export interface operations {
    * Personal Care Needs
    * @description Personal Care Need. Requires booking access (via caseload) or GLOBAL_SEARCH or VIEW_PRISONER_DATA role.
    */
-  getPersonalCareNeeds_1: {
+  getPersonalCareNeeds: {
     parameters: {
       query: {
         /**
@@ -15800,7 +16190,7 @@ export interface operations {
    * Personal Care Needs  - POST version to allow for large numbers of offenders
    * @description Requires role VIEW_PRISONER_DATA or GLOBAL_SEARCH
    */
-  getPersonalCareNeeds: {
+  getPersonalCareNeeds_1: {
     parameters: {
       query: {
         /**
@@ -18329,6 +18719,41 @@ export interface operations {
     }
   }
   /**
+   * Provide the IN/OUT movements and en-route counts for today
+   * @description Requires role ESTABLISHMENT_ROLL or agency in caseload.
+   */
+  getRollCountMovementInformation: {
+    parameters: {
+      path: {
+        /**
+         * @description Prison Id
+         * @example MDI
+         */
+        prisonId: string
+      }
+    }
+    responses: {
+      /** @description Returns cell list of roll-counts for a specific prison and sub-location */
+      200: {
+        content: {
+          'application/json': components['schemas']['PrisonRollMovementInfo']
+        }
+      }
+      /** @description Unauthorized to access this endpoint */
+      401: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Missing required role. Requires the ESTABLISHMENT_ROLL role */
+      403: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  /**
    * Provides the list of cells with roll counts under a specified location provided
    * @description Requires role ESTABLISHMENT_ROLL or agency in caseload.<p>This endpoint uses the REPLICA database.</p>
    */
@@ -18520,7 +18945,7 @@ export interface operations {
       }
     }
   }
-  /** Full details about the current state of an offender */
+  /** Full details about the current state of an offender. Requires GLOBAL_SEARCH, VIEW_PRISONER_DATA or a user token with valid offender access */
   getOffender_1: {
     parameters: {
       path: {
@@ -19679,6 +20104,10 @@ export interface operations {
    */
   getOffenderCalculations: {
     parameters: {
+      query?: {
+        /** @description return only calculations from the latest booking */
+        latestOnly?: boolean
+      }
       path: {
         /** @description The booking id of offender */
         nomsId: string
@@ -20736,6 +21165,61 @@ export interface operations {
     }
   }
   /**
+   * Returns incident type configuration data sets for incident reports
+   * @description No additional role required<p>This endpoint uses the REPLICA database.</p>
+   */
+  getQuestionnaires: {
+    parameters: {
+      query?: {
+        /** @description Return configuration for incident type only */
+        'incident-type'?: string
+      }
+    }
+    responses: {
+      /** @description Returns incident type configuration */
+      200: {
+        content: {
+          'application/json': components['schemas']['IncidentTypeConfiguration'][]
+        }
+      }
+      /** @description Unauthorized to access this endpoint */
+      401: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description Missing privileges to access this endpoint */
+      403: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  /** Returns the details of all the historic imprisonment statuses for an offender. */
+  getImprisonmentStatusHistory: {
+    parameters: {
+      path: {
+        /** @description The required offender id (mandatory) */
+        offenderNo: string
+      }
+    }
+    responses: {
+      /** @description The imprisonment status history. */
+      200: {
+        content: {
+          'application/json': components['schemas']['ImprisonmentStatusHistoryDto']
+        }
+      }
+      /** @description Requested resource not found. */
+      404: {
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  /**
    * Image detail (with image data).
    * @description Requires role VIEW_PRISONER_DATA.
    */
@@ -20793,18 +21277,21 @@ export interface operations {
       200: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Requested resource not found. */
       404: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Unrecoverable error occurred whilst processing request. */
       500: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
     }
@@ -21672,18 +22159,21 @@ export interface operations {
       200: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Requested resource not found. */
       404: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Unrecoverable error occurred whilst processing request. */
       500: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
     }
@@ -22665,18 +23155,21 @@ export interface operations {
       200: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Requested resource not found. */
       404: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
       /** @description Unrecoverable error occurred whilst processing request. */
       500: {
         content: {
           'image/jpeg': string
+          'application/json': string
         }
       }
     }
@@ -23162,10 +23655,27 @@ export interface operations {
          * @example MC
          */
         courtType?: string[]
+        /**
+         * @description Only agencies that match the area code
+         * @example LONDON
+         */
+        areaCode?: string
+        /**
+         * @description Only agencies that match the region code
+         * @example LON
+         */
+        regionCode?: string
+        /**
+         * @description Only agencies that match the establishment type
+         * @example CNOMIS
+         */
+        establishmentType?: string
         /** @description Returns Address Information */
         withAddresses?: boolean
         /** @description Don't format the location */
         skipFormatLocation?: boolean
+        /** @description Returns area and region information */
+        withAreas?: boolean
       }
       path: {
         /** @description Agency Type */

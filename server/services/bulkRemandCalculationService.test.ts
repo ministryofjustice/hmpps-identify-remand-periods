@@ -4,7 +4,11 @@ import {
   RemandResult,
   RemandResultAdjustment,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
-import { PrisonApiCourtDateResult, PrisonApiSentenceAdjustments } from '../@types/prisonApi/prisonClientTypes'
+import {
+  PrisonApiCourtDateResult,
+  PrisonApiImprisonmentStatusHistoryDto,
+  PrisonApiSentenceAdjustments,
+} from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
 import BulkRemandCalculationService from './bulkRemandCalculationService'
@@ -38,6 +42,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 0,
       COURT_DATES_JSON: '[]',
+      IMPRISONMENT_STATUSES: '[]',
       ERROR_JSON: '{"error":"THIS IS A PRISON API ERROR"}',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -87,6 +92,10 @@ describe('Bulk calculation service test', () => {
       { courtData: 'DATA' } as unknown as PrisonApiCourtDateResult,
     ])
 
+    prisonerService.getImprisonmentStatuses.mockResolvedValue([
+      { imprisonmentData: 'DATA' } as unknown as PrisonApiImprisonmentStatusHistoryDto,
+    ])
+
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -113,6 +122,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 0,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',
+      IMPRISONMENT_STATUSES: '[{"imprisonmentData":"DATA"}]',
       ERROR_JSON: '{"error":"THIS IS AN ERROR IN CALCULATION"}',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -162,6 +172,10 @@ describe('Bulk calculation service test', () => {
 
     prisonerService.getCourtDateResults.mockResolvedValue([
       { courtData: 'DATA' } as unknown as PrisonApiCourtDateResult,
+    ])
+
+    prisonerService.getImprisonmentStatuses.mockResolvedValue([
+      { imprisonmentData: 'DATA' } as unknown as PrisonApiImprisonmentStatusHistoryDto,
     ])
 
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -226,6 +240,7 @@ describe('Bulk calculation service test', () => {
       AGENCY_LOCATION_ID: undefined,
       CALCULATED_REMAND_DAYS: 25,
       COURT_DATES_JSON: '[{"courtData":"DATA"}]',
+      IMPRISONMENT_STATUSES: '[{"imprisonmentData":"DATA"}]',
       ERROR_JSON: 'null',
       ERROR_STACK: undefined,
       ERROR_TEXT: undefined,
@@ -253,6 +268,7 @@ function removeWhitespaceFromRow(row: BulkRemandCalculationRow): BulkRemandCalcu
   return {
     ...row,
     COURT_DATES_JSON: JSON.stringify(JSON.parse(row.COURT_DATES_JSON)),
+    IMPRISONMENT_STATUSES: JSON.stringify(JSON.parse(row.IMPRISONMENT_STATUSES)),
     INTERSECTING_SENTENCES_SOURCE: JSON.stringify(JSON.parse(row.INTERSECTING_SENTENCES_SOURCE)),
     NOMIS_REMAND_JSON: JSON.stringify(JSON.parse(row.NOMIS_REMAND_JSON)),
     NOMIS_UNUSED_REMAND_JSON: JSON.stringify(JSON.parse(row.NOMIS_UNUSED_REMAND_JSON)),
