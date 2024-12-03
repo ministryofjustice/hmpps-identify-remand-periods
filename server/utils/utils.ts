@@ -63,7 +63,14 @@ export const isImportantError = (
   if (['UNSUPPORTED_OUTCOME', 'MISSING_COURT_OUTCOME'].includes(problem.type)) {
     return false
   }
-  if (problem.type === 'MISSING_RECALL_EVENT') {
+  if (
+    [
+      'MISSING_RECALL_EVENT',
+      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_REMAND',
+      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_RECALL',
+      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_SENTENCING',
+    ].includes(problem.type)
+  ) {
     return true
   }
   return (
