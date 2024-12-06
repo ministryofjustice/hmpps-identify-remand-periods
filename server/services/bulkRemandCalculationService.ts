@@ -140,7 +140,11 @@ export default class BulkRemandCalculationService {
         CALCULATED_REMAND_DAYS: dpsDays,
         INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
         INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-        VALIDATION_MESSAGES: this.importantErrors(calculatedRemand?.issuesWithLegacyData || [], sentencesAndOffences)
+        VALIDATION_MESSAGES: this.importantErrors(
+          calculatedRemand?.issuesWithLegacyData || [],
+          sentencesAndOffences,
+          bookingId,
+        )
           ?.map(it => it.message)
           .join('\n'),
         ERROR_JSON: JSON.stringify(ex, null, 2),
@@ -198,9 +202,15 @@ export default class BulkRemandCalculationService {
   private importantErrors(
     problems: LegacyDataProblem[],
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
+    bookingId: string,
   ): LegacyDataProblem[] {
-    const activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
-    const activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
+    const sentenceAndOffencesOnActiveBooking = sentencesAndOffences.filter(it => it.bookingId.toString() === bookingId)
+    const activeSentenceCourtCases = sentenceAndOffencesOnActiveBooking
+      .filter(it => !!it.caseReference)
+      .map(it => it.caseReference)
+    const activeSentenceStatues = sentenceAndOffencesOnActiveBooking.flatMap(it =>
+      it.offences.map(off => off.offenceStatute),
+    )
 
     return problems.filter(problem => isImportantError(problem, activeSentenceCourtCases, activeSentenceStatues))
   }
