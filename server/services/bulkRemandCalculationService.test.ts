@@ -188,6 +188,7 @@ describe('Bulk calculation service test', () => {
         caseReference: 'REF',
         sentenceSequence: 1,
         sentenceStatus: 'A',
+        bookingId: Number(bookingId),
       },
     ])
 
@@ -246,7 +247,7 @@ describe('Bulk calculation service test', () => {
       ERROR_TEXT: undefined,
       INTERSECTING_SENTENCES: undefined,
       INTERSECTING_SENTENCES_SOURCE:
-        '[{"offences":[{"offenceStatute":"ABC"}],"caseReference":"REF","sentenceSequence":1,"sentenceStatus":"A"}]',
+        '[{"offences":[{"offenceStatute":"ABC"}],"caseReference":"REF","sentenceSequence":1,"sentenceStatus":"A","bookingId":123}]',
       IS_DATES_SAME: 'Y',
       IS_DAYS_SAME: 'Y',
       IS_REMAND_SAME: 'Y',
