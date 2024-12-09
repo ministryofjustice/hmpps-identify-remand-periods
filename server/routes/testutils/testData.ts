@@ -96,6 +96,7 @@ const remandResult = {
         chargeId: [3933870],
       },
       days: 11,
+      status: 'ACTIVE',
     } as Adjustment,
   ],
   intersectingSentencesUsingHistoricCalculation: [],
@@ -133,7 +134,7 @@ const remandResult = {
   intersectingSentences: [
     {
       from: '2022-08-17',
-      to: '2022-11-16',
+      to: '2023-01-16',
       sentence: { sequence: 3, sentenceDate: '2022-08-17', recallDate: null, bookingId: 1209333, recallDates: [] },
       chargeId: 3934217,
       days: 92,

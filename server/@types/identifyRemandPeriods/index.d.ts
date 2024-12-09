@@ -92,7 +92,14 @@ export interface components {
       toEvent: components['schemas']['CourtAppearance']
       chargeIds: number[]
       /** @enum {string} */
-      status?: 'APPLICABLE' | 'SHARED' | 'INACTIVE' | 'INTERSECTED' | 'CASE_NOT_CONCLUDED' | 'NOT_SENTENCED'
+      status?:
+        | 'APPLICABLE'
+        | 'SHARED'
+        | 'INACTIVE'
+        | 'INTERSECTED'
+        | 'CASE_NOT_CONCLUDED'
+        | 'NOT_SENTENCED'
+        | 'INTERSECTED_BY_SENTENCE'
       replacedCharges: number[]
       /** Format: int64 */
       days?: number

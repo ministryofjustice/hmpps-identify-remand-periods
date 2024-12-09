@@ -225,12 +225,13 @@ export default class RemandRoutes {
       },
       username,
     )
+    const identifiedRemand = relevantRemand.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     const adjustments = await this.adjustmentsService.findByPerson(nomsId, username)
     const unusedDeductions = await this.calculateReleaseDatesService.unusedDeductionsHandlingCRDError(
-      relevantRemand.adjustments as Adjustment[],
+      identifiedRemand,
       adjustments,
       sentencesAndOffences,
       nomsId,
@@ -238,7 +239,7 @@ export default class RemandRoutes {
     )
 
     return res.render('pages/remand/confirm-and-save', {
-      model: new ConfirmAndSaveModel(relevantRemand.adjustments as Adjustment[], unusedDeductions?.unusedDeductions),
+      model: new ConfirmAndSaveModel(identifiedRemand, unusedDeductions?.unusedDeductions),
     })
   }
 
