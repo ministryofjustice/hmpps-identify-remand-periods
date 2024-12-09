@@ -64,6 +64,7 @@ describe('GET /prisoner/{prisonerId}', () => {
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
+        adjustmentType: 'REMAND',
       } as Adjustment,
     ])
     return request(app)
@@ -81,7 +82,7 @@ describe('GET /prisoner/{prisonerId}', () => {
         expect(res.text).toContainInOrder([
           'Previous sentences that may overlap remand periods',
           'Sentenced on 17 Aug 2022',
-          'Release on 16 Nov 2022',
+          'Release on 16 Jan 2023',
           'Escape from lawful custody within booking 46201A',
           'Recalled on 18 May 2023',
           'Post recall release on 4 Oct 2023',

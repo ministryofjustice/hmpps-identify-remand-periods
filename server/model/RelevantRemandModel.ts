@@ -45,7 +45,7 @@ export default class RelevantRemandModel extends RemandCardModel {
     this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
     this.activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
     this.activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
-    this.intersectingSentences = this.filterDuplicatedBookNumberSentences(this.relevantRemand.intersectingSentences)
+    this.intersectingSentences = this.filterIntersectingSentences(this.relevantRemand.intersectingSentences)
   }
 
   public returnToAdjustments(): string {
@@ -175,9 +175,10 @@ export default class RelevantRemandModel extends RemandCardModel {
     return remand.charges.map(it => it.chargeId)
   }
 
-  private filterDuplicatedBookNumberSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
+  private filterIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
+    const filteredIntersectingSentences = this.filterHistoricIntersectingSentences(intersectingSentences)
     const groupedByFromAndBookNumber: Record<string, IntersectingSentence[]> = {}
-    intersectingSentences.forEach(it => {
+    filteredIntersectingSentences.forEach(it => {
       const charge = this.relevantRemand.charges[it.chargeId]
       const fromAndBookNo = `${it.from}${charge.bookNumber}`
       if (!groupedByFromAndBookNumber[fromAndBookNo]) {
@@ -197,13 +198,34 @@ export default class RelevantRemandModel extends RemandCardModel {
     return results
   }
 
-  public changesNumberOfDays(): boolean {
-    const adjustmentDays = this.existingAdjustments.map(a => a.days).reduce((sum, current) => sum + current, 0)
-    const identifiedDays = this.adjustments()
-      .filter(a => a.adjustmentType === 'REMAND')
-      .map(a => a.daysBetween)
-      .reduce((sum, current) => sum + current, 0)
+  private filterHistoricIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
+    const chargeRemand = [
+      ...this.relevantChargeRemand,
+      ...this.notRelevantChargeRemand.filter(it => it.status === 'INTERSECTED_BY_SENTENCE'),
+    ]
+    if (chargeRemand.length) {
+      let earliestApplicableChargeRemand = new Date()
+      chargeRemand
+        .map(it => new Date(it.from))
+        .forEach(it => {
+          if (it < earliestApplicableChargeRemand) {
+            earliestApplicableChargeRemand = it
+          }
+        })
+      return intersectingSentences.filter(it => new Date(it.to) > earliestApplicableChargeRemand)
+    }
+    return intersectingSentences
+  }
 
+  public changesNumberOfDays(): boolean {
+    const adjustmentDays = this.existingAdjustments
+      .filter(a => a.adjustmentType === 'REMAND')
+      .map(a => a.days)
+      .reduce((sum, current) => sum + current, 0)
+    const identifiedDays = this.relevantRemand.adjustments
+      .filter(it => it.status === 'ACTIVE')
+      .map(it => daysBetween(new Date(it.fromDate), new Date(it.toDate)))
+      .reduce((sum, current) => sum + current, 0)
     return adjustmentDays !== 0 && adjustmentDays !== identifiedDays
   }
 }
