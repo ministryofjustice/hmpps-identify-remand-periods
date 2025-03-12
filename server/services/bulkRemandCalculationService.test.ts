@@ -52,7 +52,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
-      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'N',
+      UPGRADE_DOWNGRADE_POSSIBILITIES: 0,
       NOMIS_REMAND_DAYS: 0,
       NOMIS_REMAND_JSON: '[]',
       NOMIS_UNUSED_REMAND_JSON: '[]',
@@ -133,7 +133,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
-      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'N',
+      UPGRADE_DOWNGRADE_POSSIBILITIES: 0,
       NOMIS_REMAND_DAYS: 29,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -261,7 +261,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'Y',
       IS_DAYS_SAME: 'Y',
       IS_REMAND_SAME: 'Y',
-      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'Y',
+      UPGRADE_DOWNGRADE_POSSIBILITIES: 1,
       NOMIS_REMAND_DAYS: 25,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
