@@ -126,6 +126,7 @@ export default class BulkRemandCalculationService {
         IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
         IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
         IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
+        HAS_UPGRADE_DOWNGRADE_POSSIBILITY: !ex && this.isAnyUpgradeDowngradePosibility(calculatedRemand) ? 'Y' : 'N',
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -158,6 +159,12 @@ export default class BulkRemandCalculationService {
         ERROR_STACK: error?.stack,
       } as BulkRemandCalculationRow
     }
+  }
+
+  private isAnyUpgradeDowngradePosibility(calculatedRemand: RemandResult): boolean {
+    return (calculatedRemand?.chargeRemand || []).some(it =>
+      ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status),
+    )
   }
 
   private async findSourceDataForIntersectingSentence(

@@ -1,4 +1,5 @@
 import {
+  ChargeRemand,
   LegacyDataProblem,
   RemandCalculation,
   RemandResult,
@@ -51,6 +52,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
+      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'N',
       NOMIS_REMAND_DAYS: 0,
       NOMIS_REMAND_JSON: '[]',
       NOMIS_UNUSED_REMAND_JSON: '[]',
@@ -131,6 +133,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'N',
       IS_DAYS_SAME: 'N',
       IS_REMAND_SAME: 'N',
+      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'N',
       NOMIS_REMAND_DAYS: 29,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -204,6 +207,13 @@ describe('Bulk calculation service test', () => {
       remandCalculation: {
         calculationData: 'DATA',
       } as unknown as RemandCalculation,
+      chargeRemand: [
+        {
+          from: '2023-02-01',
+          to: '2023-02-25',
+          status: 'CASE_NOT_CONCLUDED',
+        } as ChargeRemand,
+      ],
       issuesWithLegacyData: [
         {
           bookingId,
@@ -251,6 +261,7 @@ describe('Bulk calculation service test', () => {
       IS_DATES_SAME: 'Y',
       IS_DAYS_SAME: 'Y',
       IS_REMAND_SAME: 'Y',
+      HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'Y',
       NOMIS_REMAND_DAYS: 25,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -259,7 +270,7 @@ describe('Bulk calculation service test', () => {
       NOMS_ID: 'ABC123',
       REMAND_TOOL_INPUT: '{"remandCalculation":{"calculationData":"DATA"}}',
       REMAND_TOOL_OUTPUT:
-        '{"adjustments":[{"fromDate":"2023-02-01","toDate":"2023-02-25","status":"ACTIVE","bookingId":123}],"issuesWithLegacyData":[{"bookingId":"123","message":"This error is important","offence":{"statute":"ABC"},"courtCaseRef":"NA"},{"bookingId":"123","message":"This error is aslo important","offence":{"statute":"QRS"},"courtCaseRef":"REF"},{"bookingId":"123","message":"This error is not important","offence":{"statute":"QRS"},"courtCaseRef":"NA"}]}',
+        '{"adjustments":[{"fromDate":"2023-02-01","toDate":"2023-02-25","status":"ACTIVE","bookingId":123}],"chargeRemand":[{"from":"2023-02-01","to":"2023-02-25","status":"CASE_NOT_CONCLUDED"}],"issuesWithLegacyData":[{"bookingId":"123","message":"This error is important","offence":{"statute":"ABC"},"courtCaseRef":"NA"},{"bookingId":"123","message":"This error is aslo important","offence":{"statute":"QRS"},"courtCaseRef":"REF"},{"bookingId":"123","message":"This error is not important","offence":{"statute":"QRS"},"courtCaseRef":"NA"}]}',
       VALIDATION_MESSAGES: `This error is important\nThis error is aslo important`,
     })
   })

@@ -10,6 +10,7 @@ type BulkRemandCalculationRow = {
   IS_REMAND_SAME: 'Y' | 'N'
   IS_DAYS_SAME: 'Y' | 'N'
   IS_DATES_SAME: 'Y' | 'N'
+  HAS_UPGRADE_DOWNGRADE_POSSIBILITY: 'Y' | 'N'
 
   // NOMIS
   NOMIS_REMAND_DAYS: number
