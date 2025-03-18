@@ -2,7 +2,7 @@ import AbstractForm from './abstractForm'
 import ValidationError from './validationError'
 
 export default class SelectApplicableRemandForm extends AbstractForm<SelectApplicableRemandForm> {
-  selection: number
+  selection: string
 
   validation(): ValidationError[] {
     if (!this.selection) {

@@ -9,19 +9,19 @@ import {
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { daysBetween, isImportantError } from '../utils/utils'
-import RemandCardModel, { RemandAndCharge } from './RemandCardModel'
+import { daysBetween } from '../utils/utils'
+import RemandCardModel from './RemandCardModel'
+import DetailedRemandCalculationAndSentence from './DetailedRemandCalculationAndSentence'
+import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
 
 export default class RelevantRemandModel extends RemandCardModel {
   public relevantChargeRemand: RemandAndCharge[]
 
   public notRelevantChargeRemand: RemandAndCharge[]
 
-  public activeSentenceCourtCases: string[]
-
-  public activeSentenceStatues: string[]
-
   private intersectingSentences: IntersectingSentence[]
+
+  private detailedRemandAndSentence: DetailedRemandCalculationAndSentence
 
   constructor(
     public prisonerNumber: string,
@@ -43,9 +43,11 @@ export default class RelevantRemandModel extends RemandCardModel {
 
     this.relevantChargeRemand = chargeRemandAndCharges.filter(it => this.isRelevant(it))
     this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
-    this.activeSentenceStatues = sentencesAndOffences.flatMap(it => it.offences.map(off => off.offenceStatute))
-    this.activeSentenceCourtCases = sentencesAndOffences.filter(it => !!it.caseReference).map(it => it.caseReference)
     this.intersectingSentences = this.filterIntersectingSentences(this.relevantRemand.intersectingSentences)
+    this.detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
+      new DetailedRemandCalculation(relevantRemand),
+      sentencesAndOffences,
+    )
   }
 
   public returnToAdjustments(): string {
@@ -106,41 +108,6 @@ export default class RelevantRemandModel extends RemandCardModel {
     }
   }
 
-  public selectionTable() {
-    return {
-      head: [
-        {
-          text: 'Charges',
-        },
-        {
-          text: 'Applicable to',
-        },
-        {
-          html: '<span class="govuk-visually-hidden">Remove this selection</span>',
-        },
-      ],
-      rows: this.selections.map(it => {
-        const charges = it.chargeIdsToMakeApplicable.map(charge => this.relevantRemand.charges[charge])
-        const target = this.relevantRemand.charges[it.targetChargeId]
-        return [
-          {
-            html: charges
-              .map(
-                charge => `<strong>${charge.offence.description}</strong> commited on ${this.offenceDateText(charge)}`,
-              )
-              .join('<br/>'),
-          },
-          {
-            html: `<strong>${target.offence.description}</strong> commited on ${this.offenceDateText(target)}`,
-          },
-          {
-            html: `<a href="/prisoner/${this.prisonerNumber}/select-applicable/remove?chargeIds=${it.chargeIdsToMakeApplicable.join(',')}">Remove</a>`,
-          },
-        ]
-      }),
-    }
-  }
-
   private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
     const numberOfSentencesWithSameFromDate = this.intersectingSentences.filter(it => it.from === sentence.from).length
 
@@ -152,15 +119,11 @@ export default class RelevantRemandModel extends RemandCardModel {
   }
 
   public mostImportantErrors(): LegacyDataProblem[] {
-    return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return isImportantError(it, this.activeSentenceCourtCases, this.activeSentenceStatues)
-    })
+    return this.detailedRemandAndSentence.mostImportantErrors()
   }
 
   public otherErrors(): LegacyDataProblem[] {
-    return this.relevantRemand.issuesWithLegacyData.filter(it => {
-      return !isImportantError(it, this.activeSentenceCourtCases, this.activeSentenceStatues)
-    })
+    return this.detailedRemandAndSentence.otherErrors()
   }
 
   public hasInactivePeriod() {

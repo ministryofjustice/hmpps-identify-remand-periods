@@ -123,7 +123,10 @@
             {% else %}
                 <p class="govuk-body">No remand identified.</p>
             {% endif %}
-
+        </div>
+    </div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
             {% if model.relevantChargeRemand.length or model.notRelevantChargeRemand.length %}
                 {% if model.relevantChargeRemand.length %}
                     <h2 class="govuk-heading-m">Relevant remand</h2>
@@ -150,14 +153,7 @@
                     </div>
                 </div>
             {% endif %}
-            {% if model.selections.length %}
-                <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-full">
-                        <h2 class="govuk-heading-m">These charges have been selected as applicable</h2>
-                        {{ govukTable( model.selectionTable() )}}
-                    </div>
-                </div>
-            {% endif %}
+            
             {% if model
                 .otherErrors()
                 .length %}

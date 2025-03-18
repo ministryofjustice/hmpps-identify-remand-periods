@@ -1,12 +1,16 @@
 import { Charge, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
-import { sameMembers } from '../utils/utils'
-import RemandCardModel, { RemandAndCharge } from './RemandCardModel'
+import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
+import RemandCardModel from './RemandCardModel'
 
 export default class SelectApplicableRemandModel extends RemandCardModel {
   public chargeRemand: RemandAndCharge[]
 
   public chargesToSelect: Charge[]
+
+  public total: number
+
+  public index: number
 
   constructor(
     public prisonerNumber: string,
@@ -16,15 +20,13 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     public chargeIds: number[],
   ) {
     super(relevantRemand, sentencesAndOffences)
-    const chargeRemandAndCharges = this.relevantRemand.chargeRemand
-      .map(it => this.toRemandAndCharge(it))
-      .filter(it => {
-        return it.status !== 'INACTIVE'
-      })
+    const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
+    const replaceableCharges = detailedCalculation.getReplaceableChargeRemand()
 
-    this.chargeRemand = chargeRemandAndCharges.filter(it => {
-      return sameMembers(it.chargeIds, this.chargeIds)
-    })
+    this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
+    this.total = replaceableCharges.length
+    this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
+
     this.chargesToSelect = Object.values(relevantRemand.charges)
       .filter(it => it.sentenceSequence !== null && it.bookingId.toString() === bookingId)
       .sort((charge1, charge2) => {
@@ -49,11 +51,20 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
   }
 
   public radioItems() {
-    return this.chargesToSelect.map(it => {
-      return {
-        value: it.chargeId,
-        html: `<strong>${it.offence.description}</strong> commited on ${this.offenceDateText(it)}`,
-      }
-    })
+    return [
+      {
+        value: 'no',
+        text: 'No, this offence has not been replaced',
+      },
+      {
+        divider: 'or',
+      },
+      ...this.chargesToSelect.map(it => {
+        return {
+          value: it.chargeId,
+          html: `Yes, this offence was replaced with <strong>${it.offence.description}</strong> commited on ${this.offenceDateText(it)}`,
+        }
+      }),
+    ]
   }
 }

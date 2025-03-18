@@ -1,3 +1,5 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
 {% macro remandCard(remand, model, relevant) %}
     {% if not relevant %}
         {% set colour = 'red' %}
@@ -9,62 +11,44 @@
         {% endif %}
     {% endif %}
 
-    <article class="moj-ticket-panel govuk-!-margin-bottom-4 govuk-!-margin-left-6">
-
-        <section class="moj-ticket-panel__content moj-ticket-panel__content--{{colour}} moj-ticket-panel__content--inline">
-
-            <!-- Col 1 -->
-            <div class="moj-ticket-panel__column">
+    <article class="moj-ticket-panel govuk-!-margin-bottom-4">
+        <section class="moj-ticket-panel__content moj-ticket-panel__content--{{colour}}">
+            <h4 class="govuk-heading-s">
                 {% if remand.replacedCharges.length %}
                     {% for replacedCharge in remand.replacedCharges %}
-                        <span><strong>{{replacedCharge.offence.description}}</strong> committed on {{model.offenceDateText(replacedCharge)}}</span><br/>
+                        {{ chargeText(replacedCharge, model.offenceDateText(replacedCharge)) }}
                     {% endfor %}
-                    <strong>Replaced by:</strong><br/>
+                {% else %}
+                    {% for charge in remand.charges %}
+                        {{ chargeText(charge, model.offenceDateText(charge)) }}
+                    {% endfor %}
                 {% endif %}
-                {% for charge in remand.charges %}
-                    <span><strong>{{charge.offence.description}}</strong> committed on {{model.offenceDateText(charge)}}</span><br/>
-                {% endfor %}
-                <span class="moj-badge moj-badge--{{colour}}">{{remand.status}}</span>
-                {% if model.isRecallChargeRemand(remand) %}<span class="moj-badge moj-badge--black">Recall</span>{% endif %}
-                {% if remand.replacedCharges.length %}<span class="moj-badge moj-badge--bright-purple">Selected</span>{% endif %}
-            </div>
-            {% set charge = remand.charges[0] %}
-            <!-- Col 2 -->
-            <div class="moj-ticket-panel__column">
 
-                <span>
-                    <b>Court:</b>
-                    {{charge.courtLocation}}
-                    <span class="govuk-!-margin-right-4"></span>
-                    <b>Case number:</b>
-                    {{charge.courtCaseRef}}
-                </span><br/>
-                <span>
-                    <b>Remand:</b>
-                    {{remand.days}} days
-                </span><br/>
 
-                <span>
-                    <b>Period:</b>
-                    {{remand.from | date('DD MMM YYYY') }} to {{remand.to | date('DD MMM YYYY') }}
-                </span><br/>
-                <span>
-                    <b>Start outcome:</b>
-                    {{remand.fromEvent.description}} on {{remand.fromEvent.date | date('DD MMM YYYY') }}
-                </span><br/>
-                <span>
-                    <b>Stop outcome:</b>
-                    {{remand.toEvent.description}} on {{remand.toEvent.date | date('DD MMM YYYY') }}
-                </span><br/>
-                <span>
-                    <b>Offence outcome:</b>
-                    {{charge.resultDescription}}
-                </span><br/>
-                {% if model.canBeMarkedAsApplicable(remand) %}
-                    <span><a href="/prisoner/{{model.prisonerNumber}}/select-applicable?chargeIds={{model.chargeIdsOfRemand(remand)}}">This remand has been incorrectly marked as non-relevant.</a></span>
-                {% endif %}
-            </div>
+                <span class="govuk-tag govuk-tag--{{colour}} govuk-!-margin-top-2">{{model.statusText(remand)}}</span>
+                {% if model.isRecallChargeRemand(remand) %}<span class="govuk-tag govuk-tag--black">Recall</span>{% endif %}
+                {% if remand.replacedCharges.length %}<span class="govuk-tag govuk-tag--bright-purple">Selected</span>{% endif %}
+            </h4>
+
+            {% if remand.replacedCharges.length %}
+                <div class="govuk-!-margin-bottom-2">
+                    Replaced with
+                    {% for charge in remand.charges %}
+                        {{ chargeText(charge, model.offenceDateText(charge)) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {{govukSummaryList({
+                classes: 'govuk-summary-list--no-border govuk-summary-list--s',
+                rows: model.summaryRows(remand)
+            })}}
+
         </section>
     </article>
 
+{% endmacro %}
+
+{% macro chargeText(charge, offenceDateText) %}
+    {{charge.offence.description}} committed on {{offenceDateText}}<br/>
 {% endmacro %}

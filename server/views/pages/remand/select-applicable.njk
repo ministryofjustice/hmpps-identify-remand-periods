@@ -28,7 +28,7 @@
         <div class="govuk-grid-column-two-thirds">
 
             <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>Select applicable charge for these remand periods</h1>
+                <span class="govuk-caption-xl">Adjustments</span>Confirm if this offence has been replaced</h1>
             </p>
         </div>
     </div>
@@ -43,11 +43,17 @@
     <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
+            
+        {% set legend %}
+            Offence {{model.index + 1}} of {{model.total}} <br />
+            Has this offence been replaced?
+        {% endset %}
+
             {{ govukRadios({
                 name: "selection",
                 fieldset: {
                     legend: {
-                    text: "Select any charge this remand applies to",
+                    html: legend,
                     classes: "govuk-fieldset__legend--m"
                     }
                 },
@@ -57,7 +63,7 @@
             
                 }) }}
             <div>
-                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm</button>
+                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm and continue</button>
             </div>
         </form>
             <a href="/prisoner/{{model.prisonerNumber}}" class="govuk-link">Cancel</a>
