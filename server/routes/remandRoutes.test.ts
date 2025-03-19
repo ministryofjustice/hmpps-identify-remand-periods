@@ -47,7 +47,72 @@ afterEach(() => {
   jest.resetAllMocks()
 })
 
-describe('GET /prisoner/{prisonerId}', () => {
+describe('Remand entrypoint /prisoner/{prisonerId}', () => {
+  it('should redirect to error page', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/validation-errors`)
+  })
+  it('should redirect to replace offence', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+  })
+  it('should redirect to straight to results if no replace choices', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+      ...remandResult,
+      chargeRemand: remandResult.chargeRemand.filter(
+        it => it.status !== 'CASE_NOT_CONCLUDED' && it.status !== 'NOT_SENTENCED',
+      ),
+      issuesWithLegacyData: [],
+    })
+
+    return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
+  })
+})
+describe('Remand results page /prisoner/{prisonerId}/remand', () => {
   it('should render the results page', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -68,7 +133,7 @@ describe('GET /prisoner/{prisonerId}', () => {
       } as Adjustment,
     ])
     return request(app)
-      .get(`/prisoner/${NOMS_ID}`)
+      .get(`/prisoner/${NOMS_ID}/remand`)
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContainInOrder([
@@ -90,10 +155,9 @@ describe('GET /prisoner/{prisonerId}', () => {
           'Recalled on 18 May 2023',
           'Post recall release on 1 Oct 2023',
         ])
-        expect(res.text).toContain('APPLICABLE')
-        expect(res.text).toContain('CASE_NOT_CONCLUDED')
-        expect(res.text).toContain('This remand has been incorrectly marked as non-relevant.')
-        expect(res.text).toContain('SHARED')
+        expect(res.text).toContain('Applicable')
+        expect(res.text).toContain('Case Not Concluded')
+        expect(res.text).toContain('Shared')
         expect(res.text).toContain('The number of remand days recorded has changed')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
@@ -102,7 +166,7 @@ describe('GET /prisoner/{prisonerId}', () => {
   it('Should submit reject', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
     return request(app)
-      .post(`/prisoner/${NOMS_ID}`)
+      .post(`/prisoner/${NOMS_ID}/remand`)
       .send({
         decision: 'no',
         comment: 'Wrong',
@@ -118,7 +182,7 @@ describe('GET /prisoner/{prisonerId}', () => {
   it('Should submit accept', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
     return request(app)
-      .post(`/prisoner/${NOMS_ID}`)
+      .post(`/prisoner/${NOMS_ID}/remand`)
       .send({
         decision: 'yes',
       })
@@ -126,9 +190,50 @@ describe('GET /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', '/prisoner/ABC123/confirm-and-save')
   })
+})
+describe('Validation error page /prisoner/{prisonerId}/validation-errors', () => {
+  it('Should display error page', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/validation-errors`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContainInOrder([
+          'There is information missing in NOMIS that could impact the remand time.',
+          'This is an important message',
+          'This is also important message',
+          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+        ])
+      })
+  })
+})
 
+describe('Remand replaced offences /prisoner/{prisonerId}', () => {
+  it('Should display intercept', () => {
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          'Before you can continue to this service, you need to check if any offences without a sentence have been replaced.',
+        )
+        expect(res.text).toContain('/prisoner/ABC123/replaced-offence?chargeIds=3933924')
+      })
+  })
   it('Should show choices for select applicable', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -141,27 +246,28 @@ describe('GET /prisoner/{prisonerId}', () => {
       },
     ])
     return request(app)
-      .get(`/prisoner/${NOMS_ID}/select-applicable?chargeIds=3933924`)
+      .get(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContainInOrder([
-          'Accidentally allow a chimney to be on fire</strong> committed on 1 Feb 2023',
-          'Select any charge this remand applies to',
-          'type="radio"',
-          'Abstract water without a licence',
+          'Offence 1 of 1',
+          'Has this offence been replaced?',
+          'No, this offence has not been replaced',
+          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> commited on 10 Jan 2022',
         ])
       })
   })
 
   it('Should submit choices for select applicable', () => {
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
     return request(app)
-      .post(`/prisoner/${NOMS_ID}/select-applicable?chargeIds=3933924`)
+      .post(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .send({
         selection: 2222,
       })
       .type('form')
       .expect(302)
-      .expect('Location', '/prisoner/ABC123')
+      .expect('Location', '/prisoner/ABC123/remand')
       .expect(res => {
         expect(selectedApplicableRemandStoreService.storeSelection.mock.calls).toHaveLength(1)
         expect(selectedApplicableRemandStoreService.storeSelection.mock.calls[0][2]).toStrictEqual({
@@ -170,6 +276,9 @@ describe('GET /prisoner/{prisonerId}', () => {
         } as RemandApplicableUserSelection)
       })
   })
+})
+
+describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   it('Should show confirm and save page', () => {
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([

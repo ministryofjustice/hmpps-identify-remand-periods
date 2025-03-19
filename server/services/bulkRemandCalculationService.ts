@@ -8,7 +8,9 @@ import {
 } from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
-import { daysBetween, isImportantError, onlyUnique, sameMembers } from '../utils/utils'
+import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
+import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
+import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
@@ -141,13 +143,11 @@ export default class BulkRemandCalculationService {
         CALCULATED_REMAND_DAYS: dpsDays,
         INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
         INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-        VALIDATION_MESSAGES: this.importantErrors(
-          calculatedRemand?.issuesWithLegacyData || [],
-          sentencesAndOffences,
-          bookingId,
-        )
-          ?.map(it => it.message)
-          .join('\n'),
+        VALIDATION_MESSAGES: ex
+          ? ''
+          : this.importantErrors(calculatedRemand, sentencesAndOffences, bookingId)
+              ?.map(it => it.message)
+              .join('\n'),
         ERROR_JSON: JSON.stringify(ex, null, 2),
         ERROR_TEXT: ex?.message,
         ERROR_STACK: ex?.stack,
@@ -207,18 +207,14 @@ export default class BulkRemandCalculationService {
   }
 
   private importantErrors(
-    problems: LegacyDataProblem[],
+    result: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     bookingId: string,
   ): LegacyDataProblem[] {
     const sentenceAndOffencesOnActiveBooking = sentencesAndOffences.filter(it => it.bookingId.toString() === bookingId)
-    const activeSentenceCourtCases = sentenceAndOffencesOnActiveBooking
-      .filter(it => !!it.caseReference)
-      .map(it => it.caseReference)
-    const activeSentenceStatues = sentenceAndOffencesOnActiveBooking.flatMap(it =>
-      it.offences.map(off => off.offenceStatute),
-    )
-
-    return problems.filter(problem => isImportantError(problem, activeSentenceCourtCases, activeSentenceStatues))
+    return new DetailedRemandCalculationAndSentence(
+      new DetailedRemandCalculation(result),
+      sentenceAndOffencesOnActiveBooking,
+    ).mostImportantErrors()
   }
 }

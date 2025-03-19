@@ -2,11 +2,8 @@ import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import { Charge, ChargeRemand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-
-export type RemandAndCharge = ChargeRemand & {
-  charges: Charge[]
-  replacedCharges: Charge[]
-}
+import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
+import { convertToTitleCase } from '../utils/utils'
 
 export default abstract class RemandCardModel {
   constructor(
@@ -23,15 +20,15 @@ export default abstract class RemandCardModel {
   }
 
   public isRelevant(remand: RemandAndCharge) {
-    return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
+    return new DetailedRemandCalculation(this.relevantRemand).isRelevant(remand)
   }
 
   public canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
-    return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
+    return new DetailedRemandCalculation(this.relevantRemand).canBeMarkedAsApplicable(charge)
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
-    return remand.charges.map(it => it.chargeId)
+    return new DetailedRemandCalculation(this.relevantRemand).chargeIdsOfRemand(remand)
   }
 
   public isRecallChargeRemand(charge: ChargeRemand): boolean {
@@ -49,12 +46,90 @@ export default abstract class RemandCardModel {
     return sentence && RemandCardModel.recallTypes.includes(sentence.sentenceCalculationType)
   }
 
+  public statusText(remand: RemandAndCharge) {
+    return convertToTitleCase(remand.status.split('_').join(' '))
+  }
+
+  public summaryRows(remand: RemandAndCharge) {
+    const charge = remand.charges[0]
+    return [
+      ...(charge.courtLocation
+        ? [
+            {
+              key: {
+                text: 'Court name',
+              },
+              value: {
+                text: charge.courtLocation,
+              },
+            },
+          ]
+        : []),
+      ...(charge.courtCaseRef
+        ? [
+            {
+              key: {
+                text: 'Case number',
+              },
+              value: {
+                text: charge.courtLocation,
+              },
+            },
+          ]
+        : []),
+      ...(remand.fromEvent?.description
+        ? [
+            {
+              key: {
+                text: 'Start outcome',
+              },
+              value: {
+                text: `${remand.fromEvent.description} on ${dayjs(remand.fromEvent.date).format('D MMM YYYY')}`,
+              },
+            },
+          ]
+        : []),
+      ...(remand.toEvent?.description
+        ? [
+            {
+              key: {
+                text: 'Stop outcome',
+              },
+              value: {
+                text: `${remand.toEvent.description} on ${dayjs(remand.toEvent.date).format('D MMM YYYY')}`,
+              },
+            },
+          ]
+        : []),
+      {
+        key: {
+          text: 'Offence outcome',
+        },
+        value: {
+          text: charge.resultDescription,
+        },
+      },
+      {
+        key: {
+          text: 'Remand',
+        },
+        value: {
+          text: remand.days,
+        },
+      },
+      {
+        key: {
+          text: 'Period',
+        },
+        value: {
+          text: `${dayjs(remand.from).format('D MMM YYYY')} to ${dayjs(remand.to).format('D MMM YYYY')}`,
+        },
+      },
+    ]
+  }
+
   protected offenceDateText(charge: Charge) {
-    return `${
-      charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
-        ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format('D MMM YYYY')}`
-        : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
-    }`
+    return new DetailedRemandCalculation(this.relevantRemand).offenceDateText(charge)
   }
 
   public static recallTypes = [

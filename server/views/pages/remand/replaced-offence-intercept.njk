@@ -1,0 +1,40 @@
+{% extends "../../partials/layout.njk" %}
+{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+
+{% set pageTitle = applicationName + " - Check offences replaced" %}
+{% set mainClasses = "app-container govuk-body" %}
+
+
+{% block content %}
+
+{% call interruptionCard({
+  heading: "Before you can continue to this service, you need to check if any offences without a sentence have been replaced.",
+  primaryAction: {
+    text: "Continue",
+    href: "/prisoner/" + prisoner.prisonerNumber + "/replaced-offence?chargeIds=" + chargeIds
+  },
+  secondaryAction: {
+    text: "Cancel",
+    href: adjustmentsServiceUrl + "/" + prisoner.prisonerNumber
+  }
+  }) -%}
+  <p class="govuk-body">This service has flagged that there is at least one offence that does not have a sentence imposed. This can happen if an offence was replaced (for example, reduced to a lesser offence).</p>
+  <p class="govuk-body">To enable this service to accurately calculate relevant remand, check if the offence was replaced.</p>
+  <p class="govuk-body">Select no if there is any other reason that the offence does not have a sentence imposed.</p>
+  <details class="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">
+        Why is this important?
+      </span>
+    </summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body-l">Time spent on remand is marked as not relevant if the offence did not result in a sentence being imposed.&nbsp;</p>
+      
+      <p class="govuk-body-l">However, if the offence was replaced, and a sentence was imposed for that replaced offence, this remand might be relevant.&nbsp;</p>
+    
+      </div>
+  </details>
+
+{%- endcall %}
+
+{% endblock %}

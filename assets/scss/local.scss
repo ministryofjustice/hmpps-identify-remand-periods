@@ -8,7 +8,25 @@
 
 .moj-ticket-panel__column {
   &:first-of-type {
-    width: 40%
+    width: 40%;
   }
-  width: 60%
+  width: 60%;
+}
+
+.moj-interruption-card__body {
+   .govuk-details {  
+    * {
+      color: white;
+    }
+  }
+}
+
+.govuk-summary-list {
+  &.govuk-summary-list--s {
+    font-size: 16px;
+
+    dd, dt {
+      padding: 5px 0
+    }
+  }
 }
