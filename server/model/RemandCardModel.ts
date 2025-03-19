@@ -72,7 +72,7 @@ export default abstract class RemandCardModel {
                 text: 'Case number',
               },
               value: {
-                text: charge.courtLocation,
+                text: charge.courtCaseRef,
               },
             },
           ]

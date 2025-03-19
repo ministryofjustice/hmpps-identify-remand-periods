@@ -144,6 +144,19 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
           'There are errors with nomis data that may be unrelated to the given relevant remand',
           'This is not an important message',
         ])
+        // Remand card test
+        expect(res.text).toContainInOrder([
+          'Court name',
+          'Birmingham Crown Court',
+          'Case number',
+          'CASE1234',
+          'Offence outcome',
+          'Imprisonment',
+          'Remand',
+          '11',
+          'Period',
+          '10 Jan 2023 to 20 Jan 2023',
+        ])
         expect(res.text).toContainInOrder([
           'Previous sentences that may overlap remand periods',
           'Sentenced on 17 Aug 2022',
