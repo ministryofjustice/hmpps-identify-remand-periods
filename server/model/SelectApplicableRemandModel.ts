@@ -27,16 +27,24 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     this.total = replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
-    this.chargesToSelect = Object.values(relevantRemand.charges)
+    const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
+    Object.values(relevantRemand.charges)
       .filter(it => it.sentenceSequence !== null && it.bookingId.toString() === bookingId)
-      .sort((charge1, charge2) => {
-        const charge1Order = this.order(charge1)
-        const charge2Order = this.order(charge2)
-        if (charge1Order === charge2Order) {
-          return new Date(charge1.sentenceDate) > new Date(charge2.sentenceDate) ? 1 : -1
+      .forEach(it => {
+        const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
+        if (!Object.keys(chargesToSelectByOffenceDateAndDesc).includes(key)) {
+          chargesToSelectByOffenceDateAndDesc[key] = it
         }
-        return charge2Order - charge1Order
       })
+
+    this.chargesToSelect = Object.values(chargesToSelectByOffenceDateAndDesc).sort((charge1, charge2) => {
+      const charge1Order = this.order(charge1)
+      const charge2Order = this.order(charge2)
+      if (charge1Order === charge2Order) {
+        return new Date(charge1.sentenceDate) > new Date(charge2.sentenceDate) ? 1 : -1
+      }
+      return charge2Order - charge1Order
+    })
   }
 
   private order(charge: Charge) {
@@ -62,7 +70,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
       ...this.chargesToSelect.map(it => {
         return {
           value: it.chargeId,
-          html: `Yes, this offence was replaced with <strong>${it.offence.description}</strong> commited on ${this.offenceDateText(it)}`,
+          html: `Yes, this offence was replaced with <strong>${it.offence.description}</strong> committed on ${this.offenceDateText(it)}`,
         }
       }),
     ]

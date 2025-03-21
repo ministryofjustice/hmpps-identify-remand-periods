@@ -44,16 +44,13 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
             
-        {% set legend %}
-            Offence {{model.index + 1}} of {{model.total}} <br />
-            Has this offence been replaced?
-        {% endset %}
-
+            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
+        
             {{ govukRadios({
                 name: "selection",
                 fieldset: {
                     legend: {
-                    html: legend,
+                    text: "Has this offence been replaced?",
                     classes: "govuk-fieldset__legend--m"
                     }
                 },

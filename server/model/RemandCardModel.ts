@@ -114,7 +114,7 @@ export default abstract class RemandCardModel {
           text: 'Remand',
         },
         value: {
-          text: remand.days,
+          text: `${remand.days} days`,
         },
       },
       {
