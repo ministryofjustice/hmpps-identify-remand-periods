@@ -321,6 +321,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
           'Total days',
           '11',
         ])
+        expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
       })
   })
   it('Should submit confirm and save page', () => {

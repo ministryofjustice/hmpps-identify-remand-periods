@@ -315,7 +315,7 @@ export default class RemandRoutes {
     )
 
     return res.render('pages/remand/confirm-and-save', {
-      model: new ConfirmAndSaveModel(identifiedRemand, unusedDeductions?.unusedDeductions),
+      model: new ConfirmAndSaveModel(nomsId, identifiedRemand, unusedDeductions?.unusedDeductions),
     })
   }
 

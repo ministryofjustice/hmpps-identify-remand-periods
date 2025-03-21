@@ -1,9 +1,11 @@
 import dayjs from 'dayjs'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { daysBetween } from '../utils/utils'
+import config from '../config'
 
 export default class ConfirmAndSaveModel {
   constructor(
+    public nomsID: string,
     public adjustments: Adjustment[],
     public unusedDeductions: number,
   ) {}
@@ -40,5 +42,9 @@ export default class ConfirmAndSaveModel {
         },
       ]
     })
+  }
+
+  public cancelLink(): string {
+    return `${config.services.adjustmentServices.url}/${this.nomsID}/`
   }
 }
