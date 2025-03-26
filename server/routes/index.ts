@@ -37,6 +37,8 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/remand', remandRoutes.remand)
   post('/prisoner/:nomsId/remand', remandRoutes.remandSubmit)
 
+  get('/prisoner/:nomsId/overview', remandRoutes.overview)
+
   get('/prisoner/:nomsId/confirm-and-save', remandRoutes.confirmAndSave)
   post('/prisoner/:nomsId/confirm-and-save', remandRoutes.submitConfirmAndSave)
 

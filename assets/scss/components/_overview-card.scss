@@ -1,0 +1,36 @@
+
+.overview-card-container {
+  display: flex;
+  flex-wrap: wrap;
+
+.overview-card {
+    box-sizing: border-box;
+    flex-basis: 48%;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.18);
+    margin: 1%;
+    border: 1px solid #b1b4b6;
+    &.wider {
+      flex-basis: 68%
+    }
+    &.full {
+      flex-basis: 100%;
+      margin: 0;
+    }
+
+    &_heading{
+      background-color: #f3f2f1;
+      padding:16px;
+      color:black;
+      display: flex;
+      justify-content: space-between;
+    }
+    &_content {
+      padding:16px;
+    }
+    .count {
+      font-size: 3rem;
+      font-weight: 800;
+      padding-right:.4rem;
+    }
+  }
+}
