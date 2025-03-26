@@ -13,7 +13,7 @@
 {% block beforeContent %}
   {{ super() }}
   <nav>
-    {% set backlink = "/prisoner/" + prisoner.prisonerNumber %}
+    {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/overview" %}
     {{ govukBackLink({
       text: "Back",
       href: backlink
