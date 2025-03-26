@@ -1,0 +1,66 @@
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% macro remandOverviewCard(adjustment) %}
+  <div class="overview-card full clear govuk-!-margin-bottom-4">
+    <div class="govuk-summary-card__title-wrapper overview-card_heading">
+      <h2 class="govuk-summary-card__title">{{ 'From ' + adjustment.fromDate | date("D MMMM YYYY") + ' to ' + adjustment.toDate | date("D MMMM YYYY") }}</h2>
+    </div>
+    <div class="overview-card_content">
+
+      {% set rows = [
+        {
+          key: {
+          text: "Offence"
+        },
+          value: {
+          html: offenceList(adjustment.offences)
+        }
+        },
+        {
+          key: {
+          text: "Days"
+        },
+          value: {
+          html:  '<strong>' + adjustment.daysToDisplay + '</strong>'
+        }
+        }
+        ] %}
+
+      {{ govukSummaryList({
+        classes: summaryListClasses,
+        rows: rows
+      }) }}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro offenceList(offences) %}
+  <div class='govuk-list'>
+    {% for o in offences %}
+      <div>
+        <span class="govuk-!-font-weight-bold">{{ o.offenceDescription }}</span>
+        <br>
+        <span class="govuk-body-s">
+          {{ offenceCommittedText(o) }}
+        </span>
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro offenceCommittedText(offence) %}
+  {% if (offence.offenceEndDate and offence.offenceStartDate and offence.offenceEndDate !== offence.offenceStartDate) %}
+    Committed from <span class="govuk-!-white-space-nowrap">{{ offence.offenceStartDate | date("D MMMM YYYY") }}</span> to <span class="govuk-!-white-space-nowrap">{{ offence.offenceEndDate | date("D MMMM YYYY") }}</span>
+    {% elif offence.offenceStartDate %}
+    Committed on <span class="govuk-!-white-space-nowrap">{{ offence.offenceStartDate | date("D MMMM YYYY") }}</span>
+    {% elif offence.offenceEndDate %}
+    Committed on <span class="govuk-!-white-space-nowrap">{{ offence.offenceEndDate | date("D MMMM YYYY") }}</span>
+  {% else %}
+    Offence date not entered
+  {% endif %}
+  {% if offence.courtDescription %}
+    <br/>Heard at {{ offence.courtDescription }}
+  {% endif %}
+{% endmacro %}

@@ -17,6 +17,7 @@ import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import ConfirmAndSaveModel from '../model/ConfirmAndSaveModel'
 import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
 import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
+import RemandOverviewModel from '../model/RemandOverviewModel'
 
 export default class RemandRoutes {
   constructor(
@@ -160,7 +161,7 @@ export default class RemandRoutes {
     }
 
     if (form.decision === 'yes') {
-      return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
+      return res.redirect(`/prisoner/${prisonerNumber}/overview`)
     }
     const decision = {
       accepted: false,
@@ -286,6 +287,26 @@ export default class RemandRoutes {
     stringify(results, {
       header: true,
     }).pipe(res)
+  }
+
+  public overview: RequestHandler = async (req, res): Promise<void> => {
+    const { username } = res.locals.user
+    const { nomsId } = req.params
+    const { bookingId } = res.locals.prisoner
+    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+      nomsId,
+      {
+        includeRemandCalculation: false,
+        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
+      },
+      username,
+    )
+    const identifiedRemand = relevantRemand.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+
+    return res.render('pages/remand/overview.njk', {
+      model: new RemandOverviewModel(nomsId, identifiedRemand, sentencesAndOffences),
+    })
   }
 
   public confirmAndSave: RequestHandler = async (req, res): Promise<void> => {

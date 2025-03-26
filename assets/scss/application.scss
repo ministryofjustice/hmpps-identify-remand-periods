@@ -9,4 +9,6 @@ $govuk-page-width: $moj-page-width;
 @import 'hmpps/all';
 
 @import './components/header-bar';
+@import './components/overview-card';
+
 @import 'assets/scss/local';

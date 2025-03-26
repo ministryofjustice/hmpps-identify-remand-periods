@@ -1,0 +1,58 @@
+{% extends "../../partials/layout.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "../../partials//remandSingleLineDetails.njk" import remandSingleLineDetails %}
+{% from "../../partials/remandOverviewCard.njk" import remandOverviewCard %}
+
+
+{% set pageTitle = applicationName + " - Save remand details" %}
+{% set mainClasses = "app-container govuk-body" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% set backlink = "/prisoner/" + prisoner.prisonerNumber %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlink
+    }) }}
+  </nav>
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">
+        <span class="govuk-caption-xl">Adjustments</span>
+        Remand overview
+      </h1>
+      {% if model.adjustmentsWithOffences().length > 0 %}
+        {{ remandSingleLineDetails(model.remandSingleLineDetails()) }}
+      {% endif %}
+    </div>
+    <div class="govuk-grid-column-three-quarters">
+      <div class="overview-card-container">
+        {% for adjustment in model.adjustmentsWithOffences() %}
+          {{ remandOverviewCard(adjustment) }}
+        {% endfor %}
+      </div>
+    </div>
+    <div class="govuk-grid-column-full">
+      <form class="form" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue",
+            href: model.continueLink()
+          }) }}
+          {{ govukButton({
+            text: "Check remand tool",
+            classes: "govuk-button--secondary",
+            href: model.remandToolLink()
+          }) }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -201,7 +201,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       })
       .type('form')
       .expect(302)
-      .expect('Location', '/prisoner/ABC123/confirm-and-save')
+      .expect('Location', '/prisoner/ABC123/overview')
   })
 })
 describe('Validation error page /prisoner/{prisonerId}/validation-errors', () => {
@@ -287,6 +287,38 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
           chargeIdsToMakeApplicable: [3933924],
           targetChargeId: 2222,
         } as RemandApplicableUserSelection)
+      })
+  })
+})
+
+describe('Overview page', () => {
+  it('Overview page contains the correct information', () => {
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceDescription: 'Doing bad things',
+            offenceStartDate: '2022-04-27',
+            offenderChargeId: 3933870,
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/overview`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('10 January 2023')
+        expect(res.text).toContain('20 January 2023')
+        expect(res.text).toContain('11')
+        expect(res.text).toContain('Doing bad things')
+        expect(res.text).toContain('27 April 2022')
+        expect(res.text).toContain('Total days')
+        expect(res.text).toContain('<strong>11 days</strong>')
+        expect(res.text).toContain('Committed on <span class="govuk-!-white-space-nowrap">27 April 2022</span>')
       })
   })
 })
