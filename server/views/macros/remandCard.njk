@@ -30,12 +30,15 @@
                 {% if remand.replacedCharges.length %}<span class="govuk-tag govuk-tag--bright-purple">Selected</span>{% endif %}
             </h4>
 
-            {% if remand.replacedCharges.length %}
+            {% if model.showEditReplacedOffenceLink(remand) %}
                 <div class="govuk-!-margin-bottom-2">
-                    Replaced with
-                    {% for charge in remand.charges %}
-                        {{ chargeText(charge, model.offenceDateText(charge)) }}
-                    {% endfor %}
+                    {% if remand.replacedCharges.length %}
+                            Replaced with
+                            {% for charge in remand.charges %}
+                                {{ chargeText(charge, model.offenceDateText(charge)) }}
+                            {% endfor %}
+                    {% endif %}
+                        <a href="{{model.editReplacedRemandLink(remand)}}">Edit replaced offence</a>
                 </div>
             {% endif %}
             

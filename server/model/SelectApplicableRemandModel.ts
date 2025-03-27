@@ -12,19 +12,22 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
   public index: number
 
+  private replaceableCharges: RemandAndCharge[]
+
   constructor(
     public prisonerNumber: string,
     bookingId: string,
     relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public chargeIds: number[],
+    public edit: boolean,
   ) {
-    super(relevantRemand, sentencesAndOffences)
+    super(prisonerNumber, relevantRemand, sentencesAndOffences)
     const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
-    const replaceableCharges = detailedCalculation.getReplaceableChargeRemand()
+    this.replaceableCharges = detailedCalculation.getReplaceableChargeRemand()
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
-    this.total = replaceableCharges.length
+    this.total = this.replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
     const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
@@ -54,8 +57,19 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     return [sameCourtCase, sameOffenceDate, sameStatute].filter(it => it).length
   }
 
-  public canBeMarkedAsApplicable() {
+  public override showEditReplacedOffenceLink(): boolean {
     return false
+  }
+
+  public backlink() {
+    if (this.edit) {
+      return `/prisoner/${this.prisonerNumber}/remand`
+    }
+    if (this.index === 0) {
+      return `/prisoner/${this.prisonerNumber}/replaced-offence-intercept`
+    }
+    const previous = this.replaceableCharges[this.index - 1]
+    return `/prisoner/${this.prisonerNumber}/replaced-offence?chargeIds=${previous.chargeIds.join(',')}`
   }
 
   public radioItems() {

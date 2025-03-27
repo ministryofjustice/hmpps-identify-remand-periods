@@ -89,6 +89,32 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
   })
+  it('should redirect to tool if already accepted previously', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }],
+      },
+    })
+
+    return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
+  })
   it('should redirect to straight to results if no replace choices', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -160,13 +186,17 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         expect(res.text).toContainInOrder([
           'Previous sentences that may overlap remand periods',
           'Sentenced on 17 Aug 2022',
-          'Release on 16 Jan 2023',
+          '16 Jan 2023',
+          'Burglary dwelling and theft  - no violence',
+          '18 Jun 2022',
+          'Recalled on 18 May 2023',
+          '4 Oct 2023',
           'Escape from lawful custody within booking 46201A',
+          '18 Jun 2021',
           'Recalled on 18 May 2023',
-          'Post recall release on 4 Oct 2023',
+          '1 Oct 2023',
           'Escape from lawful custody within booking 46201X',
-          'Recalled on 18 May 2023',
-          'Post recall release on 1 Oct 2023',
+          '18 Jun 2021',
         ])
         expect(res.text).toContain('Applicable')
         expect(res.text).toContain('Case Not Concluded')
@@ -247,6 +277,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   })
   it('Should show choices for select applicable', () => {
     selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    selectedApplicableRemandStoreService.getSelections.mockReturnValue([])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -264,6 +295,36 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .expect(res => {
         expect(res.text).toContainInOrder([
           'Offence 1 of 1',
+          'Has this offence been replaced?',
+          'No, this offence has not been replaced',
+          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
+        ])
+      })
+  })
+  it('Should show choices for editting select applicable', () => {
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    selectedApplicableRemandStoreService.getSelections.mockReturnValue([
+      { chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 },
+    ])
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/replaced-offence/edit?chargeIds=3933924`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('Offence 1 of 1')
+        expect(res.text).toContain('type="radio" value="2222" checked>')
+        expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
+        expect(res.text).toContainInOrder([
           'Has this offence been replaced?',
           'No, this offence has not been replaced',
           'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
