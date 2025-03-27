@@ -89,6 +89,32 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
   })
+  it('should redirect to tool if already accepted previously', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }],
+      },
+    })
+
+    return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
+  })
   it('should redirect to straight to results if no replace choices', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {

@@ -57,7 +57,10 @@ export default class RemandRoutes {
     }
     if (detailedCalculation.getReplaceableChargeRemand().length) {
       const decision = await this.identifyRemandPeriodsService.getRemandDecision(nomsId, username)
-      if (decision?.accepted && decision?.options?.userSelections) {
+      if (
+        decision?.accepted &&
+        decision?.options?.userSelections?.length === detailedCalculation.getReplaceableChargeRemand().length
+      ) {
         decision.options.userSelections.forEach(it => {
           this.selectedApplicableRemandStoreService.storeSelection(req, nomsId, it)
         })

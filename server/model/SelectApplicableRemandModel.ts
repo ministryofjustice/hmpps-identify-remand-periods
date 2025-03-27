@@ -57,7 +57,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     return [sameCourtCase, sameOffenceDate, sameStatute].filter(it => it).length
   }
 
-  public override showEditReplacedOffenceLink(remand: RemandAndCharge): boolean {
+  public override showEditReplacedOffenceLink(): boolean {
     return false
   }
 
