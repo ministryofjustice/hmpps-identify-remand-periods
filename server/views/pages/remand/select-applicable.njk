@@ -5,12 +5,24 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "../../macros/remandCard.njk" import remandCard %}
 
 {% extends "../../partials/layout.njk" %}
 
 {% set pageTitle = applicationName + " - Home" %}
 {% set mainClasses = "app-container govuk-body" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% set backlink = model.backlink() %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlink
+    }) }}
+  </nav>
+{% endblock %}
 
 {% block content %}
 
@@ -43,8 +55,9 @@
     <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
-            
-            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
+            {% if not model.edit %}
+                <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
+            {% endif %}
         
             {{ govukRadios({
                 name: "selection",

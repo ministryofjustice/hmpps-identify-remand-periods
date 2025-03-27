@@ -31,8 +31,8 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/validation-errors', remandRoutes.validationErrors)
 
   get('/prisoner/:nomsId/replaced-offence-intercept', remandRoutes.replacedOffenceIntercept)
-  get('/prisoner/:nomsId/replaced-offence', remandRoutes.selectApplicable)
-  post('/prisoner/:nomsId/replaced-offence', remandRoutes.submitApplicable)
+  get('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.selectApplicable)
+  post('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.submitApplicable)
 
   get('/prisoner/:nomsId/remand', remandRoutes.remand)
   post('/prisoner/:nomsId/remand', remandRoutes.remandSubmit)

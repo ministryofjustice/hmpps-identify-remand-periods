@@ -5,20 +5,24 @@ import { sameMembers } from '../utils/utils'
 export type RemandAndCharge = ChargeRemand & {
   charges: Charge[]
   replacedCharges: Charge[]
+  replacedChargeIds: number[]
 }
 
 export default class DetailedRemandCalculation {
   chargeRemand: RemandAndCharge[]
 
   constructor(public remandCalculation: RemandResult) {
-    this.chargeRemand = remandCalculation.chargeRemand.map(it => this.toRemandAndCharge(it))
+    this.chargeRemand = remandCalculation.chargeRemand.map(it =>
+      DetailedRemandCalculation.toRemandAndCharge(it, remandCalculation),
+    )
   }
 
-  protected toRemandAndCharge(it: ChargeRemand): RemandAndCharge {
+  public static toRemandAndCharge(it: ChargeRemand, remandCalculation: RemandResult): RemandAndCharge {
     return {
       ...it,
-      charges: it.chargeIds.map(chargeId => this.remandCalculation.charges[chargeId]),
-      replacedCharges: it.replacedCharges?.map(chargeId => this.remandCalculation.charges[chargeId]),
+      charges: it.chargeIds.map(chargeId => remandCalculation.charges[chargeId]),
+      replacedChargeIds: it.replacedCharges,
+      replacedCharges: it.replacedCharges?.map(chargeId => remandCalculation.charges[chargeId]),
     } as RemandAndCharge
   }
 
@@ -26,12 +30,14 @@ export default class DetailedRemandCalculation {
     return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
   }
 
-  public canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
+  public static canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
     return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
   }
 
   public getReplaceableChargeRemand(): RemandAndCharge[] {
-    return this.chargeRemand.filter(it => it.status !== 'INACTIVE' && this.canBeMarkedAsApplicable(it))
+    return this.chargeRemand.filter(
+      it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it),
+    )
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {

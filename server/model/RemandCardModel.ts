@@ -7,24 +7,13 @@ import { convertToTitleCase } from '../utils/utils'
 
 export default abstract class RemandCardModel {
   constructor(
+    public prisonerNumber: string,
     public relevantRemand: RemandResult,
     private sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
   ) {}
 
-  protected toRemandAndCharge(it: ChargeRemand): RemandAndCharge {
-    return {
-      ...it,
-      charges: it.chargeIds.map(chargeId => this.relevantRemand.charges[chargeId]),
-      replacedCharges: it.replacedCharges?.map(chargeId => this.relevantRemand.charges[chargeId]),
-    } as RemandAndCharge
-  }
-
   public isRelevant(remand: RemandAndCharge) {
     return new DetailedRemandCalculation(this.relevantRemand).isRelevant(remand)
-  }
-
-  public canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
-    return new DetailedRemandCalculation(this.relevantRemand).canBeMarkedAsApplicable(charge)
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
@@ -48,6 +37,26 @@ export default abstract class RemandCardModel {
 
   public statusText(remand: RemandAndCharge) {
     return convertToTitleCase(remand.status.split('_').join(' '))
+  }
+
+  public editReplacedRemandLink(remand: RemandAndCharge): string {
+    let charges: number[]
+    if (remand.replacedChargeIds?.length) {
+      charges = remand.replacedChargeIds
+    } else {
+      charges = remand.chargeIds
+    }
+    return `/prisoner/${this.prisonerNumber}/replaced-offence/edit?chargeIds=${charges.join(',')}`
+  }
+
+  public showEditReplacedOffenceLink(remand: RemandAndCharge): boolean {
+    if (remand.replacedChargeIds?.length) {
+      return true
+    }
+    if (DetailedRemandCalculation.canBeMarkedAsApplicable(remand)) {
+      return true
+    }
+    return false
   }
 
   public summaryRows(remand: RemandAndCharge) {

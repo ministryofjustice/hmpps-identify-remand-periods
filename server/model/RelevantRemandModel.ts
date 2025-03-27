@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import {
-  ChargeRemand,
   IntersectingSentence,
   LegacyDataProblem,
   RemandApplicableUserSelection,
@@ -23,24 +22,19 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   private detailedRemandAndSentence: DetailedRemandCalculationAndSentence
 
+  public adjustments: (Adjustment & { daysBetween: number })[]
+
   constructor(
     public prisonerNumber: string,
     relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
-    public includeInactive: boolean = false,
     public selections: RemandApplicableUserSelection[],
     private existingAdjustments: Adjustment[],
   ) {
-    super(relevantRemand, sentencesAndOffences)
-    const chargeRemandAndCharges = this.relevantRemand.chargeRemand
-      .map(it => this.toRemandAndCharge(it))
-      .filter(it => {
-        if (includeInactive) {
-          return true
-        }
-        return it.status !== 'INACTIVE'
-      })
-
+    super(prisonerNumber, relevantRemand, sentencesAndOffences)
+    const chargeRemandAndCharges = this.relevantRemand.chargeRemand.map(it =>
+      DetailedRemandCalculation.toRemandAndCharge(it, relevantRemand),
+    )
     this.relevantChargeRemand = chargeRemandAndCharges.filter(it => this.isRelevant(it))
     this.notRelevantChargeRemand = chargeRemandAndCharges.filter(it => !this.isRelevant(it))
     this.intersectingSentences = this.filterIntersectingSentences(this.relevantRemand.intersectingSentences)
@@ -48,23 +42,23 @@ export default class RelevantRemandModel extends RemandCardModel {
       new DetailedRemandCalculation(relevantRemand),
       sentencesAndOffences,
     )
+    this.adjustments = RelevantRemandModel.getAdjustments(relevantRemand)
   }
 
   public returnToAdjustments(): string {
     return `${config.services.adjustmentServices.url}/${this.prisonerNumber}`
   }
 
-  public adjustments() {
-    return this.filterAdjustments().map(it => {
-      return { ...it, daysBetween: daysBetween(new Date(it.fromDate), new Date(it.toDate)) }
-    })
+  private static getAdjustments(relevantRemand: RemandResult): (Adjustment & { daysBetween: number })[] {
+    return relevantRemand.adjustments
+      .filter(it => it.status === 'ACTIVE')
+      .map(it => {
+        return { ...it, daysBetween: daysBetween(new Date(it.fromDate), new Date(it.toDate)) }
+      }) as (Adjustment & { daysBetween: number })[]
   }
 
-  private filterAdjustments() {
-    if (this.includeInactive) {
-      return this.relevantRemand.adjustments
-    }
-    return this.relevantRemand.adjustments.filter(it => it.status === 'ACTIVE')
+  public totalDays(): number {
+    return this.adjustments.map(a => a.daysBetween).reduce((sum, current) => sum + current, 0)
   }
 
   public adjustmentCharges(adjustment: Adjustment) {
@@ -75,33 +69,34 @@ export default class RelevantRemandModel extends RemandCardModel {
     return {
       head: [
         {
-          text: 'Sentence',
-        },
-        {
           text: 'From',
         },
         {
           text: 'To',
+        },
+        {
+          text: 'Offence details',
+        },
+        {
+          text: 'Committed on',
         },
       ],
       rows: this.intersectingSentences.map(it => {
         const charge = this.relevantRemand.charges[it.chargeId]
         return [
           {
-            html: `${charge.offence.description}${this.bookNumberForIntersectingSentenceText(it)}<br />
-            <span class="govuk-hint">Date of offence: 
-                ${this.offenceDateText(charge)}
-            </span>`,
-          },
-          {
             text:
               (it.from === it.sentence.sentenceDate ? 'Sentenced on ' : 'Recalled on ') +
               dayjs(it.from).format('D MMM YYYY'),
           },
           {
-            text:
-              (it.from === it.sentence.sentenceDate ? 'Release on ' : 'Post recall release on ') +
-              dayjs(it.to).format('D MMM YYYY'),
+            text: dayjs(it.to).format('D MMM YYYY'),
+          },
+          {
+            html: `${charge.offence.description}${this.bookNumberForIntersectingSentenceText(it)}`,
+          },
+          {
+            text: this.offenceDateText(charge),
           },
         ]
       }),
@@ -124,14 +119,6 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   public otherErrors(): LegacyDataProblem[] {
     return this.detailedRemandAndSentence.otherErrors()
-  }
-
-  public hasInactivePeriod() {
-    return this.relevantRemand.chargeRemand.some(it => it.status === 'INACTIVE')
-  }
-
-  public canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
-    return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
