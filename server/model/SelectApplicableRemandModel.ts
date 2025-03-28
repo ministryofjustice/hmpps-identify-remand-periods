@@ -1,5 +1,6 @@
 import { Charge, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
+import config from '../config'
 import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
 import RemandCardModel from './RemandCardModel'
 
@@ -70,6 +71,13 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     }
     const previous = this.replaceableCharges[this.index - 1]
     return `/prisoner/${this.prisonerNumber}/replaced-offence?chargeIds=${previous.chargeIds.join(',')}`
+  }
+
+  public cancelLink() {
+    if (this.edit) {
+      return `/prisoner/${this.prisonerNumber}/remand`
+    }
+    return `${config.services.adjustmentServices.url}/${this.prisonerNumber}`
   }
 
   public radioItems() {
