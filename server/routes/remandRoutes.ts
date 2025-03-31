@@ -169,6 +169,7 @@ export default class RemandRoutes {
     }
 
     if (form.decision === 'yes') {
+      this.selectedApplicableRemandStoreService.clearRejectedRemandDecision(req, nomsId)
       return res.redirect(`/prisoner/${prisonerNumber}/overview`)
     }
     const decision = {
@@ -180,14 +181,9 @@ export default class RemandRoutes {
       },
     } as IdentifyRemandDecision
 
-    const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
+    this.selectedApplicableRemandStoreService.storeRejectedRemandDecision(req, nomsId, decision)
 
-    const message = JSON.stringify({
-      type: 'REMAND',
-      days: result.days,
-      action: 'REJECTED',
-    })
-    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
+    return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
 
   public selectApplicable: RequestHandler = async (req, res): Promise<void> => {
@@ -344,6 +340,8 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const { bookingId } = res.locals.prisoner
 
+    const rejectedRemandDecision = this.selectedApplicableRemandStoreService.getRejectedRemandDecision(req, nomsId)
+
     const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
       nomsId,
       {
@@ -366,7 +364,12 @@ export default class RemandRoutes {
     )
 
     return res.render('pages/remand/confirm-and-save', {
-      model: new ConfirmAndSaveModel(nomsId, identifiedRemand, unusedDeductions?.unusedDeductions),
+      model: new ConfirmAndSaveModel(
+        nomsId,
+        identifiedRemand,
+        unusedDeductions?.unusedDeductions,
+        rejectedRemandDecision,
+      ),
     })
   }
 
@@ -374,21 +377,25 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
 
-    const decision = {
-      accepted: true,
-      rejectComment: null,
-      options: {
-        includeRemandCalculation: false,
-        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
-      },
-    } as IdentifyRemandDecision
+    const rejectedRemandDecision = this.selectedApplicableRemandStoreService.getRejectedRemandDecision(req, nomsId)
+
+    const decision =
+      rejectedRemandDecision ||
+      ({
+        accepted: true,
+        rejectComment: null,
+        options: {
+          includeRemandCalculation: false,
+          userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
+        },
+      } as IdentifyRemandDecision)
 
     const result = await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
 
     const message = JSON.stringify({
       type: 'REMAND',
       days: result.days,
-      action: 'CREATE',
+      action: rejectedRemandDecision ? 'REJECTED' : 'CREATE',
     })
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
   }

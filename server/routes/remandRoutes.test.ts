@@ -245,7 +245,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
-  it('Should submit reject', () => {
+  it('Should redirect to the confirm and save page', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
     return request(app)
       .post(`/prisoner/${NOMS_ID}/remand`)
@@ -255,10 +255,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       })
       .type('form')
       .expect(302)
-      .expect(
-        'Location',
-        'http://localhost:3000/adj/ABC123/success?message=%7B%22type%22:%22REMAND%22,%22days%22:10,%22action%22:%22REJECTED%22%7D',
-      )
+      .expect('Location', '/prisoner/ABC123/confirm-and-save')
   })
 
   it('Should submit accept', () => {
@@ -458,7 +455,47 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       })
   })
 
-  it('Should show confirm and save page with no remand', () => {
+  it('Should show confirm and save page with remand that is being rejected', () => {
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    adjustmentsService.findByPerson.mockResolvedValue([])
+    calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mockResolvedValue({
+      unusedDeductions: 10,
+      validationMessages: [],
+    })
+    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+      accepted: false,
+      rejectComment: 'Rejected',
+    } as IdentifyRemandDecision)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/confirm-and-save`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContainInOrder([
+          'When you save this remand, the unused deductions will automatically be recorded. Check that the unused remand alert has been added.',
+          '10 Jan 2023 to 20 Jan 2023',
+          '11',
+          'Total days',
+          '11',
+        ])
+        expect(res.text).toContain('<a href="/prisoner/ABC123/overview" class="govuk-back-link">Back</a>')
+        expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
+        expect(res.text).toContain('The remand tool suggested the below remand')
+        expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
+      })
+  })
+
+  it('Should show confirm and save page with no remand and an accepted decision', () => {
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -486,6 +523,38 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
       })
   })
+
+  it('Should show confirm and save page with no remand that has been rejected', () => {
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    adjustmentsService.findByPerson.mockResolvedValue([])
+    calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mockResolvedValue({
+      unusedDeductions: 0,
+      validationMessages: [],
+    })
+    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+      accepted: false,
+      rejectComment: 'Rejected',
+    } as IdentifyRemandDecision)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/confirm-and-save`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('The remand tool has suggested 0 days of relevant remand that are being rejected.')
+        expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
+        expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
+      })
+  })
   it('Should submit confirm and save page', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
     return request(app)
@@ -494,6 +563,20 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       .expect(
         'Location',
         'http://localhost:3000/adj/ABC123/success?message=%7B%22type%22:%22REMAND%22,%22days%22:10,%22action%22:%22CREATE%22%7D',
+      )
+  })
+  it('Should submit confirm and save page and display the rejected message', () => {
+    identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
+    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+      accepted: false,
+      rejectComment: 'Rejected',
+    } as IdentifyRemandDecision)
+    return request(app)
+      .post(`/prisoner/${NOMS_ID}/confirm-and-save`)
+      .expect(302)
+      .expect(
+        'Location',
+        'http://localhost:3000/adj/ABC123/success?message=%7B%22type%22:%22REMAND%22,%22days%22:10,%22action%22:%22REJECTED%22%7D',
       )
   })
 })
