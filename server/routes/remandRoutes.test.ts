@@ -11,6 +11,7 @@ import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import {
   IdentifyRemandDecision,
   RemandApplicableUserSelection,
+  RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import CalculateReleaseDatesService from '../services/calculateReleaseDatesService'
 
@@ -30,6 +31,14 @@ const selectedApplicableRemandStoreService =
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 
 const NOMS_ID = 'ABC123'
+
+const emptyRemandResult = {
+  adjustments: [],
+  chargeRemand: [],
+  intersectingSentences: [],
+  charges: {},
+  issuesWithLegacyData: [],
+} as RemandResult
 
 beforeEach(() => {
   app = appWithAllRoutes({
@@ -139,7 +148,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
   })
 })
 describe('Remand results page /prisoner/{prisonerId}/remand', () => {
-  it('should render the results page', () => {
+  it('should render the results page with remand', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -206,6 +215,36 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       })
   })
 
+  it('should render the results page with zero remand identified', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/remand`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('Applicable')
+        expect(res.text).toContain('The number of remand days recorded has changed')
+        expect(res.text).toContain('What to do next')
+        expect(res.text).toContain('the remand tool has not identified any relevant remand')
+        expect(res.text).not.toContain('Confirm the identified remand is correct')
+      })
+  })
   it('Should submit reject', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
     return request(app)
@@ -385,7 +424,7 @@ describe('Overview page', () => {
 })
 
 describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
-  it('Should show confirm and save page', () => {
+  it('Should show confirm and save page with remand', () => {
     identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -414,7 +453,37 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
           'Total days',
           '11',
         ])
+        expect(res.text).toContain('<a href="/prisoner/ABC123/overview" class="govuk-back-link">Back</a>')
         expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
+      })
+  })
+
+  it('Should show confirm and save page with no remand', () => {
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    adjustmentsService.findByPerson.mockResolvedValue([])
+    calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mockResolvedValue({
+      unusedDeductions: 0,
+      validationMessages: [],
+    })
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/confirm-and-save`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          'You are about to accept the suggested 0 days of relevant remand by the remand tool.',
+        )
+        expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
       })
   })
   it('Should submit confirm and save page', () => {

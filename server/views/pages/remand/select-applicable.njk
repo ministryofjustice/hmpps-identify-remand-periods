@@ -25,7 +25,6 @@
 {% endblock %}
 
 {% block content %}
-
     {% if form.errors.length %}
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
@@ -50,33 +49,29 @@
         {{ remandCard(remand, model, false)}}
     {% endfor %}
 
-
-
     <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
-            {% if not model.edit %}
-                <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
-            {% endif %}
+        {% if not model.edit %}
+            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
+        {% endif %}
+    
+        {{ govukRadios({
+            name: "selection",
+            fieldset: {
+                legend: {
+                text: "Has this offence been replaced?",
+                classes: "govuk-fieldset__legend--m"
+                }
+            },
+            errorMessage: form.messageForField('selection'),
+            value: form.selection,
+            items: model.radioItems()
         
-            {{ govukRadios({
-                name: "selection",
-                fieldset: {
-                    legend: {
-                    text: "Has this offence been replaced?",
-                    classes: "govuk-fieldset__legend--m"
-                    }
-                },
-                errorMessage: form.messageForField('selection'),
-                value: form.selection,
-                items: model.radioItems()
-            
-                }) }}
-            <div>
-                <button class="govuk-button" data-module="govuk-button" name="submit">Confirm and continue</button>
-            </div>
-        </form>
-            <a href="{{model.cancelLink()}}" class="govuk-link">Cancel</a>
+            }) }}
+        <div>
+            <button class="govuk-button" data-module="govuk-button" name="submit">Confirm and continue</button>
         </div>
-    </div>
+    </form>
+    <a href="{{model.cancelLink()}}" class="govuk-link">Cancel</a>
 {% endblock %}

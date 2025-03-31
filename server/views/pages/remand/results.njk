@@ -50,32 +50,40 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
             <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>Check remand details for {{prisoner.firstName | title}}
-                {{prisoner.lastName | title}}</h1>
-
-                {% if model.changesNumberOfDays() %}
-                    {% set html %}
-                        <h3 class="govuk-notification-banner__heading">The number of remand days recorded has changed</h3>
-                        <p class="govuk-body">The number of remand days does not match what was originally recorded. Make sure the remand information is correct, before continuing.</p>
-                    {% endset %}
-
-                    {{ govukNotificationBanner({
-                        html: html
-                    }) }}
+                <span class="govuk-caption-xl">Adjustments</span>
+                {% if model.totalDays > 0 %}Check remand details for 
+                {% else %}Confirm there is no relevant remand for 
                 {% endif %}
+                {{prisoner.firstName | title}}
+                {{prisoner.lastName | title}}
+            </h1>
+
+            {% if model.changesNumberOfDays() %}
+                {% set html %}
+                    <h3 class="govuk-notification-banner__heading">The number of remand days recorded has changed</h3>
+                    <p class="govuk-body">The number of remand days does not match what was originally recorded. Make sure the remand information is correct, before continuing.</p>
+                {% endset %}
+
+                {{ govukNotificationBanner({
+                    html: html
+                }) }}
+            {% endif %}
         </div>
     </div>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <p class="govuk-!-margin-bottom-8">Based on the court case information in NOMIS, the remand tool has calculated the below remand to be applied.
+            <p class="govuk-!-margin-bottom-8">Based on the court case information in NOMIS,
+                {% if model.totalDays > 0%}the remand tool has calculated the below remand to be applied.
+                {% else %}the remand tool has not identified any relevant remand.
+                {% endif %}
                 The rules for applying remand time can be found in the <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
             </p>
         </div>
     </div>
     
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            {% if model.relevantRemand.adjustments.length %}
+    {% if  model.totalDays > 0 %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
                 <table class="govuk-table">
                     <caption class="govuk-table__caption govuk-table__caption--m">Remand to be applied</caption>
                     <thead class="govuk-table__head">
@@ -92,7 +100,7 @@
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">{{remand.fromDate | date('DD MMM YYYY') }}
                                     {% if remand.status == 'INACTIVE' %}
-                                       <br /><span class="govuk-tag govuk-tag--red">Served</span>
+                                        <br /><span class="govuk-tag govuk-tag--red">Served</span>
                                     {% endif %}
                                     {% if model.isRecallAdjustment(remand) %}
                                         <br /><span class="govuk-tag govuk-tag--black">Recall</span>
@@ -116,18 +124,24 @@
                                 </td>
                             </tr>
                         {% endfor %}
-                         <tr class="govuk-table__row">
+                            <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header" colspan="2">Total days</th>
                             <td class="govuk-table__cell" colspan="3">{{model.totalDays()}}</td>
                         </tr>
                     </tbody>
                 </table>
-
-            {% else %}
-                <p class="govuk-body">No remand identified.</p>
-            {% endif %}
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class="govuk-grid-row govuk-!-margin-bottom-4">
+            <div class="govuk-grid-column-three-quarters">
+                <h2 class="govuk-heading-m">What to do next</h2>
+                <p class="govuk-body">Select yes if you agree with the remand tool.</p>
+                <p class="govuk-body">If you think something is wong, select no.</p>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
             {% if model.relevantChargeRemand.length or model.notRelevantChargeRemand.length %}
