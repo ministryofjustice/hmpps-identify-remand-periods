@@ -1,5 +1,6 @@
 import type { UserDetails } from '../../services/userService'
 import { PrisonerSearchApiPrisoner } from '../prisonerSearchApi/prisonerSearchTypes'
+import { IdentifyRemandDecision } from '../identifyRemandPeriods/identifyRemandPeriodsTypes'
 
 export default {}
 
@@ -10,6 +11,7 @@ declare module 'express-session' {
     nowInMinutes: number
     selectedApplicableRemand?: Record<string, RemandApplicableUserSelection[]>
     storedResults?: Record<string, RemandResult>
+    rejectedRemandDecision?: Record<string, IdentifyRemandDecision>
   }
 }
 

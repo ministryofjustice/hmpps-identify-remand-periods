@@ -2,12 +2,14 @@ import dayjs from 'dayjs'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { daysBetween } from '../utils/utils'
 import config from '../config'
+import { IdentifyRemandDecision } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 
 export default class ConfirmAndSaveModel {
   constructor(
     public nomsID: string,
     public adjustments: Adjustment[],
     public unusedDeductions: number,
+    public rejectedRemandDecision?: IdentifyRemandDecision,
   ) {}
 
   public table() {
@@ -24,11 +26,15 @@ export default class ConfirmAndSaveModel {
         classes: 'govuk-table__header',
       },
       {
-        text: this.adjustments
-          .map(it => daysBetween(new Date(it.fromDate), new Date(it.toDate)))
-          .reduce((sum, current) => sum + current, 0),
+        text: this.getTotalDaysRemand(),
       },
     ]
+  }
+
+  private getTotalDaysRemand(): number {
+    return this.adjustments
+      .map(it => daysBetween(new Date(it.fromDate), new Date(it.toDate)))
+      .reduce((sum, current) => sum + current, 0)
   }
 
   private rows() {
@@ -42,6 +48,23 @@ export default class ConfirmAndSaveModel {
         },
       ]
     })
+  }
+
+  public getRemandHeading(): string {
+    if (this.rejectedRemandDecision && this.rejectedRemandDecision.accepted === false) {
+      if (this.getTotalDaysRemand() === 0) {
+        return `<h2 class="govuk-heading-m">The remand tool has suggested 0 days of relevant remand that are being rejected.</h2>${this.getRejectedReasonLine()}`
+      }
+      return `<h2 class="govuk-heading-m">The remand tool suggested the below remand</h2>${this.getRejectedReasonLine()}`
+    }
+    if (this.getTotalDaysRemand() === 0) {
+      return '<p class="govuk-body"><strong>You are about to accept the suggested 0 days of relevant remand by the remand tool.</strong></p>'
+    }
+    return '<h2 class="govuk-heading-m">Remand details</h2>'
+  }
+
+  private getRejectedReasonLine(): string {
+    return `<p class="govuk-body">The reason for rejection was: <strong>${this.rejectedRemandDecision.rejectComment}</strong></p>`
   }
 
   public cancelLink(): string {

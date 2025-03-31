@@ -53,13 +53,12 @@
   </div>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+      {{ model.getRemandHeading() | safe }}
+      <br>
       {% if model.adjustments.length %}
-        <h2 class="govuk-heading-m">Remand details</h2>
         {{ govukTable(
           model.table()
         ) }}
-      {% else %}
-        <p class="govuk-body"><strong>You are about to accept the suggested 0 days of relevant remand by the remand tool.</strong></p>
       {% endif %}
 
       <form class="form" method="post">

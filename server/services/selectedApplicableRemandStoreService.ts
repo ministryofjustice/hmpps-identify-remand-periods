@@ -1,5 +1,9 @@
 import { Request } from 'express'
-import { RemandApplicableUserSelection, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  IdentifyRemandDecision,
+  RemandApplicableUserSelection,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { sameMembers } from '../utils/utils'
 
 export default class SelectedApplicableRemandStoreService {
@@ -35,6 +39,21 @@ export default class SelectedApplicableRemandStoreService {
     return req.session.selectedApplicableRemand[nomsId]
   }
 
+  public storeRejectedRemandDecision(req: Request, nomsId: string, decision: IdentifyRemandDecision): void {
+    this.initialiseSession(req, nomsId)
+    req.session.rejectedRemandDecision[nomsId] = decision
+  }
+
+  public getRejectedRemandDecision(req: Request, nomsId: string): IdentifyRemandDecision {
+    this.initialiseSession(req, nomsId)
+    return req.session.rejectedRemandDecision[nomsId]
+  }
+
+  public clearRejectedRemandDecision(req: Request, nomsId: string): void {
+    this.initialiseSession(req, nomsId)
+    req.session.rejectedRemandDecision[nomsId] = undefined
+  }
+
   private initialiseSession(req: Request, nomsId: string) {
     if (!req.session.selectedApplicableRemand) {
       req.session.selectedApplicableRemand = {}
@@ -44,6 +63,12 @@ export default class SelectedApplicableRemandStoreService {
     }
     if (!req.session.storedResults) {
       req.session.storedResults = {}
+    }
+    if (!req.session.rejectedRemandDecision) {
+      req.session.rejectedRemandDecision = {}
+    }
+    if (!req.session.rejectedRemandDecision[nomsId]) {
+      req.session.rejectedRemandDecision[nomsId] = undefined
     }
   }
 }
