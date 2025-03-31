@@ -13,7 +13,11 @@
 {% block beforeContent %}
   {{ super() }}
   <nav>
-    {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/overview" %}
+    {% if model.adjustments.length %}
+      {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/overview" %}
+    {% else %}
+      {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/remand" %}
+    {% endif %}
     {{ govukBackLink({
       text: "Back",
       href: backlink
@@ -49,11 +53,14 @@
   </div>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h2 class="govuk-heading-m">Remand details</h2>
-
-      {{ govukTable(
-        model.table()
-      ) }}
+      {% if model.adjustments.length %}
+        <h2 class="govuk-heading-m">Remand details</h2>
+        {{ govukTable(
+          model.table()
+        ) }}
+      {% else %}
+        <p class="govuk-body"><strong>You are about to accept the suggested 0 days of relevant remand by the remand tool.</strong></p>
+      {% endif %}
 
       <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>

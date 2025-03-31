@@ -329,6 +329,9 @@ export default class RemandRoutes {
       username,
     )
     const identifiedRemand = relevantRemand.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
+    if (!identifiedRemand.length) {
+      return res.redirect(`/prisoner/${nomsId}/confirm-and-save`)
+    }
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/overview.njk', {
