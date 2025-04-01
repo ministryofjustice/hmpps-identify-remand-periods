@@ -13,14 +13,9 @@
 {% block beforeContent %}
   {{ super() }}
   <nav>
-    {% if model.adjustments.length %}
-      {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/overview" %}
-    {% else %}
-      {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/remand" %}
-    {% endif %}
     {{ govukBackLink({
       text: "Back",
-      href: backlink
+      href: model.backLink()
     }) }}
   </nav>
 {% endblock %}

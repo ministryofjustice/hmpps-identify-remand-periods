@@ -488,7 +488,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
           'Total days',
           '11',
         ])
-        expect(res.text).toContain('<a href="/prisoner/ABC123/overview" class="govuk-back-link">Back</a>')
+        expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
         expect(res.text).toContain('The remand tool suggested the below remand')
         expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
