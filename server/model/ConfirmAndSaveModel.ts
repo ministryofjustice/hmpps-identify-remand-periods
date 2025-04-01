@@ -51,7 +51,7 @@ export default class ConfirmAndSaveModel {
   }
 
   public getRemandHeading(): string {
-    if (this.rejectedRemandDecision && this.rejectedRemandDecision.accepted === false) {
+    if (this.isDecisionRejected()) {
       if (this.getTotalDaysRemand() === 0) {
         return `<h2 class="govuk-heading-m">The remand tool has suggested 0 days of relevant remand that are being rejected.</h2>${this.getRejectedReasonLine()}`
       }
@@ -63,8 +63,19 @@ export default class ConfirmAndSaveModel {
     return '<h2 class="govuk-heading-m">Remand details</h2>'
   }
 
+  private isDecisionRejected() {
+    return this.rejectedRemandDecision && this.rejectedRemandDecision.accepted === false
+  }
+
   private getRejectedReasonLine(): string {
     return `<p class="govuk-body">The reason for rejection was: <strong>${this.rejectedRemandDecision.rejectComment}</strong></p>`
+  }
+
+  public backLink(): string {
+    if (this.adjustments.length && !this.isDecisionRejected()) {
+      return `/prisoner/${this.nomsID}/overview`
+    }
+    return `/prisoner/${this.nomsID}/remand`
   }
 
   public cancelLink(): string {
