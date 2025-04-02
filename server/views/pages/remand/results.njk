@@ -51,7 +51,7 @@
         <div class="govuk-grid-column-full">
             <h1 class="govuk-heading-l">
                 <span class="govuk-caption-xl">Adjustments</span>
-                {% if model.totalDays > 0 %}Check remand details for 
+                {% if model.totalDays() > 0 %}Check remand details for
                 {% else %}Confirm there is no relevant remand for 
                 {% endif %}
                 {{prisoner.firstName | title}}
