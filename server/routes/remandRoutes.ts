@@ -78,10 +78,21 @@ export default class RemandRoutes {
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const relevantRemand = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
+    const cachedCalculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
     this.selectedApplicableRemandStoreService.clearCalculation(req, nomsId)
+    let calculation = cachedCalculation
+    if (!cachedCalculation) {
+      calculation = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+        nomsId,
+        {
+          includeRemandCalculation: false,
+          userSelections: [],
+        },
+        username,
+      )
+    }
 
-    const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
+    const detailedCalculation = new DetailedRemandCalculation(calculation)
     const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
       detailedCalculation,
       sentencesAndOffences,
