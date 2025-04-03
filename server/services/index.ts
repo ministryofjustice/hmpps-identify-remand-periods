@@ -6,7 +6,7 @@ import FeComponentsService from './feComponentsService'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
-import SelectedApplicableRemandStoreService from './selectedApplicableRemandStoreService'
+import CachedDataService from './cachedDataService'
 import UserService from './userService'
 
 export const services = () => {
@@ -21,7 +21,7 @@ export const services = () => {
     prisonerService,
     identifyRemandPeriodsService,
   )
-  const selectedApplicableRemandStoreService = new SelectedApplicableRemandStoreService()
+  const cachedDataService = new CachedDataService(identifyRemandPeriodsService)
   const feComponentsService = new FeComponentsService(feComponentsClient)
   const adjustmentsService = new AdjustmentsService(hmppsAuthClient)
   const calculateReleaseDatesService = new CalculateReleaseDatesService(hmppsAuthClient)
@@ -33,7 +33,7 @@ export const services = () => {
     bulkRemandCalculationService,
     prisonerSearchService,
     feComponentsService,
-    selectedApplicableRemandStoreService,
+    cachedDataService,
     adjustmentsService,
     calculateReleaseDatesService,
   }

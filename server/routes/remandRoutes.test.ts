@@ -5,7 +5,7 @@ import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
 import remandResult from './testutils/testData'
-import SelectedApplicableRemandStoreService from '../services/selectedApplicableRemandStoreService'
+import CachedDataService from '../services/cachedDataService'
 import AdjustmentsService from '../services/adjustmentsService'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import {
@@ -20,14 +20,13 @@ let app: Express
 jest.mock('../services/adjustmentsService')
 jest.mock('../services/prisonerService')
 jest.mock('../services/identifyRemandPeriodsService')
-jest.mock('../services/selectedApplicableRemandStoreService')
+jest.mock('../services/cachedDataService')
 jest.mock('../services/calculateReleaseDatesService')
 
 const adjustmentsService = new AdjustmentsService(null) as jest.Mocked<AdjustmentsService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
-const selectedApplicableRemandStoreService =
-  new SelectedApplicableRemandStoreService() as jest.Mocked<SelectedApplicableRemandStoreService>
+const cachedDataService = new CachedDataService(null) as jest.Mocked<CachedDataService>
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 
 const NOMS_ID = 'ABC123'
@@ -45,7 +44,7 @@ beforeEach(() => {
     services: {
       prisonerService,
       identifyRemandPeriodsService,
-      selectedApplicableRemandStoreService,
+      cachedDataService,
       adjustmentsService,
       calculateReleaseDatesService,
     },
@@ -69,7 +68,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
 
     return request(app)
       .get(`/prisoner/${NOMS_ID}`)
@@ -88,7 +87,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       issuesWithLegacyData: [],
     })
@@ -110,7 +109,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       issuesWithLegacyData: [],
     })
@@ -136,7 +135,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       chargeRemand: remandResult.chargeRemand.filter(
         it => it.status !== 'CASE_NOT_CONCLUDED' && it.status !== 'NOT_SENTENCED',
@@ -160,7 +159,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -227,7 +226,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -283,7 +282,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/validation-errors`)
       .expect('Content-Type', /html/)
@@ -308,8 +307,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(null)
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/validation-errors`)
       .expect('Content-Type', /html/)
@@ -334,15 +332,14 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(null)
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(emptyRemandResult)
     return request(app).get(`/prisoner/${NOMS_ID}/validation-errors`).expect(302).expect('Location', '/prisoner/ABC123')
   })
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   it('Should display intercept', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
       .expect('Content-Type', /html/)
@@ -354,8 +351,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       })
   })
   it('Should show choices for select applicable', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
-    selectedApplicableRemandStoreService.getSelections.mockReturnValue([])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    cachedDataService.getSelections.mockReturnValue([])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -380,10 +377,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       })
   })
   it('Should show choices for editting select applicable', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
-    selectedApplicableRemandStoreService.getSelections.mockReturnValue([
-      { chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 },
-    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    cachedDataService.getSelections.mockReturnValue([{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -411,7 +406,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   })
 
   it('Should submit choices for select applicable', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .post(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .send({
@@ -421,8 +416,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', '/prisoner/ABC123/remand')
       .expect(res => {
-        expect(selectedApplicableRemandStoreService.storeSelection.mock.calls).toHaveLength(1)
-        expect(selectedApplicableRemandStoreService.storeSelection.mock.calls[0][2]).toStrictEqual({
+        expect(cachedDataService.storeSelection.mock.calls).toHaveLength(1)
+        expect(cachedDataService.storeSelection.mock.calls[0][2]).toStrictEqual({
           chargeIdsToMakeApplicable: [3933924],
           targetChargeId: 2222,
         } as RemandApplicableUserSelection)
@@ -432,7 +427,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
 
 describe('Overview page', () => {
   it('Overview page contains the correct information', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -464,7 +459,7 @@ describe('Overview page', () => {
 
 describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   it('Should show confirm and save page with remand', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -498,7 +493,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
 
   it('Should show confirm and save page with remand that is being rejected', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -515,7 +510,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       unusedDeductions: 10,
       validationMessages: [],
     })
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)
@@ -538,7 +533,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
 
   it('Should show confirm and save page with no remand and an accepted decision', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -567,7 +562,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
 
   it('Should show confirm and save page with no remand that has been rejected', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -584,7 +579,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       unusedDeductions: 0,
       validationMessages: [],
     })
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)
@@ -609,7 +604,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
   it('Should submit confirm and save page and display the rejected message', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)
