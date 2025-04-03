@@ -296,6 +296,48 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         ])
       })
   })
+  it('Should display error page without cached result', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(null)
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/validation-errors`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContainInOrder([
+          'There is information missing in NOMIS that could impact the remand time.',
+          'This is an important message',
+          'This is also important message',
+          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+        ])
+      })
+  })
+  it('Should display redirect with no errors', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(null)
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    return request(app).get(`/prisoner/${NOMS_ID}/validation-errors`).expect(302).expect('Location', '/prisoner/ABC123')
+  })
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
