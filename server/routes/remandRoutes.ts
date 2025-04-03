@@ -6,8 +6,8 @@ import RelevantRemandModel from '../model/RelevantRemandModel'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import config from '../config'
 import RemandDecisionForm from '../model/RemandDecisionForm'
-import { IdentifyRemandDecision, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
-import SelectedApplicableRemandStoreService from '../services/selectedApplicableRemandStoreService'
+import { IdentifyRemandDecision } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import CachedDataService from '../services/cachedDataService'
 import SelectApplicableRemandModel from '../model/SelectApplicableRemandModel'
 import SelectApplicableRemandForm from '../model/SelectApplicableRemandForm'
 import { UserDetails } from '../services/userService'
@@ -25,7 +25,7 @@ export default class RemandRoutes {
     private readonly prisonerService: PrisonerService,
     private readonly identifyRemandPeriodsService: IdentifyRemandPeriodsService,
     private readonly bulkRemandCalculationService: BulkRemandCalculationService,
-    private readonly selectedApplicableRemandStoreService: SelectedApplicableRemandStoreService,
+    private readonly cachedDataService: CachedDataService,
     private readonly adjustmentsService: AdjustmentsService,
     private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
   ) {}
@@ -35,18 +35,10 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const { bookingId } = res.locals.prisoner
 
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-      nomsId,
-      {
-        includeRemandCalculation: false,
-        userSelections: [],
-      },
-      username,
-    )
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    this.selectedApplicableRemandStoreService.storeCalculation(req, nomsId, relevantRemand)
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
 
-    const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
+    const detailedCalculation = new DetailedRemandCalculation(calculation)
     const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
       detailedCalculation,
       sentencesAndOffences,
@@ -62,7 +54,7 @@ export default class RemandRoutes {
         decision?.options?.userSelections?.length === detailedCalculation.getReplaceableChargeRemand().length
       ) {
         decision.options.userSelections.forEach(it => {
-          this.selectedApplicableRemandStoreService.storeSelection(req, nomsId, it)
+          this.cachedDataService.storeSelection(req, nomsId, it)
         })
 
         return res.redirect(`/prisoner/${nomsId}/remand`)
@@ -78,19 +70,7 @@ export default class RemandRoutes {
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const cachedCalculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
-    this.selectedApplicableRemandStoreService.clearCalculation(req, nomsId)
-    let calculation = cachedCalculation
-    if (!cachedCalculation) {
-      calculation = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-        nomsId,
-        {
-          includeRemandCalculation: false,
-          userSelections: [],
-        },
-        username,
-      )
-    }
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username, true)
 
     const detailedCalculation = new DetailedRemandCalculation(calculation)
     const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
@@ -107,7 +87,8 @@ export default class RemandRoutes {
 
   public replacedOffenceIntercept: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const calculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
+    const { username } = res.locals.user
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
     const chargeIds = calculation.chargeRemand
       .find(it => ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status))
       .chargeIds.join(',')
@@ -119,29 +100,14 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
     const { bookingId, prisonerNumber } = res.locals.prisoner
-    const selections = this.selectedApplicableRemandStoreService.getSelections(req, nomsId)
-    const cachedCalculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
-    let relevantRemand: RemandResult
-    if (selections?.length || !cachedCalculation) {
-      relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-        nomsId,
-        {
-          includeRemandCalculation: false,
-          userSelections: selections,
-        },
-        username,
-      )
-    } else {
-      // If no selections are made, use the cached calculation and clear it.
-      relevantRemand = cachedCalculation
-      this.selectedApplicableRemandStoreService.clearCalculation(req, nomsId)
-    }
+    const selections = this.cachedDataService.getSelections(req, nomsId)
+    const calculation = await this.cachedDataService.getCalculation(req, nomsId, username, true)
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/results', {
       model: new RelevantRemandModel(
         prisonerNumber,
-        relevantRemand,
+        calculation,
         sentencesAndOffences,
         selections,
         await this.adjustmentsService.findByPerson(nomsId, username),
@@ -154,23 +120,16 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
     const { bookingId, prisonerNumber } = res.locals.prisoner
-    const selections = this.selectedApplicableRemandStoreService.getSelections(req, nomsId)
+    const selections = this.cachedDataService.getSelections(req, nomsId)
     const form = new RemandDecisionForm(req.body)
     form.validate()
     if (form.errors.length) {
-      const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-        nomsId,
-        {
-          includeRemandCalculation: false,
-          userSelections: selections,
-        },
-        username,
-      )
+      const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/results', {
         model: new RelevantRemandModel(
           prisonerNumber,
-          relevantRemand,
+          calculation,
           sentencesAndOffences,
           selections,
           await this.adjustmentsService.findByPerson(nomsId, username),
@@ -180,7 +139,7 @@ export default class RemandRoutes {
     }
 
     if (form.decision === 'yes') {
-      this.selectedApplicableRemandStoreService.clearRejectedRemandDecision(req, nomsId)
+      this.cachedDataService.clearRejectedRemandDecision(req, nomsId)
       return res.redirect(`/prisoner/${prisonerNumber}/overview`)
     }
     const decision = {
@@ -192,7 +151,7 @@ export default class RemandRoutes {
       },
     } as IdentifyRemandDecision
 
-    this.selectedApplicableRemandStoreService.storeRejectedRemandDecision(req, nomsId, decision)
+    this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
 
     return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
@@ -205,22 +164,9 @@ export default class RemandRoutes {
 
     const chargeNumbers = chargeIds.split(',').map(it => Number(it))
 
-    let calculation: RemandResult
-    if (edit) {
-      calculation = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-        nomsId,
-        {
-          includeRemandCalculation: false,
-          userSelections: [],
-        },
-        username,
-      )
-      this.selectedApplicableRemandStoreService.storeCalculation(req, nomsId, calculation)
-    } else {
-      calculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
-    }
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const selections = this.selectedApplicableRemandStoreService.getSelections(req, nomsId)
+    const selections = this.cachedDataService.getSelections(req, nomsId)
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
 
     return res.render('pages/remand/select-applicable', {
@@ -242,7 +188,7 @@ export default class RemandRoutes {
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const { chargeIds } = req.query as Record<string, string>
     const form = new SelectApplicableRemandForm(req.body)
-    const calculation = this.selectedApplicableRemandStoreService.getCalculation(req, nomsId)
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
     const chargeNumbers = chargeIds.split(',').map(it => Number(it))
 
     form.validate()
@@ -262,13 +208,13 @@ export default class RemandRoutes {
     }
 
     if (form.selection === 'no') {
-      this.selectedApplicableRemandStoreService.removeSelection(
+      this.cachedDataService.removeSelection(
         req,
         nomsId,
         chargeIds.split(',').map(it => Number(it)),
       )
     } else {
-      this.selectedApplicableRemandStoreService.storeSelection(req, nomsId, {
+      this.cachedDataService.storeSelection(req, nomsId, {
         chargeIdsToMakeApplicable: chargeIds.split(',').map(it => Number(it)),
         targetChargeId: Number(form.selection),
       })
@@ -289,7 +235,7 @@ export default class RemandRoutes {
     const { chargeIds } = req.query as Record<string, string>
     const { prisonerNumber } = res.locals.prisoner
 
-    this.selectedApplicableRemandStoreService.removeSelection(
+    this.cachedDataService.removeSelection(
       req,
       nomsId,
       chargeIds.split(',').map(it => Number(it)),
@@ -327,15 +273,8 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
     const { bookingId } = res.locals.prisoner
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-      nomsId,
-      {
-        includeRemandCalculation: false,
-        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
-      },
-      username,
-    )
-    const identifiedRemand = relevantRemand.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
+    const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
+    const identifiedRemand = calculation.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
     if (!identifiedRemand.length) {
       return res.redirect(`/prisoner/${nomsId}/confirm-and-save`)
     }
@@ -351,17 +290,10 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const { bookingId } = res.locals.prisoner
 
-    const rejectedRemandDecision = this.selectedApplicableRemandStoreService.getRejectedRemandDecision(req, nomsId)
+    const rejectedRemandDecision = this.cachedDataService.getRejectedRemandDecision(req, nomsId)
 
-    const relevantRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-      nomsId,
-      {
-        includeRemandCalculation: false,
-        userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
-      },
-      username,
-    )
-    const identifiedRemand = relevantRemand.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
+    const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
+    const identifiedRemand = calculation.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
@@ -388,7 +320,7 @@ export default class RemandRoutes {
     const { username } = res.locals.user
     const { nomsId } = req.params
 
-    const rejectedRemandDecision = this.selectedApplicableRemandStoreService.getRejectedRemandDecision(req, nomsId)
+    const rejectedRemandDecision = this.cachedDataService.getRejectedRemandDecision(req, nomsId)
 
     const decision =
       rejectedRemandDecision ||
@@ -397,7 +329,7 @@ export default class RemandRoutes {
         rejectComment: null,
         options: {
           includeRemandCalculation: false,
-          userSelections: this.selectedApplicableRemandStoreService.getSelections(req, nomsId),
+          userSelections: this.cachedDataService.getSelections(req, nomsId),
         },
       } as IdentifyRemandDecision)
 
