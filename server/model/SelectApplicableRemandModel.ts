@@ -1,7 +1,7 @@
 import { Charge, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import config from '../config'
-import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
+import DetailedRemandCalculation, { RemandAndCharge, ReplaceableChargeRemands } from './DetailedRemandCalculation'
 import RemandCardModel from './RemandCardModel'
 
 export default class SelectApplicableRemandModel extends RemandCardModel {
@@ -13,7 +13,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
   public index: number
 
-  private replaceableCharges: RemandAndCharge[]
+  private replaceableCharges: ReplaceableChargeRemands[]
 
   constructor(
     public prisonerNumber: string,
@@ -25,7 +25,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
   ) {
     super(prisonerNumber, relevantRemand, sentencesAndOffences)
     const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
-    this.replaceableCharges = detailedCalculation.getReplaceableChargeRemand()
+    this.replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
     this.total = this.replaceableCharges.length

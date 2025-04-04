@@ -47,12 +47,9 @@ export default class RemandRoutes {
     if (detailedRemandAndSentence.mostImportantErrors().length) {
       return res.redirect(`/prisoner/${nomsId}/validation-errors`)
     }
-    if (detailedCalculation.getReplaceableChargeRemand().length) {
+    if (detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds().length) {
       const decision = await this.identifyRemandPeriodsService.getRemandDecision(nomsId, username)
-      if (
-        decision?.accepted &&
-        decision?.options?.userSelections?.length === detailedCalculation.getReplaceableChargeRemand().length
-      ) {
+      if (decision?.accepted && decision?.options?.userSelections?.length) {
         decision.options.userSelections.forEach(it => {
           this.cachedDataService.storeSelection(req, nomsId, it)
         })
@@ -221,7 +218,7 @@ export default class RemandRoutes {
     }
 
     const detailedCalculation = new DetailedRemandCalculation(calculation)
-    const replaceableCharges = detailedCalculation.getReplaceableChargeRemand()
+    const replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
     const index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeNumbers)
     if (index + 1 === replaceableCharges.length || edit) {
       return res.redirect(`/prisoner/${prisonerNumber}/remand`)
