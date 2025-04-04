@@ -109,6 +109,13 @@ const remandResult = {
       status: 'CASE_NOT_CONCLUDED',
     } as ChargeRemand,
     {
+      from: '2021-11-23',
+      to: '2021-12-15',
+      days: 23,
+      chargeIds: [3933924],
+      status: 'CASE_NOT_CONCLUDED',
+    } as ChargeRemand,
+    {
       from: '2023-01-10',
       to: '2023-01-20',
       days: 11,

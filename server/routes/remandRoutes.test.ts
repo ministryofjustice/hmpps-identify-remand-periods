@@ -369,6 +369,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContainInOrder([
+          '23 Nov 2022 to 15 Dec 2022',
+          '23 Nov 2021 to 15 Dec 2021',
           'Offence 1 of 1',
           'Has this offence been replaced?',
           'No, this offence has not been replaced',
