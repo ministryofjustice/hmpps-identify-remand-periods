@@ -4,6 +4,7 @@ import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClien
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import { daysBetween } from '../utils/utils'
 import { HmppsAuthClient } from '../data'
+import logger from '../../logger'
 
 const expectedUnusedDeductionsValidations = [
   'CUSTODIAL_PERIOD_EXTINGUISHED_TAGGED_BAIL',
@@ -42,7 +43,8 @@ export default class CalculateReleaseDatesService {
       ]
 
       return await this.calculateUnusedDeductions(nomsId, adjustmentsReadyForCalculation, username)
-    } catch {
+    } catch (e) {
+      logger.error(`Error calculating UD ${e}`)
       // If CRDS can't calculate unused deductions. There may be a validation error, or some NOMIS deductions.
       return null
     }

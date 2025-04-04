@@ -18,21 +18,24 @@ export default class CachedDataService {
   ): Promise<RemandResult> {
     this.initialiseSession(req, nomsId)
     let calculation = req.session.storedCalculations[nomsId]
+    if (clear) {
+      req.session.storedCalculations[nomsId] = undefined
+      req.session.storedCalculationsWithoutSelection[nomsId] = undefined
+    }
+    const selections = this.getSelections(req, nomsId)
+    if (selections.length === 0) {
+      return this.getCalculationWithoutSelections(req, nomsId, username)
+    }
     if (!calculation) {
       calculation = await this.identifyRemandPeriodsService.calculateRelevantRemand(
         nomsId,
         {
           includeRemandCalculation: false,
-          userSelections: this.getSelections(req, nomsId),
+          userSelections: selections,
         },
         username,
       )
       req.session.storedCalculations[nomsId] = calculation
-    }
-
-    if (clear) {
-      req.session.storedCalculations[nomsId] = undefined
-      req.session.storedCalculationsWithoutSelection[nomsId] = undefined
     }
     return calculation
   }

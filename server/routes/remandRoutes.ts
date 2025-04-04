@@ -36,7 +36,7 @@ export default class RemandRoutes {
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username, true)
 
     const detailedCalculation = new DetailedRemandCalculation(calculation)
     const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
@@ -295,16 +295,20 @@ export default class RemandRoutes {
     const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
     const identifiedRemand = calculation.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
 
-    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+    const remandRejected = rejectedRemandDecision?.accepted === false
+    let unusedDeductions
+    if (!remandRejected) {
+      const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
-    const adjustments = await this.adjustmentsService.findByPerson(nomsId, username)
-    const unusedDeductions = await this.calculateReleaseDatesService.unusedDeductionsHandlingCRDError(
-      identifiedRemand,
-      adjustments,
-      sentencesAndOffences,
-      nomsId,
-      username,
-    )
+      const adjustments = await this.adjustmentsService.findByPerson(nomsId, username)
+      unusedDeductions = await this.calculateReleaseDatesService.unusedDeductionsHandlingCRDError(
+        identifiedRemand,
+        adjustments,
+        sentencesAndOffences,
+        nomsId,
+        username,
+      )
+    }
 
     return res.render('pages/remand/confirm-and-save', {
       model: new ConfirmAndSaveModel(
