@@ -69,6 +69,7 @@ export default class CachedDataService {
 
   public storeSelection(req: Request, nomsId: string, selection: RemandApplicableUserSelection): void {
     this.initialiseSession(req, nomsId)
+    this.removeSelection(req, nomsId, selection.chargeIdsToMakeApplicable)
     req.session.selectedApplicableRemand[nomsId].push(selection)
     req.session.storedCalculations[nomsId] = undefined
   }
