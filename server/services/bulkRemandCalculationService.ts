@@ -1,5 +1,9 @@
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  ChargeRemand,
+  LegacyDataProblem,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiImprisonmentStatusHistoryDto,
@@ -128,7 +132,8 @@ export default class BulkRemandCalculationService {
         IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
         IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
         IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
-        UPGRADE_DOWNGRADE_POSSIBILITIES: ex ? 0 : this.countUpgradeDowngradePosibilities(calculatedRemand),
+        UPGRADE_DOWNGRADE_REMAND_PERIODS: ex ? 0 : this.countUpgradeDowngradeRemandPeriods(calculatedRemand),
+        UPGRADE_DOWNGRADE_CHARGES: ex ? 0 : this.countUpgradeDowngradeCharges(calculatedRemand),
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -161,10 +166,18 @@ export default class BulkRemandCalculationService {
     }
   }
 
-  private countUpgradeDowngradePosibilities(calculatedRemand: RemandResult): number {
+  private countUpgradeDowngradeRemandPeriods(calculatedRemand: RemandResult): number {
+    return this.getUpgradeDowngradePeriods(calculatedRemand).length
+  }
+
+  private countUpgradeDowngradeCharges(calculatedRemand: RemandResult): number {
+    return this.getUpgradeDowngradePeriods(calculatedRemand).flatMap(it => it.chargeIds).length
+  }
+
+  private getUpgradeDowngradePeriods(calculatedRemand: RemandResult): ChargeRemand[] {
     return (calculatedRemand?.chargeRemand || []).filter(it =>
       ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status),
-    ).length
+    )
   }
 
   private async findSourceDataForIntersectingSentence(
