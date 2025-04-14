@@ -97,32 +97,35 @@
                     </thead>
                     <tbody class="govuk-table__body">
                         {% for remand in model.adjustments %}
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">{{remand.fromDate | date('DD MMM YYYY') }}
-                                    {% if remand.status == 'INACTIVE' %}
-                                        <br /><span class="govuk-tag govuk-tag--red">Served</span>
+                            {% set rowspan = model.adjustmentCharges(remand).length %}
+                            {% set rowspanAttr = '' %}
+                            {% if rowspan > 1 %}
+                                {% set rowspanAttr = 'rowspan=' + rowspan %}
+                            {% endif %}
+                            {% for charge in model.adjustmentCharges(remand) %}
+                                <tr class="govuk-table__row">
+                                    {% if loop.first %}
+                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.fromDate | date('DD MMM YYYY') }}
+                                            {% if remand.status == 'INACTIVE' %}
+                                                <br /><span class="govuk-tag govuk-tag--red">Served</span>
+                                            {% endif %}
+                                            {% if model.isRecallAdjustment(remand) %}
+                                                <br /><span class="govuk-tag govuk-tag--black">Recall</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.toDate | date('DD MMM YYYY') }}</td>
+                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.daysBetween}}</td>
                                     {% endif %}
-                                    {% if model.isRecallAdjustment(remand) %}
-                                        <br /><span class="govuk-tag govuk-tag--black">Recall</span>
-                                    {% endif %}
-                                </td>
-                                <td class="govuk-table__cell">{{remand.toDate | date('DD MMM YYYY') }}</td>
-                                <td class="govuk-table__cell">{{remand.daysBetween}}</td>
-
-                                <td class="govuk-table__cell">
-                                    {% for charge in model.adjustmentCharges(remand) %}{{charge.offence.description}}<br>{% endfor %}
-                                </td>
-                                <td class="govuk-table__cell">
-                                    {% for charge in model.adjustmentCharges(remand) %}
+                                    <td class="govuk-table__cell">{{charge.offence.description}}</td>
+                                    <td class="govuk-table__cell">
                                         {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
                                             {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ charge.offenceEndDate | date('DD MMM YYYY') }}
                                         {% elif charge.offenceDate %}
                                             {{ charge.offenceDate | date('DD MMM YYYY') }}
                                         {% endif %}
-                                        <br/>
-                                    {% endfor %}
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         {% endfor %}
                             <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header" colspan="2">Total days</th>
@@ -137,7 +140,7 @@
             <div class="govuk-grid-column-three-quarters">
                 <h2 class="govuk-heading-m">What to do next</h2>
                 <p class="govuk-body">Select yes if you agree with the remand tool.</p>
-                <p class="govuk-body">If you think something is wong, select no.</p>
+                <p class="govuk-body">If you think something is wrong, select no.</p>
             </div>
         </div>
     {% endif %}
