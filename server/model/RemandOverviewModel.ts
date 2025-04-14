@@ -14,7 +14,7 @@ export default class RemandOverviewModel {
     return [
       ...this.adjustmentsWithOffences().flatMap(adjustment => {
         let index = 0
-        return adjustment.offences.flatMap(offence => {
+        return adjustment.offences.map(offence => {
           index += 1
           const row = []
           if (index === 1) {
