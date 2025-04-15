@@ -31,9 +31,25 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     this.total = this.replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
+    let latestRemandDate: Date = null
+    this.chargeRemand.forEach(it => {
+      if (!latestRemandDate) {
+        latestRemandDate = new Date(it.to)
+      }
+      if (new Date(it.to) > latestRemandDate) {
+        latestRemandDate = new Date(it.to)
+      }
+    })
+
     const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
     Object.values(relevantRemand.charges)
-      .filter(it => it.sentenceSequence !== null && it.bookingId.toString() === bookingId)
+      .filter(
+        it =>
+          it.sentenceSequence !== null &&
+          it.bookingId.toString() === bookingId &&
+          it.sentenceDate !== null &&
+          new Date(it.sentenceDate) > latestRemandDate,
+      )
       .forEach(it => {
         const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
         if (!Object.keys(chargesToSelectByOffenceDateAndDesc).includes(key)) {
@@ -86,9 +102,13 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
         value: 'no',
         text: 'No, this offence has not been replaced',
       },
-      {
-        divider: 'or',
-      },
+      ...(this.chargesToSelect.length > 0
+        ? [
+            {
+              divider: 'or',
+            },
+          ]
+        : []),
       ...this.chargesToSelect.map(it => {
         return {
           value: it.chargeId,
