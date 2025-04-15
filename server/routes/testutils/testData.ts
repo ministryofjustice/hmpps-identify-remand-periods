@@ -9,6 +9,19 @@ import {
 
 const remandResult = {
   charges: {
+    3333: {
+      chargeId: 3333,
+      offence: { code: 'TP47017', statute: 'TP47', description: 'A sentence charge, way before the remand dates' },
+      offenceDate: '2023-02-01',
+      bookingId: 1204935,
+      bookNumber: '41938A',
+      offenceEndDate: null,
+      sentenceSequence: 88,
+      sentenceDate: '2000-03-21',
+      courtCaseRef: 'CASE5678',
+      courtLocation: 'Birmingham Crown Court',
+      resultDescription: 'Imprisonment',
+    } as Charge,
     3933924: {
       chargeId: 3933924,
       offence: { code: 'TP47017', statute: 'TP47', description: 'Accidentally allow a chimney to be on fire' },

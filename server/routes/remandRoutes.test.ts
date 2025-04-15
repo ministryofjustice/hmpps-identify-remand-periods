@@ -368,6 +368,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .get(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        expect(res.text).not.toContain('A sentence charge, way before the remand dates')
         expect(res.text).toContainInOrder([
           '23 Nov 2022 to 15 Dec 2022',
           '23 Nov 2021 to 15 Dec 2021',
