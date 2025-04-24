@@ -375,6 +375,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
           'Offence 1 of 1',
           'Has this offence been replaced?',
           'No, this offence has not been replaced',
+          'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
           'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
       })
