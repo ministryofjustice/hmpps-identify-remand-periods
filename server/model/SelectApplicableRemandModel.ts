@@ -44,7 +44,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
           it.sentenceSequence !== null &&
           it.bookingId >= minReplaceableChargeBookingId &&
           it.sentenceDate !== null &&
-          new Date(it.sentenceDate) > latestRemandDate,
+          new Date(it.sentenceDate) >= latestRemandDate,
       )
       .forEach(it => {
         const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
