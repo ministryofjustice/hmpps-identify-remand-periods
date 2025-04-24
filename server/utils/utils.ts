@@ -53,3 +53,29 @@ export const distinct = <T>(all: T[]): T[] => {
 export const fieldHasErrors = (errors: ValidationError[], field: string) => {
   return !!errors.find(error => error.fields.indexOf(field) !== -1)
 }
+
+export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {
+  let max: B = null
+  all.forEach(it => {
+    if (!max) {
+      max = map(it)
+    }
+    if (map(it) > max) {
+      max = map(it)
+    }
+  })
+  return max
+}
+
+export const minOf = <A, B>(all: A[], map: (a: A) => B): B => {
+  let min: B = null
+  all.forEach(it => {
+    if (!min) {
+      min = map(it)
+    }
+    if (map(it) < min) {
+      min = map(it)
+    }
+  })
+  return min
+}
