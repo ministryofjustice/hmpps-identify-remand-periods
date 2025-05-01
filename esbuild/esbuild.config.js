@@ -34,6 +34,10 @@ const buildConfig = {
     entryPoints: glob.sync([path.join(cwd, 'assets/js/index.js'), path.join(cwd, 'assets/scss/application.scss')]),
     copy: [
       {
+        from: path.join(cwd, 'assets/js/**/*'),
+        to: path.join(cwd, 'dist/assets/js'),
+      },
+      {
         from: path.join(cwd, 'assets/images/**/*'),
         to: path.join(cwd, 'dist/assets/images'),
       },
