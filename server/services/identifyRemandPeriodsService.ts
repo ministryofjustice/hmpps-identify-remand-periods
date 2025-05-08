@@ -32,7 +32,9 @@ export default class IdentifyRemandPeriodsService {
   }
 
   public async getRemandDecision(nomsId: string, username: string): Promise<IdentifyRemandDecision> {
-    const result = new IdentifyRemandPeriodsClient(await this.getSystemClientToken(username)).getRemandDecision(nomsId)
+    const result = await new IdentifyRemandPeriodsClient(await this.getSystemClientToken(username)).getRemandDecision(
+      nomsId,
+    )
     return Object.keys(result).length ? result : null
   }
 

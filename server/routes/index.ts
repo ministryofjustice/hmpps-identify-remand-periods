@@ -15,7 +15,7 @@ export default function routes(service: Services): Router {
     service.prisonerService,
     service.identifyRemandPeriodsService,
     service.bulkRemandCalculationService,
-    service.selectedApplicableRemandStoreService,
+    service.cachedDataService,
     service.adjustmentsService,
     service.calculateReleaseDatesService,
   )
@@ -26,15 +26,24 @@ export default function routes(service: Services): Router {
     res.render('pages/index')
   })
 
-  get('/bulk', remandRoutes.bulkRemand)
-  post('/bulk', remandRoutes.submitBulkRemand)
-  get('/prisoner/:nomsId', remandRoutes.remand)
-  post('/prisoner/:nomsId', remandRoutes.remandSubmit)
-  get('/prisoner/:nomsId/select-applicable', remandRoutes.selectApplicable)
-  post('/prisoner/:nomsId/select-applicable', remandRoutes.submitApplicable)
-  get('/prisoner/:nomsId/select-applicable/remove', remandRoutes.removeSelection)
+  get('/prisoner/:nomsId', remandRoutes.entry)
+
+  get('/prisoner/:nomsId/validation-errors', remandRoutes.validationErrors)
+
+  get('/prisoner/:nomsId/replaced-offence-intercept', remandRoutes.replacedOffenceIntercept)
+  get('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.selectApplicable)
+  post('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.submitApplicable)
+
+  get('/prisoner/:nomsId/remand', remandRoutes.remand)
+  post('/prisoner/:nomsId/remand', remandRoutes.remandSubmit)
+
+  get('/prisoner/:nomsId/overview', remandRoutes.overview)
+
   get('/prisoner/:nomsId/confirm-and-save', remandRoutes.confirmAndSave)
   post('/prisoner/:nomsId/confirm-and-save', remandRoutes.submitConfirmAndSave)
+
+  get('/bulk', remandRoutes.bulkRemand)
+  post('/bulk', remandRoutes.submitBulkRemand)
 
   return router
 }
