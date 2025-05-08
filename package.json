@@ -107,7 +107,7 @@
     "bunyan-format": "^0.2.1",
     "compression": "^1.8.0",
     "connect-flash": "^0.1.1",
-    "connect-redis": "^7.1.1",
+    "connect-redis": "^8.0.3",
     "csurf": "^1.11.0",
     "csv-stringify": "^6.5.2",
     "dayjs": "^1.11.13",
