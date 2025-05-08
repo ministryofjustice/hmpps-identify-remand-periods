@@ -1,5 +1,9 @@
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import {
+  ChargeRemand,
+  LegacyDataProblem,
+  RemandResult,
+} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiImprisonmentStatusHistoryDto,
@@ -8,7 +12,9 @@ import {
 } from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
-import { daysBetween, isImportantError, onlyUnique, sameMembers } from '../utils/utils'
+import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
+import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
+import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
@@ -126,7 +132,8 @@ export default class BulkRemandCalculationService {
         IS_REMAND_SAME: !ex && isDatesSame && isDaysSame ? 'Y' : 'N',
         IS_DATES_SAME: !ex && isDatesSame ? 'Y' : 'N',
         IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
-        UPGRADE_DOWNGRADE_POSSIBILITIES: ex ? 0 : this.countUpgradeDowngradePosibilities(calculatedRemand),
+        UPGRADE_DOWNGRADE_REMAND_PERIODS: ex ? 0 : this.countUpgradeDowngradeRemandPeriods(calculatedRemand),
+        UPGRADE_DOWNGRADE_CHARGES: ex ? 0 : this.countUpgradeDowngradeCharges(calculatedRemand),
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -141,13 +148,11 @@ export default class BulkRemandCalculationService {
         CALCULATED_REMAND_DAYS: dpsDays,
         INTERSECTING_SENTENCES: JSON.stringify(calculatedRemand?.intersectingSentences, null, 2),
         INTERSECTING_SENTENCES_SOURCE: JSON.stringify(sentencesAndOffences, null, 2),
-        VALIDATION_MESSAGES: this.importantErrors(
-          calculatedRemand?.issuesWithLegacyData || [],
-          sentencesAndOffences,
-          bookingId,
-        )
-          ?.map(it => it.message)
-          .join('\n'),
+        VALIDATION_MESSAGES: ex
+          ? ''
+          : this.importantErrors(calculatedRemand, sentencesAndOffences, bookingId)
+              ?.map(it => it.message)
+              .join('\n'),
         ERROR_JSON: JSON.stringify(ex, null, 2),
         ERROR_TEXT: ex?.message,
         ERROR_STACK: ex?.stack,
@@ -161,10 +166,18 @@ export default class BulkRemandCalculationService {
     }
   }
 
-  private countUpgradeDowngradePosibilities(calculatedRemand: RemandResult): number {
+  private countUpgradeDowngradeRemandPeriods(calculatedRemand: RemandResult): number {
+    return this.getUpgradeDowngradePeriods(calculatedRemand).length
+  }
+
+  private countUpgradeDowngradeCharges(calculatedRemand: RemandResult): number {
+    return this.getUpgradeDowngradePeriods(calculatedRemand).flatMap(it => it.chargeIds).length
+  }
+
+  private getUpgradeDowngradePeriods(calculatedRemand: RemandResult): ChargeRemand[] {
     return (calculatedRemand?.chargeRemand || []).filter(it =>
       ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status),
-    ).length
+    )
   }
 
   private async findSourceDataForIntersectingSentence(
@@ -207,18 +220,14 @@ export default class BulkRemandCalculationService {
   }
 
   private importantErrors(
-    problems: LegacyDataProblem[],
+    result: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     bookingId: string,
   ): LegacyDataProblem[] {
     const sentenceAndOffencesOnActiveBooking = sentencesAndOffences.filter(it => it.bookingId.toString() === bookingId)
-    const activeSentenceCourtCases = sentenceAndOffencesOnActiveBooking
-      .filter(it => !!it.caseReference)
-      .map(it => it.caseReference)
-    const activeSentenceStatues = sentenceAndOffencesOnActiveBooking.flatMap(it =>
-      it.offences.map(off => off.offenceStatute),
-    )
-
-    return problems.filter(problem => isImportantError(problem, activeSentenceCourtCases, activeSentenceStatues))
+    return new DetailedRemandCalculationAndSentence(
+      new DetailedRemandCalculation(result),
+      sentenceAndOffencesOnActiveBooking,
+    ).mostImportantErrors()
   }
 }

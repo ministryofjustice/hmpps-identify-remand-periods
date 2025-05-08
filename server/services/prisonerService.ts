@@ -12,8 +12,8 @@ import {
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
-  async getPrisonerImage(username: string, prisonerNumber: string): Promise<Readable> {
-    return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(prisonerNumber)
+  async getPrisonerImage(token: string, prisonerNumber: string): Promise<Readable> {
+    return new PrisonApiClient(token).getPrisonerImage(prisonerNumber)
   }
 
   async getUsersCaseloads(token: string): Promise<PrisonApiUserCaseloads[]> {
