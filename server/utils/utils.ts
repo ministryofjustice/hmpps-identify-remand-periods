@@ -1,4 +1,3 @@
-import { LegacyDataProblem } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import ValidationError from '../model/validationError'
 
 const properCase = (word: string): string =>
@@ -55,25 +54,28 @@ export const fieldHasErrors = (errors: ValidationError[], field: string) => {
   return !!errors.find(error => error.fields.indexOf(field) !== -1)
 }
 
-export const isImportantError = (
-  problem: LegacyDataProblem,
-  activeSentenceCourtCases: string[],
-  activeSentenceStatues: string[],
-): boolean => {
-  if (['UNSUPPORTED_OUTCOME', 'MISSING_COURT_OUTCOME'].includes(problem.type)) {
-    return false
-  }
-  if (
-    [
-      'MISSING_RECALL_EVENT',
-      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_REMAND',
-      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_RECALL',
-      'MISSING_COURT_EVENT_FOR_IMPRISONMENT_STATUS_SENTENCING',
-    ].includes(problem.type)
-  ) {
-    return true
-  }
-  return (
-    activeSentenceStatues.includes(problem.offence.statute) || activeSentenceCourtCases.includes(problem.courtCaseRef)
-  )
+export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {
+  let max: B = null
+  all.forEach(it => {
+    if (!max) {
+      max = map(it)
+    }
+    if (map(it) > max) {
+      max = map(it)
+    }
+  })
+  return max
+}
+
+export const minOf = <A, B>(all: A[], map: (a: A) => B): B => {
+  let min: B = null
+  all.forEach(it => {
+    if (!min) {
+      min = map(it)
+    }
+    if (map(it) < min) {
+      min = map(it)
+    }
+  })
+  return min
 }

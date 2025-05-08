@@ -1,0 +1,28 @@
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% macro remandSingleLineDetails(rows) %}
+
+{{ govukTable({
+  caption: "Remand to be applied",
+  captionClasses: "govuk-table__caption--m",
+  head: [
+    {
+      text: "From"
+    },
+    {
+      text: "To"
+    },
+    {
+      text: "Days"
+    },
+    {
+      text: "Offence details"
+    },
+    {
+      text: "Committed on"
+    }
+  ],
+  rows: rows
+}) }}
+
+{% endmacro %}

@@ -61,6 +61,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   )
 
   njkEnv.addGlobal('digitalPrisonServicesUrl', config.services.digitalPrisonServices.url)
+  njkEnv.addGlobal('adjustmentsServiceUrl', config.services.adjustmentServices.url)
 
   njkEnv.addFilter('initialiseName', initialiseName)
 
