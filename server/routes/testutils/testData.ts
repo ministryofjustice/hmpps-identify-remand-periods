@@ -9,6 +9,19 @@ import {
 
 const remandResult = {
   charges: {
+    3333: {
+      chargeId: 3333,
+      offence: { code: 'TP47017', statute: 'TP47', description: 'A sentence charge, way before the remand dates' },
+      offenceDate: '2023-02-01',
+      bookingId: 1204935,
+      bookNumber: '41938A',
+      offenceEndDate: null,
+      sentenceSequence: 88,
+      sentenceDate: '2000-03-21',
+      courtCaseRef: 'CASE5678',
+      courtLocation: 'Birmingham Crown Court',
+      resultDescription: 'Imprisonment',
+    } as Charge,
     3933924: {
       chargeId: 3933924,
       offence: { code: 'TP47017', statute: 'TP47', description: 'Accidentally allow a chimney to be on fire' },
@@ -40,6 +53,19 @@ const remandResult = {
       offence: { code: 'WR91001', statute: 'WR91', description: 'Abstract water without a licence' },
       offenceDate: '2022-01-10',
       bookingId: 1204935,
+      bookNumber: '41938A',
+      offenceEndDate: null,
+      sentenceSequence: 1,
+      sentenceDate: '2023-03-21',
+      courtCaseRef: 'CASE1234',
+      courtLocation: 'Birmingham Crown Court',
+      resultDescription: 'Imprisonment',
+    } as Charge,
+    4444: {
+      chargeId: 4444,
+      offence: { code: 'WR91001', statute: 'WR91', description: 'offence on another booking' },
+      offenceDate: '2022-01-10',
+      bookingId: 1204936,
       bookNumber: '41938A',
       offenceEndDate: null,
       sentenceSequence: 1,
@@ -104,6 +130,13 @@ const remandResult = {
     {
       from: '2022-11-23',
       to: '2022-12-15',
+      days: 23,
+      chargeIds: [3933924],
+      status: 'CASE_NOT_CONCLUDED',
+    } as ChargeRemand,
+    {
+      from: '2021-11-23',
+      to: '2021-12-15',
       days: 23,
       chargeIds: [3933924],
       status: 'CASE_NOT_CONCLUDED',

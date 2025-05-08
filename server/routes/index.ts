@@ -15,7 +15,7 @@ export default function routes(service: Services): Router {
     service.prisonerService,
     service.identifyRemandPeriodsService,
     service.bulkRemandCalculationService,
-    service.selectedApplicableRemandStoreService,
+    service.cachedDataService,
     service.adjustmentsService,
     service.calculateReleaseDatesService,
   )

@@ -12,18 +12,27 @@ export default class RemandOverviewModel {
 
   public remandSingleLineDetails() {
     return [
-      ...this.adjustmentsWithOffences().map(it => {
-        return [
-          { text: `${dayjs(it.fromDate).format('D MMMM YYYY')}` },
-          { text: `${dayjs(it.toDate).format('D MMMM YYYY')}` },
-          { text: daysBetween(new Date(it.fromDate), new Date(it.toDate)) },
-          { html: it.offences ? it.offences.map(offence => offence.offenceDescription).join('<br>') : 'No offences' },
-          {
-            html: it.offences
-              ? it.offences.map(offence => `${dayjs(offence.offenceStartDate).format('D MMMM YYYY')}`).join('<br>')
-              : 'No offences',
-          },
-        ]
+      ...this.adjustmentsWithOffences().flatMap(adjustment => {
+        let index = 0
+        return adjustment.offences.map(offence => {
+          index += 1
+          const row = []
+          if (index === 1) {
+            row.push({
+              text: `${dayjs(adjustment.fromDate).format('D MMMM YYYY')}`,
+              rowspan: adjustment.offences.length,
+            })
+            row.push({ text: `${dayjs(adjustment.toDate).format('D MMMM YYYY')}`, rowspan: adjustment.offences.length })
+            row.push({
+              text: daysBetween(new Date(adjustment.fromDate), new Date(adjustment.toDate)),
+              rowspan: adjustment.offences.length,
+            })
+          }
+          row.push({ text: offence.offenceDescription })
+          row.push({ text: this.offenceDateText(offence) })
+
+          return row
+        })
       }),
       [
         { text: 'Total days', classes: 'govuk-table__header' },
@@ -55,6 +64,14 @@ export default class RemandOverviewModel {
         offences: this.offencesForRemandAdjustment(it, this.sentencesAndOffences),
       }
     })
+  }
+
+  private offenceDateText(offence: PrisonApiOffence) {
+    return `${
+      offence.offenceStartDate && offence.offenceEndDate && offence.offenceEndDate !== offence.offenceStartDate
+        ? `${dayjs(offence.offenceStartDate).format('D MMM YYYY')} to ${dayjs(offence.offenceEndDate).format('D MMM YYYY')}`
+        : `${dayjs(offence.offenceStartDate).format('D MMM YYYY')}`
+    }`
   }
 
   private offencesForRemandAdjustment(

@@ -10,7 +10,8 @@ declare module 'express-session' {
     returnTo: string
     nowInMinutes: number
     selectedApplicableRemand?: Record<string, RemandApplicableUserSelection[]>
-    storedResults?: Record<string, RemandResult>
+    storedCalculations?: Record<string, RemandResult>
+    storedCalculationsWithoutSelection?: Record<string, RemandResult>
     rejectedRemandDecision?: Record<string, IdentifyRemandDecision>
   }
 }

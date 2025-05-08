@@ -64,7 +64,7 @@ export default class ConfirmAndSaveModel {
   }
 
   private isDecisionRejected() {
-    return this.rejectedRemandDecision && this.rejectedRemandDecision.accepted === false
+    return this.rejectedRemandDecision?.accepted === false
   }
 
   private getRejectedReasonLine(): string {

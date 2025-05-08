@@ -5,7 +5,7 @@ import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
 import remandResult from './testutils/testData'
-import SelectedApplicableRemandStoreService from '../services/selectedApplicableRemandStoreService'
+import CachedDataService from '../services/cachedDataService'
 import AdjustmentsService from '../services/adjustmentsService'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import {
@@ -20,14 +20,13 @@ let app: Express
 jest.mock('../services/adjustmentsService')
 jest.mock('../services/prisonerService')
 jest.mock('../services/identifyRemandPeriodsService')
-jest.mock('../services/selectedApplicableRemandStoreService')
+jest.mock('../services/cachedDataService')
 jest.mock('../services/calculateReleaseDatesService')
 
 const adjustmentsService = new AdjustmentsService(null) as jest.Mocked<AdjustmentsService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
-const selectedApplicableRemandStoreService =
-  new SelectedApplicableRemandStoreService() as jest.Mocked<SelectedApplicableRemandStoreService>
+const cachedDataService = new CachedDataService(null) as jest.Mocked<CachedDataService>
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 
 const NOMS_ID = 'ABC123'
@@ -45,7 +44,7 @@ beforeEach(() => {
     services: {
       prisonerService,
       identifyRemandPeriodsService,
-      selectedApplicableRemandStoreService,
+      cachedDataService,
       adjustmentsService,
       calculateReleaseDatesService,
     },
@@ -69,7 +68,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
 
     return request(app)
       .get(`/prisoner/${NOMS_ID}`)
@@ -88,7 +87,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       issuesWithLegacyData: [],
     })
@@ -110,7 +109,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       issuesWithLegacyData: [],
     })
@@ -136,7 +135,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
       ...remandResult,
       chargeRemand: remandResult.chargeRemand.filter(
         it => it.status !== 'CASE_NOT_CONCLUDED' && it.status !== 'NOT_SENTENCED',
@@ -160,7 +159,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -227,7 +226,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         sentenceStatus: 'A',
       },
     ])
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -283,7 +282,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/validation-errors`)
       .expect('Content-Type', /html/)
@@ -296,11 +295,51 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         ])
       })
   })
+  it('Should display error page without cached result', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/validation-errors`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContainInOrder([
+          'There is information missing in NOMIS that could impact the remand time.',
+          'This is an important message',
+          'This is also important message',
+          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+        ])
+      })
+  })
+  it('Should display redirect with no errors', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(emptyRemandResult)
+    return request(app).get(`/prisoner/${NOMS_ID}/validation-errors`).expect(302).expect('Location', '/prisoner/ABC123')
+  })
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   it('Should display intercept', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
       .expect('Content-Type', /html/)
@@ -312,8 +351,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       })
   })
   it('Should show choices for select applicable', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
-    selectedApplicableRemandStoreService.getSelections.mockReturnValue([])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    cachedDataService.getSelections.mockReturnValue([])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -329,19 +368,21 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .get(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        expect(res.text).not.toContain('A sentence charge, way before the remand dates')
         expect(res.text).toContainInOrder([
+          '23 Nov 2022 to 15 Dec 2022',
+          '23 Nov 2021 to 15 Dec 2021',
           'Offence 1 of 1',
           'Has this offence been replaced?',
           'No, this offence has not been replaced',
+          'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
           'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
       })
   })
   it('Should show choices for editting select applicable', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
-    selectedApplicableRemandStoreService.getSelections.mockReturnValue([
-      { chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 },
-    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    cachedDataService.getSelections.mockReturnValue([{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -369,7 +410,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   })
 
   it('Should submit choices for select applicable', () => {
-    selectedApplicableRemandStoreService.getCalculation.mockReturnValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .post(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .send({
@@ -379,8 +420,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', '/prisoner/ABC123/remand')
       .expect(res => {
-        expect(selectedApplicableRemandStoreService.storeSelection.mock.calls).toHaveLength(1)
-        expect(selectedApplicableRemandStoreService.storeSelection.mock.calls[0][2]).toStrictEqual({
+        expect(cachedDataService.storeSelection.mock.calls).toHaveLength(1)
+        expect(cachedDataService.storeSelection.mock.calls[0][2]).toStrictEqual({
           chargeIdsToMakeApplicable: [3933924],
           targetChargeId: 2222,
         } as RemandApplicableUserSelection)
@@ -390,7 +431,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
 
 describe('Overview page', () => {
   it('Overview page contains the correct information', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -422,7 +463,7 @@ describe('Overview page', () => {
 
 describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   it('Should show confirm and save page with remand', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -456,24 +497,8 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
 
   it('Should show confirm and save page with remand that is being rejected', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(remandResult)
-    prisonerService.getSentencesAndOffences.mockResolvedValue([
-      {
-        offences: [
-          {
-            offenceStatute: 'WR91',
-          },
-        ],
-        caseReference: 'CASE1234',
-        sentenceStatus: 'A',
-      },
-    ])
-    adjustmentsService.findByPerson.mockResolvedValue([])
-    calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mockResolvedValue({
-      unusedDeductions: 10,
-      validationMessages: [],
-    })
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)
@@ -481,22 +506,16 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       .get(`/prisoner/${NOMS_ID}/confirm-and-save`)
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContainInOrder([
-          'When you save this remand, the unused deductions will automatically be recorded. Check that the unused remand alert has been added.',
-          '10 Jan 2023 to 20 Jan 2023',
-          '11',
-          'Total days',
-          '11',
-        ])
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
         expect(res.text).toContain('The remand tool suggested the below remand')
         expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
+        expect(calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mock.calls.length).toBe(0)
       })
   })
 
   it('Should show confirm and save page with no remand and an accepted decision', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
@@ -525,24 +544,8 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
 
   it('Should show confirm and save page with no remand that has been rejected', () => {
-    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue(emptyRemandResult)
-    prisonerService.getSentencesAndOffences.mockResolvedValue([
-      {
-        offences: [
-          {
-            offenceStatute: 'WR91',
-          },
-        ],
-        caseReference: 'CASE1234',
-        sentenceStatus: 'A',
-      },
-    ])
-    adjustmentsService.findByPerson.mockResolvedValue([])
-    calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mockResolvedValue({
-      unusedDeductions: 0,
-      validationMessages: [],
-    })
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)
@@ -553,6 +556,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
         expect(res.text).toContain('The remand tool has suggested 0 days of relevant remand that are being rejected.')
         expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
+        expect(calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mock.calls.length).toBe(0)
       })
   })
   it('Should submit confirm and save page', () => {
@@ -567,7 +571,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
   })
   it('Should submit confirm and save page and display the rejected message', () => {
     identifyRemandPeriodsService.saveRemandDecision.mockResolvedValue({ days: 10 } as IdentifyRemandDecision)
-    selectedApplicableRemandStoreService.getRejectedRemandDecision.mockReturnValue({
+    cachedDataService.getRejectedRemandDecision.mockReturnValue({
       accepted: false,
       rejectComment: 'Rejected',
     } as IdentifyRemandDecision)

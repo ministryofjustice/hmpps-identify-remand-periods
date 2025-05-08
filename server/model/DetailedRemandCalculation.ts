@@ -8,6 +8,11 @@ export type RemandAndCharge = ChargeRemand & {
   replacedChargeIds: number[]
 }
 
+export type ReplaceableChargeRemands = {
+  chargeIds: number[]
+  remand: RemandAndCharge[]
+}
+
 export default class DetailedRemandCalculation {
   chargeRemand: RemandAndCharge[]
 
@@ -34,10 +39,24 @@ export default class DetailedRemandCalculation {
     return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
   }
 
-  public getReplaceableChargeRemand(): RemandAndCharge[] {
-    return this.chargeRemand.filter(
-      it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it),
-    )
+  public getReplaceableChargeRemandGroupedByChargeIds(): ReplaceableChargeRemands[] {
+    const remands: ReplaceableChargeRemands[] = []
+
+    this.chargeRemand
+      .filter(it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it))
+      .forEach(chargeRemand => {
+        const existing = remands.find(it => sameMembers(it.chargeIds, chargeRemand.chargeIds))
+        if (existing) {
+          existing.remand.push(chargeRemand)
+        } else {
+          remands.push({
+            chargeIds: chargeRemand.chargeIds,
+            remand: [chargeRemand],
+          })
+        }
+      })
+
+    return remands
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
@@ -45,13 +64,15 @@ export default class DetailedRemandCalculation {
   }
 
   public findReplaceableChargesMatchingChargeIds(chargeIds: number[]): RemandAndCharge[] {
-    return this.getReplaceableChargeRemand().filter(it => {
-      return sameMembers(it.chargeIds, chargeIds)
-    })
+    return (
+      this.getReplaceableChargeRemandGroupedByChargeIds().find(it => {
+        return sameMembers(it.chargeIds, chargeIds)
+      })?.remand || []
+    )
   }
 
   public indexOfReplaceableChargesMatchingChargeIds(chargeIds: number[]): number {
-    return this.getReplaceableChargeRemand().findIndex(it => {
+    return this.getReplaceableChargeRemandGroupedByChargeIds().findIndex(it => {
       return sameMembers(it.chargeIds, chargeIds)
     })
   }
