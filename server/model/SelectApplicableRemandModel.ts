@@ -1,6 +1,7 @@
 import { Charge, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import config from '../config'
+import { maxOf, minOf } from '../utils/utils'
 import DetailedRemandCalculation, { RemandAndCharge, ReplaceableChargeRemands } from './DetailedRemandCalculation'
 import RemandCardModel from './RemandCardModel'
 
@@ -17,7 +18,6 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
   constructor(
     public prisonerNumber: string,
-    bookingId: string,
     relevantRemand: RemandResult,
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public chargeIds: number[],
@@ -31,24 +31,20 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     this.total = this.replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
-    let latestRemandDate: Date = null
-    this.chargeRemand.forEach(it => {
-      if (!latestRemandDate) {
-        latestRemandDate = new Date(it.to)
-      }
-      if (new Date(it.to) > latestRemandDate) {
-        latestRemandDate = new Date(it.to)
-      }
-    })
+    const latestRemandDate = maxOf(this.chargeRemand, it => new Date(it.to))
 
     const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
+    const minReplaceableChargeBookingId = minOf(
+      this.chargeRemand.flatMap(it => it.charges),
+      it => it.bookingId,
+    )
     Object.values(relevantRemand.charges)
       .filter(
         it =>
           it.sentenceSequence !== null &&
-          it.bookingId.toString() === bookingId &&
+          it.bookingId >= minReplaceableChargeBookingId &&
           it.sentenceDate !== null &&
-          new Date(it.sentenceDate) > latestRemandDate,
+          new Date(it.sentenceDate) >= latestRemandDate,
       )
       .forEach(it => {
         const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
