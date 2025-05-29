@@ -76,8 +76,10 @@ jobs:
       - attach_workspace:
           at: ~/app
       - run:
-          name: Install missing OS dependency
-          command: sudo apt-get install libxss1
+          name: Install OS dependencies for Cypress headless
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
