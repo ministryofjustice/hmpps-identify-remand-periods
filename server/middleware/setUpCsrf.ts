@@ -14,22 +14,26 @@ export default function setUpCsrf(): Router {
 
   if (!testMode) {
     const csrfMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
-      if (req.method === 'GET') {
-        const secret = tokens.secretSync()
-        const token = tokens.create(secret)
-        res.cookie('csrf-secret', secret, { httpOnly: true, sameSite: 'strict' })
-        res.locals.csrfToken = token
-        next()
-        return
-      }
+      const isHtmlRequest = req.headers.accept?.includes('text/html')
 
-      // eslint-disable-next-line no-underscore-dangle
-      const token = req.body._csrf || req.headers['x-csrf-token']
-      const secret = req.cookies['csrf-secret']
+      if (isHtmlRequest) {
+        if (req.method === 'GET') {
+          const secret = tokens.secretSync()
+          const token = tokens.create(secret)
+          res.cookie('csrf-secret', secret, { httpOnly: true, sameSite: 'strict' })
+          res.locals.csrfToken = token
+          next()
+          return
+        }
 
-      if (!secret || !token || !tokens.verify(secret, token)) {
-        res.status(403).send('Invalid CSRF token')
-        return
+        // eslint-disable-next-line no-underscore-dangle
+        const token = req.body._csrf || req.headers['x-csrf-token']
+        const secret = req.cookies['csrf-secret']
+
+        if (!secret || !token || !tokens.verify(secret, token)) {
+          res.status(403).send('Invalid CSRF token')
+          return
+        }
       }
 
       next()
