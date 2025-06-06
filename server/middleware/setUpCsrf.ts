@@ -1,46 +1,32 @@
-import { Router, RequestHandler, Request, Response, NextFunction } from 'express'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import cookieParser from 'cookie-parser'
-import Csrf from 'csrf'
+import { Router } from 'express'
+import { csrfSync } from 'csrf-sync'
 
-const tokens = new Csrf()
 const testMode = process.env.NODE_ENV === 'test'
 
 export default function setUpCsrf(): Router {
   const router = Router({ mergeParams: true })
 
-  // Ensure cookie-parser is used
-  router.use(cookieParser())
-
+  // CSRF protection
   if (!testMode) {
-    const csrfMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
-      const isHtmlRequest = req.headers.accept?.includes('text/html')
-
-      if (isHtmlRequest) {
-        if (req.method === 'GET') {
-          const secret = tokens.secretSync()
-          const token = tokens.create(secret)
-          res.cookie('csrf-secret', secret, { httpOnly: true, sameSite: 'strict' })
-          res.locals.csrfToken = token
-          next()
-          return
-        }
-
+    const {
+      csrfSynchronisedProtection, // This is the default CSRF protection middleware.
+    } = csrfSync({
+      // By default, csrf-sync uses x-csrf-token header, but we use the token in forms and send it in the request body, so change getTokenFromRequest so it grabs from there
+      getTokenFromRequest: req => {
         // eslint-disable-next-line no-underscore-dangle
-        const token = req.body._csrf || req.headers['x-csrf-token']
-        const secret = req.cookies['csrf-secret']
+        return req.body._csrf
+      },
+    })
 
-        if (!secret || !token || !tokens.verify(secret, token)) {
-          res.status(403).send('Invalid CSRF token')
-          return
-        }
-      }
-
-      next()
-    }
-
-    router.use(csrfMiddleware)
+    router.use(csrfSynchronisedProtection)
   }
+
+  router.use((req, res, next) => {
+    if (typeof req.csrfToken === 'function') {
+      res.locals.csrfToken = req.csrfToken()
+    }
+    next()
+  })
 
   return router
 }
