@@ -52,7 +52,7 @@ const remandResult = {
       chargeId: 2222,
       offence: { code: 'WR91001', statute: 'WR91', description: 'Abstract water without a licence' },
       offenceDate: '2022-01-10',
-      bookingId: 1204935,
+      bookingId: 1204940,
       bookNumber: '41938A',
       offenceEndDate: null,
       sentenceSequence: 1,
