@@ -16,7 +16,7 @@ generic-service:
     CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk"
     CALCULATE_RELEASE_DATES_URL: "https://calculate-release-dates-dev.hmpps.service.justice.gov.uk"
     DIGITAL_PRISON_SERVICES_URL: "https://digital-dev.prison.service.justice.gov.uk"
-    ADJUSTMENTS_URL: "https://adjust-release-dates-dev.hmpps.service.justice.gov.uk"
+    ADJUSTMENTS_URL: "https://adjustments-dev.hmpps.service.justice.gov.uk"
     IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api-dev.hmpps.service.justice.gov.uk"
     MANAGE_USERS_API_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     PRISONER_SEARCH_API_URL: "https://prisoner-search-dev.prison.service.justice.gov.uk"
