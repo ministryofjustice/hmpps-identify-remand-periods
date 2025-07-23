@@ -137,18 +137,18 @@ export default class RemandRoutes {
 
     if (form.decision === 'yes') {
       this.cachedDataService.clearRejectedRemandDecision(req, nomsId)
-      return res.redirect(`/prisoner/${prisonerNumber}/overview`)
-    }
-    const decision = {
-      accepted: false,
-      rejectComment: form.comment,
-      options: {
-        includeRemandCalculation: false,
-        userSelections: selections,
-      },
-    } as IdentifyRemandDecision
+    } else {
+      const decision = {
+        accepted: false,
+        rejectComment: form.comment,
+        options: {
+          includeRemandCalculation: false,
+          userSelections: selections,
+        },
+      } as IdentifyRemandDecision
 
-    this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+      this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+    }
 
     return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
