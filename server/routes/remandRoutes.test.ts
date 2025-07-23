@@ -266,7 +266,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       })
       .type('form')
       .expect(302)
-      .expect('Location', '/prisoner/ABC123/overview')
+      .expect('Location', '/prisoner/ABC123/confirm-and-save')
   })
 })
 describe('Validation error page /prisoner/{prisonerId}/validation-errors', () => {
@@ -493,7 +493,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
           'Total days',
           '11',
         ])
-        expect(res.text).toContain('<a href="/prisoner/ABC123/overview" class="govuk-back-link">Back</a>')
+        expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContain('http://localhost:3000/adj/ABC123/')
       })
   })

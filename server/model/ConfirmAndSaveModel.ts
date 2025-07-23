@@ -72,9 +72,6 @@ export default class ConfirmAndSaveModel {
   }
 
   public backLink(): string {
-    if (this.adjustments.length && !this.isDecisionRejected()) {
-      return `/prisoner/${this.nomsID}/overview`
-    }
     return `/prisoner/${this.nomsID}/remand`
   }
 
