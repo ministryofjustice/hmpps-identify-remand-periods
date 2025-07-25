@@ -555,7 +555,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContain(
-          `You are rejecting the remand tool's calculation that there is no remand to be applied`,
+          `You are rejecting the remand tool's calculation that there is no remand to be applied.`,
         )
         expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')

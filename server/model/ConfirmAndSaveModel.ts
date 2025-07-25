@@ -53,7 +53,7 @@ export default class ConfirmAndSaveModel {
   public getRemandHeading(): string {
     if (this.isDecisionRejected()) {
       if (this.getTotalDaysRemand() === 0) {
-        return `<p class="govuk-body"><strong>You are rejecting the remand tool's calculation that there is no remand to be applied</strong></p>${this.getRejectedReasonLine()}`
+        return `<p class="govuk-body"><strong>You are rejecting the remand tool's calculation that there is no remand to be applied.</strong></p>${this.getRejectedReasonLine()}`
       }
       return `<h2 class="govuk-heading-m">The remand tool suggested the below remand</h2>${this.getRejectedReasonLine()}`
     }
