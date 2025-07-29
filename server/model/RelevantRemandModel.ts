@@ -8,7 +8,7 @@ import {
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { daysBetween } from '../utils/utils'
+import { daysBetween, maxOf } from '../utils/utils'
 import RemandCardModel from './RemandCardModel'
 import DetailedRemandCalculationAndSentence from './DetailedRemandCalculationAndSentence'
 import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
@@ -126,7 +126,8 @@ export default class RelevantRemandModel extends RemandCardModel {
   }
 
   private filterIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
-    const filteredIntersectingSentences = this.filterHistoricIntersectingSentences(intersectingSentences)
+    let filteredIntersectingSentences = this.filterHistoricIntersectingSentences(intersectingSentences)
+    filteredIntersectingSentences = this.filterIntersectingSentencesAfterRemand(filteredIntersectingSentences)
     const groupedByFromAndBookNumber: Record<string, IntersectingSentence[]> = {}
     filteredIntersectingSentences.forEach(it => {
       const charge = this.relevantRemand.charges[it.chargeId]
@@ -146,6 +147,16 @@ export default class RelevantRemandModel extends RemandCardModel {
       }
     })
     return results
+  }
+
+  private filterIntersectingSentencesAfterRemand(
+    intersectingSentences: IntersectingSentence[],
+  ): IntersectingSentence[] {
+    const latestAdjustmentDate = maxOf(this.relevantRemand.adjustments, it => new Date(it.toDate))
+    if (latestAdjustmentDate) {
+      return intersectingSentences.filter(it => new Date(it.to) < latestAdjustmentDate)
+    }
+    return intersectingSentences
   }
 
   private filterHistoricIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
