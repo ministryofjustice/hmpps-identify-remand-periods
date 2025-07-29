@@ -173,7 +173,7 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            {% if model.relevantRemand.intersectingSentences.length %}
+            {% if model.intersectingSentences.length %}
                 <h2 class="govuk-heading-m">Previous sentences that may overlap remand periods</h2>
                 <p class="govuk-body">These sentences could overlap with the relevant remand periods above.</p>
                 {{ govukTable( model.intersectingSentenceTable() )}}

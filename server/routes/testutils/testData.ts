@@ -176,8 +176,8 @@ const remandResult = {
       calculationIds: [1],
     } as IntersectingSentence,
     {
-      from: '2023-05-18',
-      to: '2023-10-04',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -193,8 +193,8 @@ const remandResult = {
     } as IntersectingSentence,
     {
       // Same book number and shorter, shouldn't be displayed
-      from: '2023-05-18',
-      to: '2023-10-03',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -210,8 +210,8 @@ const remandResult = {
     } as IntersectingSentence,
     {
       // Different book number should be displayed with text.
-      from: '2023-05-18',
-      to: '2023-10-01',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -221,6 +221,17 @@ const remandResult = {
       },
       chargeId: 3934221,
       days: 140,
+      service: 'HISTORIC',
+      errors: [],
+      calculationIds: [1],
+    } as IntersectingSentence,
+    {
+      // After most recent adjustment
+      from: '2022-08-17',
+      to: '2023-01-16',
+      sentence: { sequence: 3, sentenceDate: '2022-08-17', recallDate: null, bookingId: 1209333, recallDates: [] },
+      chargeId: 3934217,
+      days: 92,
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
