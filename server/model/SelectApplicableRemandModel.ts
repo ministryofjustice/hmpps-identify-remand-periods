@@ -26,6 +26,9 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     super(prisonerNumber, relevantRemand, sentencesAndOffences)
     const detailedCalculation = new DetailedRemandCalculation(relevantRemand)
     this.replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
+    this.replaceableCharges = detailedCalculation.expandChargeIds(
+      detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+    )
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
     this.total = this.replaceableCharges.length
@@ -122,24 +125,31 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
   }
 
   public radioItems() {
-    return [
+    const items: ({ text?: string; value: string; html?: string } | { divider: string })[] = [
       {
         value: 'no',
-        text: 'No, this offence has not been replaced',
+        text: 'No, this remand period is not relevant',
       },
-      ...(this.chargesToSelect.length > 0
-        ? [
-            {
-              divider: 'or',
-            },
-          ]
-        : []),
-      ...this.chargesToSelect.map(it => {
-        return {
-          value: it.chargeId,
-          html: `Yes, this offence was replaced with <strong>${it.offence.description}</strong> committed on ${this.offenceDateText(it)}`,
-        }
-      }),
     ]
+
+    if (this.chargesToSelect.length > 0) {
+      items.push({ divider: 'or' })
+
+      if (this.chargeIds.length > 1) {
+        items.push({
+          value: 'review-individually',
+          text: 'Yes, view these offences individually',
+        })
+      } else {
+        this.chargesToSelect.forEach(it => {
+          items.push({
+            value: it.chargeId.toString(),
+            html: `<strong>${it.offence.description}</strong> committed on ${this.offenceDateText(it)}`,
+          })
+        })
+      }
+    }
+
+    return items
   }
 }

@@ -202,7 +202,7 @@ export default class RemandRoutes {
         nomsId,
         chargeIds.split(',').map(it => Number(it)),
       )
-    } else {
+    } else if (form.selection !== 'review-individually') {
       this.cachedDataService.storeSelection(req, nomsId, {
         chargeIdsToMakeApplicable: chargeIds.split(',').map(it => Number(it)),
         targetChargeId: Number(form.selection),
@@ -210,9 +210,11 @@ export default class RemandRoutes {
     }
 
     const detailedCalculation = new DetailedRemandCalculation(calculation)
-    const replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
+    const replaceableCharges = detailedCalculation.expandChargeIds(
+      detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+    )
     const index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeNumbers)
-    if (index + 1 === replaceableCharges.length || edit) {
+    if (index + 1 === replaceableCharges.length || (edit && index + 1 === chargeNumbers[chargeNumbers.length - 1])) {
       return res.redirect(`/prisoner/${prisonerNumber}/remand`)
     }
     const nextChargeIds = replaceableCharges[index + 1].chargeIds.join(',')

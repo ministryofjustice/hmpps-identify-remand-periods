@@ -22,6 +22,18 @@ export default class DetailedRemandCalculation {
     )
   }
 
+  public expandChargeIds(data: ReplaceableChargeRemands[]): ReplaceableChargeRemands[] {
+    const result: ReplaceableChargeRemands[] = []
+
+    data.forEach(item => {
+      result.push(item)
+      if (item.chargeIds.length > 1) {
+        item.chargeIds.forEach(id => result.push({ chargeIds: [id], remand: item.remand }))
+      }
+    })
+    return result
+  }
+
   public static toRemandAndCharge(it: ChargeRemand, remandCalculation: RemandResult): RemandAndCharge {
     return {
       ...it,
@@ -69,13 +81,13 @@ export default class DetailedRemandCalculation {
   public findReplaceableChargesMatchingChargeIds(chargeIds: number[]): RemandAndCharge[] {
     return (
       this.getReplaceableChargeRemandGroupedByChargeIds().find(it => {
-        return sameMembers(it.chargeIds, chargeIds)
+        return it.chargeIds.some(id => chargeIds.includes(id))
       })?.remand || []
     )
   }
 
   public indexOfReplaceableChargesMatchingChargeIds(chargeIds: number[]): number {
-    return this.getReplaceableChargeRemandGroupedByChargeIds().findIndex(it => {
+    return this.expandChargeIds(this.getReplaceableChargeRemandGroupedByChargeIds()).findIndex(it => {
       return sameMembers(it.chargeIds, chargeIds)
     })
   }
