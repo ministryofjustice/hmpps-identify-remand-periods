@@ -1,4 +1,4 @@
-import { RequestHandler, Request } from 'express'
+import { RequestHandler } from 'express'
 import { stringify } from 'csv-stringify'
 import PrisonerService from '../services/prisonerService'
 import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
