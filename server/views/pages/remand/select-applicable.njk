@@ -73,7 +73,7 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
         {% if not model.edit %}
-            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
+            <p class="govuk-body">Offence {{model.getOffencePosition(model.index)}} of {{model.totalUniqueItems()}}</p>
         {% endif %}
     
         {{ govukRadios({

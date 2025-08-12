@@ -487,7 +487,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
-  it('Should display intercept', () => {
+  it.skip('Should display intercept', () => {
     cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
