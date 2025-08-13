@@ -207,12 +207,15 @@ export default class RemandRoutes {
         nomsId,
         chargeIds.split(',').map(it => Number(it)),
       )
-      const nextCharge = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
+      const nextChargeIndex = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
         chargeNumbers[chargeNumbers.length - 1],
       ])
       if (chargeNumbers.length > 0) {
-        if (nextCharge !== replaceableCharges.length - 1) {
-          return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextCharge}`)
+        if (nextChargeIndex !== replaceableCharges.length - 1) {
+          const nextChargeId = detailedCalculation.expandChargeIds(
+            detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+          )[nextChargeIndex + 1].chargeIds
+          return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeId}`)
         }
         return res.redirect(`/prisoner/${prisonerNumber}/remand`)
       }
