@@ -247,13 +247,25 @@ export default class RemandRoutes {
     const user = res.locals.user as UserDetails
     const { prisonerIds } = req.body
     const nomsIds = prisonerIds.split(/\r?\n/)
-    if (nomsIds.length > 500) return res.redirect(`/remand/`)
+    if (nomsIds.length > 1000) return res.redirect(`/remand/`)
 
-    const results = await this.bulkRemandCalculationService.runCalculations(user, nomsIds)
+    const id = await this.bulkRemandCalculationService.startRun(user, nomsIds)
+    return res.redirect(`/bulk-in-progress/${id}`)
+  }
+
+  public bulkRemandInProgress: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
+    return res.render('pages/remand/bulk-in-progress', { id, status: run.status })
+  }
+
+  public downloadBulkRemand: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
     const fileName = `download-remand-dates.csv`
     res.setHeader('Content-Type', 'text/csv')
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-    stringify(results, {
+    stringify(run.results, {
       header: true,
     }).pipe(res)
   }

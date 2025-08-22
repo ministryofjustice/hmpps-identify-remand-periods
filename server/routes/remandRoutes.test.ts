@@ -1,6 +1,6 @@
 import type { Express } from 'express'
 import request from 'supertest'
-import { appWithAllRoutes } from './testutils/appSetup'
+import { appWithAllRoutes, user } from './testutils/appSetup'
 import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
@@ -14,6 +14,7 @@ import {
   RemandResult,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import CalculateReleaseDatesService from '../services/calculateReleaseDatesService'
+import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
 
 let app: Express
 
@@ -22,12 +23,19 @@ jest.mock('../services/prisonerService')
 jest.mock('../services/identifyRemandPeriodsService')
 jest.mock('../services/cachedDataService')
 jest.mock('../services/calculateReleaseDatesService')
+jest.mock('../services/bulkRemandCalculationService')
 
 const adjustmentsService = new AdjustmentsService(null) as jest.Mocked<AdjustmentsService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
 const cachedDataService = new CachedDataService(null) as jest.Mocked<CachedDataService>
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
+const bulkRemandCalculationService = new BulkRemandCalculationService(
+  null,
+  null,
+  null,
+  null,
+) as jest.Mocked<BulkRemandCalculationService>
 
 const NOMS_ID = 'ABC123'
 
@@ -47,6 +55,7 @@ beforeEach(() => {
       cachedDataService,
       adjustmentsService,
       calculateReleaseDatesService,
+      bulkRemandCalculationService,
     },
   })
 })
@@ -585,5 +594,37 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
         'Location',
         'http://localhost:3000/adj/ABC123/success?message=%7B%22type%22:%22REMAND%22,%22days%22:10,%22action%22:%22REJECTED%22%7D',
       )
+  })
+})
+
+describe('bulk comparison', () => {
+  it('should start a bulk comparison run', () => {
+    bulkRemandCalculationService.startRun.mockResolvedValue('999')
+    return request(app)
+      .post(`/bulk`)
+      .send({ prisonerIds: 'A1234BC\nD5678EF' })
+      .expect(302)
+      .expect('Location', '/bulk-in-progress/999')
+      .expect(_ => {
+        expect(bulkRemandCalculationService.startRun).toHaveBeenCalledWith(user, ['A1234BC', 'D5678EF'])
+      })
+  })
+  it('should render in progress if still running', () => {
+    bulkRemandCalculationService.getRun.mockResolvedValue({ id: '999', status: 'RUNNING', results: null })
+    return request(app)
+      .get(`/bulk-in-progress/999`)
+      .expect(200)
+      .expect(res => {
+        expect(res.text).toContain('Calculation in progress')
+      })
+  })
+  it('should render complete if run is complete', () => {
+    bulkRemandCalculationService.getRun.mockResolvedValue({ id: '999', status: 'DONE', results: [] })
+    return request(app)
+      .get(`/bulk-in-progress/999`)
+      .expect(200)
+      .expect(res => {
+        expect(res.text).toContain('Calculation complete')
+      })
   })
 })

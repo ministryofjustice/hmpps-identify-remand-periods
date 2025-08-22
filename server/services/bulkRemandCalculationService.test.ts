@@ -18,6 +18,7 @@ import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import { UserDetails } from './userService'
+import InMemoryBulkRemandCalculationRunStore from '../data/bulkResultsStore/inMemoryBulkRemandCalculationRunStore'
 
 jest.mock('../services/prisonerService')
 jest.mock('../services/prisonerSearchService')
@@ -26,9 +27,15 @@ jest.mock('../services/identifyRemandPeriodsService')
 const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
+const bulkRemandCalculationRunStore = new InMemoryBulkRemandCalculationRunStore()
 
 describe('Bulk calculation service test', () => {
-  const service = new BulkRemandCalculationService(prisonerSearchService, prisonerService, identifyRemandPeriodsService)
+  const service = new BulkRemandCalculationService(
+    prisonerSearchService,
+    prisonerService,
+    identifyRemandPeriodsService,
+    bulkRemandCalculationRunStore,
+  )
   const prisonerNumber = 'ABC123'
   const bookingId = '123'
 
@@ -36,7 +43,7 @@ describe('Bulk calculation service test', () => {
     prisonerSearchService.getPrisonerDetails.mockRejectedValue({ error: 'THIS IS A PRISON API ERROR' })
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], '1'))[0],
     )
 
     expect(row).toStrictEqual({
@@ -118,7 +125,7 @@ describe('Bulk calculation service test', () => {
     })
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], '1'))[0],
     )
 
     expect(row).toStrictEqual({
@@ -253,7 +260,7 @@ describe('Bulk calculation service test', () => {
     } as RemandResult)
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], '1'))[0],
     )
 
     expect(row).toStrictEqual({

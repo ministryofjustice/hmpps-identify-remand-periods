@@ -1,0 +1,15 @@
+version: '3.1'
+services:
+
+  redis-contacts:
+    image: 'redis:7.4'
+    networks:
+      - hmpps
+    container_name: redis-identify-remand
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+
+networks:
+  hmpps:
