@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import {
   ChargeRemand,
@@ -19,16 +20,39 @@ import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import { UserDetails } from './userService'
+import BulkRemandCalculationRunStore from '../data/bulkResultsStore/bulkRemandCalculationRunStore'
+import logger from '../../logger'
+import BulkRemandCalculationRun from '../model/BulkRemandCalculationRun'
 
 export default class BulkRemandCalculationService {
   constructor(
     private readonly prisonerSearchService: PrisonerSearchService,
     private readonly prisonerService: PrisonerService,
     private readonly identifyRemandPeriodsService: IdentifyRemandPeriodsService,
+    private readonly bulkResultsStore: BulkRemandCalculationRunStore,
   ) {}
 
+  private readonly SECONDS_TO_KEEP_RESULTS = 60 * 60 // Keep results in redis for up to 1 hour
+
+  public async startRun(user: UserDetails, nomsIds: string[]): Promise<string> {
+    const id = uuidv4()
+    await this.bulkResultsStore.setRun(id, { id, status: 'RUNNING', results: null }, this.SECONDS_TO_KEEP_RESULTS)
+    this.runCalculations(user, nomsIds, id)
+      .catch(err => logger.error('Failed to run bulk calc', err))
+      .then(results => {
+        if (results) {
+          this.bulkResultsStore.setRun(id, { id, status: 'DONE', results }, this.SECONDS_TO_KEEP_RESULTS)
+        }
+      })
+    return id
+  }
+
+  public async getRun(id: string): Promise<BulkRemandCalculationRun | null> {
+    return this.bulkResultsStore.getRun(id)
+  }
+
   /* eslint-disable */
-  public async runCalculations(user: UserDetails, nomsIds: string[]): Promise<BulkRemandCalculationRow[]> {
+  public async runCalculations(user: UserDetails, nomsIds: string[], id: string): Promise<BulkRemandCalculationRow[]> {
     const csvData: BulkRemandCalculationRow[] = []
     const { username } = user
 
@@ -98,6 +122,7 @@ export default class BulkRemandCalculationService {
     }
     return csvData
   }
+
   /* eslint-enable */
 
   private addRow(
