@@ -17,12 +17,12 @@ import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
 import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
 import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
-import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import { UserDetails } from './userService'
 import BulkRemandCalculationRunStore from '../data/bulkResultsStore/bulkRemandCalculationRunStore'
 import logger from '../../logger'
 import BulkRemandCalculationRun from '../model/BulkRemandCalculationRun'
+import PrisonerSearchService from './prisonerSearchService'
 
 export default class BulkRemandCalculationService {
   constructor(
@@ -32,13 +32,16 @@ export default class BulkRemandCalculationService {
     private readonly bulkResultsStore: BulkRemandCalculationRunStore,
   ) {}
 
-  private readonly SECONDS_TO_KEEP_RESULTS = 60 * 60 // Keep results in redis for up to 1 hour
+  private readonly SECONDS_TO_KEEP_RESULTS = 60 * 60 * 4 // Keep results in redis for up to 4 hours
 
-  public async startRun(user: UserDetails, nomsIds: string[]): Promise<string> {
+  public async startRun(user: UserDetails, nomsIds: string[] | null, prisonId: string | null): Promise<string> {
     const id = uuidv4()
     await this.bulkResultsStore.setRun(id, { id, status: 'RUNNING', results: null }, this.SECONDS_TO_KEEP_RESULTS)
-    this.runCalculations(user, nomsIds, id)
-      .catch(err => logger.error('Failed to run bulk calc', err))
+    this.runCalculations(user, nomsIds, prisonId)
+      .catch(err => {
+        logger.error('Failed to run bulk calc', err)
+        this.bulkResultsStore.setRun(id, { id, status: 'FAILED', results: null }, this.SECONDS_TO_KEEP_RESULTS)
+      })
       .then(results => {
         if (results) {
           this.bulkResultsStore.setRun(id, { id, status: 'DONE', results }, this.SECONDS_TO_KEEP_RESULTS)
@@ -52,10 +55,36 @@ export default class BulkRemandCalculationService {
   }
 
   /* eslint-disable */
-  public async runCalculations(user: UserDetails, nomsIds: string[], id: string): Promise<BulkRemandCalculationRow[]> {
+  public async runCalculations(
+    user: UserDetails,
+    specificPrisonerIds: string[] | null,
+    prisonId: string | null,
+  ): Promise<BulkRemandCalculationRow[]> {
     const csvData: BulkRemandCalculationRow[] = []
     const { username } = user
 
+    let nomsIds: string[]
+    const prisonerDetailsByPrisonerId = new Map<string, PrisonerSearchApiPrisoner>()
+    if (prisonId) {
+      const allPrisonersInPrison = await this.prisonerSearchService.getPrisonersInEstablishment(prisonId, user)
+      allPrisonersInPrison.forEach(prisoner => prisonerDetailsByPrisonerId.set(prisoner.prisonerNumber, prisoner))
+      nomsIds = [...prisonerDetailsByPrisonerId.keys()]
+    } else {
+      nomsIds = specificPrisonerIds
+    }
+    for (const nomsId of nomsIds) {
+      await this.handlePrisoner(nomsId, user, username, csvData, prisonerDetailsByPrisonerId)
+    }
+    return csvData
+  }
+
+  private async handlePrisoner(
+    nomsId: string,
+    user: UserDetails,
+    username: string,
+    csvData: BulkRemandCalculationRow[],
+    prisonerDetailsByPrisonerId: Map<string, PrisonerSearchApiPrisoner>,
+  ) {
     let prisonDetails,
       bookingId,
       nomisAdjustments,
@@ -65,62 +94,66 @@ export default class BulkRemandCalculationService {
       calculatedRemand,
       sentences,
       imprisonmentStatuses
-    for (const nomsId of nomsIds) {
-      try {
+
+    try {
+      if (prisonerDetailsByPrisonerId.has(nomsId)) {
+        prisonDetails = prisonerDetailsByPrisonerId.get(nomsId)
+      } else {
+        // lazy load for specific list of prisoner ids so we can handle missing prisoners without breaking the whole run.
+        // if you're loading for a whole prison then it's impossible for this to be missing.
         prisonDetails = await this.prisonerSearchService.getPrisonerDetails(nomsId, user)
-        bookingId = prisonDetails.bookingId
-        nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
-        nomisRemand = nomisAdjustments.sentenceAdjustments
-          .filter(it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND')
-          .filter(it => it.active)
-        nomisUnusedRemand = nomisAdjustments.sentenceAdjustments
-          .filter(it => it.type === 'UNUSED_REMAND')
-          .filter(it => it.active)
-        courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
-        imprisonmentStatuses = await this.prisonerService.getImprisonmentStatuses(nomsId, username)
-
-        calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-          nomsId,
-          { includeRemandCalculation: true, userSelections: [] },
-          username,
-        )
-        sentences = await this.findSourceDataForIntersectingSentence(calculatedRemand, username)
-        if (!sentences.length) {
-          sentences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-        }
-
-        csvData.push(
-          this.addRow(
-            nomsId,
-            bookingId,
-            prisonDetails,
-            nomisRemand,
-            nomisUnusedRemand,
-            courtDates,
-            calculatedRemand,
-            sentences,
-            imprisonmentStatuses,
-            null,
-          ),
-        )
-      } catch (ex) {
-        csvData.push(
-          this.addRow(
-            nomsId,
-            bookingId,
-            prisonDetails,
-            nomisRemand || [],
-            nomisUnusedRemand || [],
-            courtDates || [],
-            calculatedRemand,
-            sentences || [],
-            imprisonmentStatuses || [],
-            ex,
-          ),
-        )
       }
+      bookingId = prisonDetails.bookingId
+      nomisAdjustments = await this.prisonerService.getBookingAndSentenceAdjustments(bookingId, username)
+      nomisRemand = nomisAdjustments.sentenceAdjustments
+        .filter(it => it.type === 'REMAND' || it.type === 'RECALL_SENTENCE_REMAND')
+        .filter(it => it.active)
+      nomisUnusedRemand = nomisAdjustments.sentenceAdjustments
+        .filter(it => it.type === 'UNUSED_REMAND')
+        .filter(it => it.active)
+      courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
+      imprisonmentStatuses = await this.prisonerService.getImprisonmentStatuses(nomsId, username)
+
+      calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
+        nomsId,
+        { includeRemandCalculation: true, userSelections: [] },
+        username,
+      )
+      sentences = await this.findSourceDataForIntersectingSentence(calculatedRemand, username)
+      if (!sentences.length) {
+        sentences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+      }
+
+      csvData.push(
+        this.addRow(
+          nomsId,
+          bookingId,
+          prisonDetails,
+          nomisRemand,
+          nomisUnusedRemand,
+          courtDates,
+          calculatedRemand,
+          sentences,
+          imprisonmentStatuses,
+          null,
+        ),
+      )
+    } catch (ex) {
+      csvData.push(
+        this.addRow(
+          nomsId,
+          bookingId,
+          prisonDetails,
+          nomisRemand || [],
+          nomisUnusedRemand || [],
+          courtDates || [],
+          calculatedRemand,
+          sentences || [],
+          imprisonmentStatuses || [],
+          ex,
+        ),
+      )
     }
-    return csvData
   }
 
   /* eslint-enable */

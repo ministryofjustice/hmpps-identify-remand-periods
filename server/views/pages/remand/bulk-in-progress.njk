@@ -15,6 +15,10 @@
                 <span class="govuk-caption-xl">Bulk Comparison</span>
                 {% if status == "RUNNING" %}
                     Calculation in progress
+                {% elseif status == "FAILED" %}
+                    Calculation failed
+                {% elseif status == "MISSING" %}
+                    Calculation not found
                 {% else %}
                     Calculation complete
                 {% endif %}
@@ -22,6 +26,10 @@
             {% if status == "RUNNING" %}
                 <p class="govuk-body">Depending on the number of prisoners, this may take a while.</p>
                 <p class="govuk-body">This page should refresh automatically but you can also <a href="/bulk-in-progress/{{ id }}" class="govuk-link--no-visited-state">check the status again manually.</a></p>
+            {% elseif status == "FAILED" %}
+                <p class="govuk-body">Calculation failed - ask the dev team as this shouldn't happen.</p>
+            {% elseif status == "MISSING" %}
+                <p class="govuk-body">Calculation couldn't be found. It's either expired or was lost due to a deployment.</p>
             {% else %}
                 <p class="govuk-body">Calculation complete, now you can <a href="/bulk-download/{{ id }}" class="govuk-link--no-visited-state">download the CSV.</a></p>
             {% endif %}

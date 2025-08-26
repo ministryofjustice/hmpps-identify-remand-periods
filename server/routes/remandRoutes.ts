@@ -237,7 +237,6 @@ export default class RemandRoutes {
     return res.render('pages/remand/bulk')
   }
 
-  // eslint-disable-next-line consistent-return
   public submitBulkRemand: RequestHandler = async (req, res): Promise<void> => {
     if (req.body.single) {
       const prisonerId = req.body['single-prisoner']
@@ -245,29 +244,33 @@ export default class RemandRoutes {
     }
 
     const user = res.locals.user as UserDetails
-    const { prisonerIds } = req.body
-    const nomsIds = prisonerIds.split(/\r?\n/)
+    const { prisonerIds, prisonId } = req.body
+    const nomsIds = prisonerIds?.split(/\r?\n/) ?? []
     if (nomsIds.length > 1000) return res.redirect(`/remand/`)
 
-    const id = await this.bulkRemandCalculationService.startRun(user, nomsIds)
+    const id = await this.bulkRemandCalculationService.startRun(user, nomsIds, prisonId)
     return res.redirect(`/bulk-in-progress/${id}`)
   }
 
   public bulkRemandInProgress: RequestHandler = async (req, res): Promise<void> => {
     const { id } = req.params
     const run = await this.bulkRemandCalculationService.getRun(id)
-    return res.render('pages/remand/bulk-in-progress', { id, status: run.status })
+    return res.render('pages/remand/bulk-in-progress', { id, status: run?.status ?? 'MISSING' })
   }
 
   public downloadBulkRemand: RequestHandler = async (req, res): Promise<void> => {
     const { id } = req.params
     const run = await this.bulkRemandCalculationService.getRun(id)
-    const fileName = `download-remand-dates.csv`
-    res.setHeader('Content-Type', 'text/csv')
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-    stringify(run.results, {
-      header: true,
-    }).pipe(res)
+    if (!run || run.status !== 'DONE') {
+      res.redirect(`/bulk-in-progress/${id}`)
+    } else {
+      const fileName = `download-remand-dates.csv`
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+      stringify(run.results, {
+        header: true,
+      }).pipe(res)
+    }
   }
 
   public overview: RequestHandler = async (req, res): Promise<void> => {
