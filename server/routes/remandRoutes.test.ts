@@ -598,7 +598,7 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
 })
 
 describe('bulk comparison', () => {
-  it('should start a bulk comparison run', () => {
+  it('should start a bulk comparison run for a specific list of prisoners', () => {
     bulkRemandCalculationService.startRun.mockResolvedValue('999')
     return request(app)
       .post(`/bulk`)
@@ -606,7 +606,18 @@ describe('bulk comparison', () => {
       .expect(302)
       .expect('Location', '/bulk-in-progress/999')
       .expect(_ => {
-        expect(bulkRemandCalculationService.startRun).toHaveBeenCalledWith(user, ['A1234BC', 'D5678EF'])
+        expect(bulkRemandCalculationService.startRun).toHaveBeenCalledWith(user, ['A1234BC', 'D5678EF'], undefined)
+      })
+  })
+  it('should start a bulk comparison run for a whole prison', () => {
+    bulkRemandCalculationService.startRun.mockResolvedValue('999')
+    return request(app)
+      .post(`/bulk`)
+      .send({ prisonId: 'KMI' })
+      .expect(302)
+      .expect('Location', '/bulk-in-progress/999')
+      .expect(_ => {
+        expect(bulkRemandCalculationService.startRun).toHaveBeenCalledWith(user, [], 'KMI')
       })
   })
   it('should render in progress if still running', () => {

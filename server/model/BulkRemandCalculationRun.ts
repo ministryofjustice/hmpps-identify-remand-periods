@@ -2,7 +2,7 @@ import BulkRemandCalculationRow from './BulkRemandCalculationRow'
 
 type BulkRemandCalculationRun = {
   id: string
-  status: 'RUNNING' | 'DONE'
+  status: 'RUNNING' | 'DONE' | 'FAILED'
   results: BulkRemandCalculationRow[] | null
 }
 
