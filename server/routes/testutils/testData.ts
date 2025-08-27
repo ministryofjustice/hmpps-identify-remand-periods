@@ -261,6 +261,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
     } as LegacyDataProblem,
   ],
+  periodsOutOfPrison: [],
 } as RemandResult
 
 export default remandResult

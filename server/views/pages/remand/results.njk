@@ -173,12 +173,19 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
+          {% if  model.intersectingSentences.length or model.periodsOutOfPrison.length %}
+            <h2 class="govuk-heading-m">Days deducted from the relevant remand periods</h2>
+            <p class="govuk-body">Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.</p>
+          {% endif %}
             {% if model.intersectingSentences.length %}
-                <h2 class="govuk-heading-m">Previous sentences that may overlap remand periods</h2>
-                <p class="govuk-body">These sentences could overlap with the relevant remand periods above.</p>
+                <h3 class="govuk-heading-s">Previous sentences that may overlap remand periods</h3>
                 {{ govukTable( model.intersectingSentenceTable() )}}
             {% endif %}
-            
+            {% if model.periodsOutOfPrison.length %}
+                <h3 class="govuk-heading-s">Time spent not in custody</h3>
+                {{ govukTable(model.periodsOutOfPrisonTable())}}
+            {% endif %}
+
             {% if model
                 .otherErrors()
                 .length %}
