@@ -120,7 +120,7 @@ export default abstract class RemandCardModel {
       },
       {
         key: {
-          text: 'Remand',
+          text: 'Days on remand',
         },
         value: {
           text: `${remand.days} days`,
@@ -128,7 +128,7 @@ export default abstract class RemandCardModel {
       },
       {
         key: {
-          text: 'Period',
+          text: 'Remand period',
         },
         value: {
           text: `${dayjs(remand.from).format('D MMM YYYY')} to ${dayjs(remand.to).format('D MMM YYYY')}`,

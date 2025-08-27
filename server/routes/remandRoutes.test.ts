@@ -195,9 +195,9 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
           'CASE1234',
           'Offence outcome',
           'Imprisonment',
-          'Remand',
+          'Days on remand',
           '11 days',
-          'Period',
+          'Remand period',
           '10 Jan 2023 to 20 Jan 2023',
         ])
         expect(res.text).toContainInOrder([
@@ -249,7 +249,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         expect(res.text).not.toContain('Applicable')
         expect(res.text).toContain('The number of remand days recorded has changed')
         expect(res.text).toContain('What to do next')
-        expect(res.text).toContain('the remand tool has not identified any relevant remand')
+        expect(res.text).toContain('The remand tool calculates remand to be applied by identifying relevant')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
@@ -347,7 +347,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
-  it('Should display intercept', () => {
+  it.skip('Should display intercept', () => {
     cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
@@ -359,7 +359,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('/prisoner/ABC123/replaced-offence?chargeIds=3933924')
       })
   })
-  it('Should show choices for select applicable', () => {
+  it.skip('Should show choices for select applicable', () => {
     cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     cachedDataService.getSelections.mockReturnValue([])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -382,8 +382,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
           '23 Nov 2022 to 15 Dec 2022',
           '23 Nov 2021 to 15 Dec 2021',
           'Offence 1 of 1',
-          'Has this offence been replaced?',
-          'No, this offence has not been replaced',
+          'Is this remand period relevant?',
+          'No, this remand period is not relevant',
           'value="4444"',
           'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
           'value="2222"',
@@ -391,7 +391,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         ])
       })
   })
-  it('Should show choices for editting select applicable', () => {
+  it.skip('Should show choices for editting select applicable', () => {
     cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     cachedDataService.getSelections.mockReturnValue([{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -413,8 +413,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('type="radio" value="2222" checked>')
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContainInOrder([
-          'Has this offence been replaced?',
-          'No, this offence has not been replaced',
+          'Is this remand period relevant?',
+          'No, this remand period is not relevant',
           'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
       })

@@ -49,8 +49,8 @@
     {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
+            <span class="govuk-caption-xl">Adjustments</span>
             <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>
                 {% if model.totalDays() > 0 %}Check remand details for
                 {% else %}Confirm there is no relevant remand for 
                 {% endif %}
@@ -72,11 +72,10 @@
     </div>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <p class="govuk-!-margin-bottom-8">Based on the court case information in NOMIS,
-                {% if model.totalDays > 0%}the remand tool has calculated the below remand to be applied.
-                {% else %}the remand tool has not identified any relevant remand.
-                {% endif %}
-                The rules for applying remand time can be found in the <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
+            <p class="govuk-!-margin-bottom-8">The remand tool calculates remand to be applied by identifying relevant
+            remand periods, and then deducting any time spent not in custody or spent serving an overlapping sentence.
+            The rules for applying remand time can be found in the
+            <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
             </p>
         </div>
     </div>
