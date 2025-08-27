@@ -195,9 +195,9 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
           'CASE1234',
           'Offence outcome',
           'Imprisonment',
-          'Remand',
+          'Days on remand',
           '11 days',
-          'Period',
+          'Remand period',
           '10 Jan 2023 to 20 Jan 2023',
         ])
         expect(res.text).toContainInOrder([
@@ -249,7 +249,9 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
         expect(res.text).not.toContain('Applicable')
         expect(res.text).toContain('The number of remand days recorded has changed')
         expect(res.text).toContain('What to do next')
-        expect(res.text).toContain('the remand tool has not identified any relevant remand')
+        expect(res.text).toContain(
+          'The remand tool calculates remand to be applied by identifying relevant remand periods',
+        )
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
