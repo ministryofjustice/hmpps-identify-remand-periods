@@ -5,6 +5,7 @@ import {
   LegacyDataProblem,
   RemandApplicableUserSelection,
   RemandResult,
+  PeriodOutOfPrison,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
@@ -21,6 +22,8 @@ export default class RelevantRemandModel extends RemandCardModel {
   private intersectingSentences: IntersectingSentence[]
 
   private detailedRemandAndSentence: DetailedRemandCalculationAndSentence
+
+  private periodsOutOfPrison: PeriodOutOfPrison[]
 
   public adjustments: (Adjustment & { daysBetween: number })[]
 
@@ -43,6 +46,9 @@ export default class RelevantRemandModel extends RemandCardModel {
       sentencesAndOffences,
     )
     this.adjustments = RelevantRemandModel.getAdjustments(relevantRemand)
+    this.periodsOutOfPrison = this.relevantRemand.periodsOutOfPrison
+      ?.filter(it => it.days > 0)
+      .filter(it => dayjs(it.from).isBefore(dayjs(it.to)))
   }
 
   public returnToAdjustments(): string {
@@ -70,9 +76,11 @@ export default class RelevantRemandModel extends RemandCardModel {
       head: [
         {
           text: 'From',
+          classes: 'govuk-!-width-one-quarter',
         },
         {
           text: 'To',
+          classes: 'govuk-!-width-one-quarter',
         },
         {
           text: 'Offence details',
@@ -97,6 +105,38 @@ export default class RelevantRemandModel extends RemandCardModel {
           },
           {
             text: this.offenceDateText(charge),
+          },
+        ]
+      }),
+    }
+  }
+
+  public periodsOutOfPrisonTable() {
+    return {
+      head: [
+        {
+          text: 'From',
+          classes: 'govuk-!-width-one-quarter',
+        },
+        {
+          text: 'To',
+          classes: 'govuk-!-width-one-quarter',
+        },
+        {
+          text: 'Days',
+          classes: 'govuk-!-width-one-half',
+        },
+      ],
+      rows: this.periodsOutOfPrison.map(it => {
+        return [
+          {
+            text: dayjs(it.from).format('D MMM YYYY'),
+          },
+          {
+            text: dayjs(it.to).format('D MMM YYYY'),
+          },
+          {
+            text: it.days,
           },
         ]
       }),
