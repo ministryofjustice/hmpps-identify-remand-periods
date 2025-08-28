@@ -234,7 +234,11 @@ export default class RemandRoutes {
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {
-    return res.render('pages/remand/bulk')
+    const usersCaseload = await this.prisonerService.getUsersCaseloads(res.locals.user.token)
+    const caseloadItems = usersCaseload.map(caseload => ({ text: caseload.description, value: caseload.caseLoadId }))
+    caseloadItems.sort((a, b) => a.text.localeCompare(b.text))
+    caseloadItems.unshift({ text: '', value: '' })
+    return res.render('pages/remand/bulk', { caseloadItems })
   }
 
   public submitBulkRemand: RequestHandler = async (req, res): Promise<void> => {

@@ -66,10 +66,12 @@ export default class BulkRemandCalculationService {
     let nomsIds: string[]
     const prisonerDetailsByPrisonerId = new Map<string, PrisonerSearchApiPrisoner>()
     if (prisonId) {
+      logger.info('Running bulk for every prisoner in ' + prisonId)
       const allPrisonersInPrison = await this.prisonerSearchService.getPrisonersInEstablishment(prisonId, user)
       allPrisonersInPrison.forEach(prisoner => prisonerDetailsByPrisonerId.set(prisoner.prisonerNumber, prisoner))
       nomsIds = [...prisonerDetailsByPrisonerId.keys()]
     } else {
+      logger.info('Running bulk for specific prisoners', specificPrisonerIds)
       nomsIds = specificPrisonerIds
     }
     for (const nomsId of nomsIds) {
