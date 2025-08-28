@@ -4,8 +4,14 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
 
 {% set pageTitle = applicationName + " - test data" %}
+
+{% block javascripts %}
+    <script src="/assets/accessible-autocomplete.min.js"></script>
+    <script id="autocomplete-script" src="/assets/js/autoCompletePrisonName.js"></script>
+{% endblock %}
 
 {% block content %}
     <form method="post">
@@ -24,16 +30,19 @@
                     rows: 25
                 }) }}
             </div>
-            <div class="govuk-!-width-one-quarter">
-                {{ govukInput({
+            <div class="govuk-!-width-two-thirds">
+                {{ govukSelect({
                     label: {
-                        text: "or, provide an establishment id",
+                        text: "or, select an establishment",
                         classes: "govuk-label--s",
                         isPageHeading: false
                     },
                     id: "prisonId",
-                    name: "prisonId"
+                    name: "prisonId",
+                    placeholder: "Start typing the name of the prison",
+                    items: caseloadItems
                 }) }}
+
             </div>
             <div class="govuk-grid-row  govuk-!-margin-bottom-0 govuk-!-padding-bottom-0">
                 <div class="govuk-grid-column-three-quarters ">
