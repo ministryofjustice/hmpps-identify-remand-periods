@@ -5,10 +5,11 @@ import {
   LegacyDataProblem,
   RemandApplicableUserSelection,
   RemandResult,
+  PeriodOutOfPrison,
 } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import config from '../config'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import { daysBetween } from '../utils/utils'
+import { daysBetween, maxOf } from '../utils/utils'
 import RemandCardModel from './RemandCardModel'
 import DetailedRemandCalculationAndSentence from './DetailedRemandCalculationAndSentence'
 import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
@@ -21,6 +22,8 @@ export default class RelevantRemandModel extends RemandCardModel {
   private intersectingSentences: IntersectingSentence[]
 
   private detailedRemandAndSentence: DetailedRemandCalculationAndSentence
+
+  private periodsOutOfPrison: PeriodOutOfPrison[]
 
   public adjustments: (Adjustment & { daysBetween: number })[]
 
@@ -43,6 +46,9 @@ export default class RelevantRemandModel extends RemandCardModel {
       sentencesAndOffences,
     )
     this.adjustments = RelevantRemandModel.getAdjustments(relevantRemand)
+    this.periodsOutOfPrison = this.relevantRemand.periodsOutOfPrison
+      ?.filter(it => it.days > 0)
+      .filter(it => dayjs(it.from).isBefore(dayjs(it.to)))
   }
 
   public returnToAdjustments(): string {
@@ -70,9 +76,11 @@ export default class RelevantRemandModel extends RemandCardModel {
       head: [
         {
           text: 'From',
+          classes: 'govuk-!-width-one-quarter',
         },
         {
           text: 'To',
+          classes: 'govuk-!-width-one-quarter',
         },
         {
           text: 'Offence details',
@@ -103,6 +111,38 @@ export default class RelevantRemandModel extends RemandCardModel {
     }
   }
 
+  public periodsOutOfPrisonTable() {
+    return {
+      head: [
+        {
+          text: 'From',
+          classes: 'govuk-!-width-one-quarter',
+        },
+        {
+          text: 'To',
+          classes: 'govuk-!-width-one-quarter',
+        },
+        {
+          text: 'Days',
+          classes: 'govuk-!-width-one-half',
+        },
+      ],
+      rows: this.periodsOutOfPrison.map(it => {
+        return [
+          {
+            text: dayjs(it.from).format('D MMM YYYY'),
+          },
+          {
+            text: dayjs(it.to).format('D MMM YYYY'),
+          },
+          {
+            text: it.days,
+          },
+        ]
+      }),
+    }
+  }
+
   private bookNumberForIntersectingSentenceText(sentence: IntersectingSentence) {
     const numberOfSentencesWithSameFromDate = this.intersectingSentences.filter(it => it.from === sentence.from).length
 
@@ -126,7 +166,8 @@ export default class RelevantRemandModel extends RemandCardModel {
   }
 
   private filterIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {
-    const filteredIntersectingSentences = this.filterHistoricIntersectingSentences(intersectingSentences)
+    let filteredIntersectingSentences = this.filterHistoricIntersectingSentences(intersectingSentences)
+    filteredIntersectingSentences = this.filterIntersectingSentencesAfterRemand(filteredIntersectingSentences)
     const groupedByFromAndBookNumber: Record<string, IntersectingSentence[]> = {}
     filteredIntersectingSentences.forEach(it => {
       const charge = this.relevantRemand.charges[it.chargeId]
@@ -146,6 +187,16 @@ export default class RelevantRemandModel extends RemandCardModel {
       }
     })
     return results
+  }
+
+  private filterIntersectingSentencesAfterRemand(
+    intersectingSentences: IntersectingSentence[],
+  ): IntersectingSentence[] {
+    const latestAdjustmentDate = maxOf(this.relevantRemand.adjustments, it => new Date(it.toDate))
+    if (latestAdjustmentDate) {
+      return intersectingSentences.filter(it => new Date(it.to) < latestAdjustmentDate)
+    }
+    return intersectingSentences
   }
 
   private filterHistoricIntersectingSentences(intersectingSentences: IntersectingSentence[]): IntersectingSentence[] {

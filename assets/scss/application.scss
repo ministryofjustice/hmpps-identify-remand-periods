@@ -10,5 +10,5 @@ $govuk-page-width: $moj-page-width;
 
 @import './components/header-bar';
 @import './components/overview-card';
-
+@import 'node_modules/accessible-autocomplete/dist/accessible-autocomplete.min';
 @import 'assets/scss/local';
