@@ -18,6 +18,7 @@ import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import { UserDetails } from './userService'
+import InMemoryBulkRemandCalculationRunStore from '../data/bulkResultsStore/inMemoryBulkRemandCalculationRunStore'
 
 jest.mock('../services/prisonerService')
 jest.mock('../services/prisonerSearchService')
@@ -26,9 +27,15 @@ jest.mock('../services/identifyRemandPeriodsService')
 const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const identifyRemandPeriodsService = new IdentifyRemandPeriodsService(null) as jest.Mocked<IdentifyRemandPeriodsService>
+const bulkRemandCalculationRunStore = new InMemoryBulkRemandCalculationRunStore()
 
 describe('Bulk calculation service test', () => {
-  const service = new BulkRemandCalculationService(prisonerSearchService, prisonerService, identifyRemandPeriodsService)
+  const service = new BulkRemandCalculationService(
+    prisonerSearchService,
+    prisonerService,
+    identifyRemandPeriodsService,
+    bulkRemandCalculationRunStore,
+  )
   const prisonerNumber = 'ABC123'
   const bookingId = '123'
 
@@ -36,7 +43,7 @@ describe('Bulk calculation service test', () => {
     prisonerSearchService.getPrisonerDetails.mockRejectedValue({ error: 'THIS IS A PRISON API ERROR' })
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], null))[0],
     )
 
     expect(row).toStrictEqual({
@@ -118,7 +125,7 @@ describe('Bulk calculation service test', () => {
     })
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], null))[0],
     )
 
     expect(row).toStrictEqual({
@@ -250,10 +257,11 @@ describe('Bulk calculation service test', () => {
           courtCaseRef: 'NA',
         } as unknown as LegacyDataProblem,
       ],
+      periodsOutOfPrison: [],
     } as RemandResult)
 
     const row = removeWhitespaceFromRow(
-      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber]))[0],
+      (await service.runCalculations({ caseloads: [], username: 'bob' } as UserDetails, [prisonerNumber], null))[0],
     )
 
     expect(row).toStrictEqual({
@@ -281,9 +289,90 @@ describe('Bulk calculation service test', () => {
       NOMS_ID: 'ABC123',
       REMAND_TOOL_INPUT: '{"remandCalculation":{"calculationData":"DATA"}}',
       REMAND_TOOL_OUTPUT:
-        '{"adjustments":[{"fromDate":"2023-02-01","toDate":"2023-02-25","status":"ACTIVE","bookingId":123}],"chargeRemand":[{"from":"2023-02-01","to":"2023-02-25","status":"CASE_NOT_CONCLUDED","chargeIds":[1,2,3]}],"intersectingSentences":[],"issuesWithLegacyData":[{"bookingId":"123","message":"This error is important","offence":{"statute":"ABC"},"courtCaseRef":"NA"},{"bookingId":"123","message":"This error is aslo important","offence":{"statute":"QRS"},"courtCaseRef":"REF"},{"bookingId":"123","message":"This error is not important","offence":{"statute":"QRS"},"courtCaseRef":"NA"}]}',
+        '{"adjustments":[{"fromDate":"2023-02-01","toDate":"2023-02-25","status":"ACTIVE","bookingId":123}],"chargeRemand":[{"from":"2023-02-01","to":"2023-02-25","status":"CASE_NOT_CONCLUDED","chargeIds":[1,2,3]}],"intersectingSentences":[],"issuesWithLegacyData":[{"bookingId":"123","message":"This error is important","offence":{"statute":"ABC"},"courtCaseRef":"NA"},{"bookingId":"123","message":"This error is aslo important","offence":{"statute":"QRS"},"courtCaseRef":"REF"},{"bookingId":"123","message":"This error is not important","offence":{"statute":"QRS"},"courtCaseRef":"NA"}],"periodsOutOfPrison":[]}',
       VALIDATION_MESSAGES: `This error is important\nThis error is aslo important`,
     })
+  })
+  it('should run calculation for whole prison', async () => {
+    const prisoner1 = {
+      prisonerNumber,
+      bookingId,
+    } as PrisonerSearchApiPrisoner
+    const prisoner2 = {
+      prisonerNumber: 'Z9876BC',
+      bookingId: '1234567895',
+    } as PrisonerSearchApiPrisoner
+    prisonerSearchService.getPrisonersInEstablishment.mockResolvedValue([prisoner1, prisoner2])
+
+    prisonerService.getBookingAndSentenceAdjustments.mockResolvedValue({
+      bookingAdjustments: [],
+      sentenceAdjustments: [
+        {
+          sentenceSequence: 1,
+          type: 'REMAND',
+          numberOfDays: 25,
+          fromDate: '2023-02-01',
+          toDate: '2023-02-25',
+          active: true,
+        } as PrisonApiSentenceAdjustments,
+        {
+          sentenceSequence: 1,
+          type: 'UNUSED_REMAND',
+          numberOfDays: 0,
+          fromDate: null,
+          toDate: null,
+          active: true,
+        } as PrisonApiSentenceAdjustments,
+      ],
+    })
+
+    prisonerService.getCourtDateResults.mockResolvedValue([
+      { courtData: 'DATA' } as unknown as PrisonApiCourtDateResult,
+    ])
+
+    prisonerService.getImprisonmentStatuses.mockResolvedValue([
+      { imprisonmentData: 'DATA' } as unknown as PrisonApiImprisonmentStatusHistoryDto,
+    ])
+
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'ABC',
+          },
+        ],
+        caseReference: 'REF',
+        sentenceSequence: 1,
+        sentenceStatus: 'A',
+        bookingId: Number(bookingId),
+      },
+    ])
+
+    identifyRemandPeriodsService.calculateRelevantRemand.mockResolvedValue({
+      adjustments: [],
+      remandCalculation: {
+        calculationData: 'DATA',
+      } as unknown as RemandCalculation,
+      chargeRemand: [],
+      charges: {
+        1: {
+          bookingId,
+        } as unknown as Charge,
+      },
+      intersectingSentences: [],
+      issuesWithLegacyData: [],
+      periodsOutOfPrison: [],
+    } as RemandResult)
+    const rows = await service.runCalculations(
+      {
+        caseloads: [],
+        username: 'bob',
+      } as UserDetails,
+      [],
+      'KMI',
+    )
+    expect(removeWhitespaceFromRow(rows[0]).NOMS_ID).toStrictEqual(prisoner1.prisonerNumber)
+    expect(removeWhitespaceFromRow(rows[1]).NOMS_ID).toStrictEqual(prisoner2.prisonerNumber)
   })
 })
 

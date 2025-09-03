@@ -42,6 +42,8 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/confirm-and-save', remandRoutes.confirmAndSave)
   post('/prisoner/:nomsId/confirm-and-save', remandRoutes.submitConfirmAndSave)
 
+  get('/bulk-in-progress/:id', remandRoutes.bulkRemandInProgress)
+  get('/bulk-download/:id', remandRoutes.downloadBulkRemand)
   get('/bulk', remandRoutes.bulkRemand)
   post('/bulk', remandRoutes.submitBulkRemand)
 
