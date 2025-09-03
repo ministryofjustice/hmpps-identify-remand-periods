@@ -42,6 +42,8 @@
       <link href="{{ css }}" nonce="{{ cspNonce }}" rel="stylesheet" />
     {% endfor %}
   {% endif %}
+  {% block javascripts %}
+  {% endblock %}
 {% endblock %}
 
 {% block pageTitle %}{{pageTitle | default(applicationName)}}{% endblock %}
