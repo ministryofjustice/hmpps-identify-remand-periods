@@ -137,18 +137,18 @@ export default class RemandRoutes {
 
     if (form.decision === 'yes') {
       this.cachedDataService.clearRejectedRemandDecision(req, nomsId)
-      return res.redirect(`/prisoner/${prisonerNumber}/overview`)
-    }
-    const decision = {
-      accepted: false,
-      rejectComment: form.comment,
-      options: {
-        includeRemandCalculation: false,
-        userSelections: selections,
-      },
-    } as IdentifyRemandDecision
+    } else {
+      const decision = {
+        accepted: false,
+        rejectComment: form.comment,
+        options: {
+          includeRemandCalculation: false,
+          userSelections: selections,
+        },
+      } as IdentifyRemandDecision
 
-    this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+      this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+    }
 
     return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
@@ -234,10 +234,13 @@ export default class RemandRoutes {
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {
-    return res.render('pages/remand/bulk')
+    const usersCaseload = await this.prisonerService.getUsersCaseloads(res.locals.user.token)
+    const caseloadItems = usersCaseload.map(caseload => ({ text: caseload.description, value: caseload.caseLoadId }))
+    caseloadItems.sort((a, b) => a.text.localeCompare(b.text))
+    caseloadItems.unshift({ text: '', value: '' })
+    return res.render('pages/remand/bulk', { caseloadItems })
   }
 
-  // eslint-disable-next-line consistent-return
   public submitBulkRemand: RequestHandler = async (req, res): Promise<void> => {
     if (req.body.single) {
       const prisonerId = req.body['single-prisoner']
@@ -245,17 +248,33 @@ export default class RemandRoutes {
     }
 
     const user = res.locals.user as UserDetails
-    const { prisonerIds } = req.body
-    const nomsIds = prisonerIds.split(/\r?\n/)
-    if (nomsIds.length > 500) return res.redirect(`/remand/`)
+    const { prisonerIds, prisonId } = req.body
+    const nomsIds = prisonerIds?.split(/\r?\n/) ?? []
+    if (nomsIds.length > 1000) return res.redirect(`/remand/`)
 
-    const results = await this.bulkRemandCalculationService.runCalculations(user, nomsIds)
-    const fileName = `download-remand-dates.csv`
-    res.setHeader('Content-Type', 'text/csv')
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-    stringify(results, {
-      header: true,
-    }).pipe(res)
+    const id = await this.bulkRemandCalculationService.startRun(user, nomsIds, prisonId)
+    return res.redirect(`/bulk-in-progress/${id}`)
+  }
+
+  public bulkRemandInProgress: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
+    return res.render('pages/remand/bulk-in-progress', { id, status: run?.status ?? 'MISSING' })
+  }
+
+  public downloadBulkRemand: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
+    if (!run || run.status !== 'DONE') {
+      res.redirect(`/bulk-in-progress/${id}`)
+    } else {
+      const fileName = `download-remand-dates.csv`
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+      stringify(run.results, {
+        header: true,
+      }).pipe(res)
+    }
   }
 
   public overview: RequestHandler = async (req, res): Promise<void> => {

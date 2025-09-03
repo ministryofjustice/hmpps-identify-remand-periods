@@ -119,6 +119,14 @@ export interface components {
       isRecallEvent: boolean
       isCustodial: boolean
     }
+    DatePeriod: {
+      /** Format: date */
+      from: string
+      /** Format: date */
+      to: string
+      /** Format: int64 */
+      days?: number
+    }
     LegacyDataProblem: {
       /** @enum {string} */
       type:
@@ -160,6 +168,7 @@ export interface components {
         [key: string]: components['schemas']['Charge']
       }
       issuesWithLegacyData: components['schemas']['LegacyDataProblem'][]
+      periodsOutOfPrison: components['schemas']['DatePeriod'][]
       remandCalculation?: components['schemas']['RemandCalculation']
     }
     Sentence: {
