@@ -63,7 +63,7 @@ describe('CachedDataService - getCalculationWithOnlyInconclusiveChargeRemands', 
   it('returns only remands with inconclusive charges', async () => {
     mockIdentifyService.calculateRelevantRemand.mockResolvedValue(rrWithInconclusiveCharges)
 
-    const result = await service.getCalcWithoutSelectionAndOnlyInconclusiveCharges(mockRequest, nomsId, username)
+    const result = await service.getCalculationWithoutSelections(mockRequest, nomsId, username)
 
     expect(result.chargeRemand).toEqual([{ chargeIds: [1] }])
   })
@@ -71,7 +71,7 @@ describe('CachedDataService - getCalculationWithOnlyInconclusiveChargeRemands', 
   it('returns empty array when no inconclusive charges', async () => {
     mockIdentifyService.calculateRelevantRemand.mockResolvedValue(rrWithNoInconclusiveCharges)
 
-    const result = await service.getCalcWithoutSelectionAndOnlyInconclusiveCharges(mockRequest, nomsId, username)
+    const result = await service.getCalculationWithoutSelections(mockRequest, nomsId, username)
 
     expect(result.chargeRemand).toEqual([])
   })

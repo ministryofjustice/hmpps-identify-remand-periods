@@ -65,21 +65,8 @@ export default class CachedDataService {
       req.session.storedCalculations[nomsId] = undefined
       req.session.storedCalculationsWithoutSelection[nomsId] = undefined
     }
+    calculation.chargeRemand = this.getInconclusiveChargeRemands(calculation)
     return calculation
-  }
-
-  public getCalcWithoutSelectionAndOnlyInconclusiveCharges(
-    req: Request,
-    nomsId: string,
-    username: string,
-    clear: boolean = false,
-  ): Promise<RemandResult> {
-    return this.getCalculationWithoutSelections(req, nomsId, username, clear).then(calculation => {
-      return {
-        ...calculation,
-        chargeRemand: this.getInconclusiveChargeRemands(calculation),
-      }
-    })
   }
 
   public getInconclusiveChargeRemands(remandResult: RemandResult): ChargeRemand[] {

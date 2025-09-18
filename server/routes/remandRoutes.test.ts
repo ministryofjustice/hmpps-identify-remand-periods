@@ -414,7 +414,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/validation-errors`)
       .expect('Content-Type', /html/)
@@ -439,7 +439,7 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/validation-errors`)
       .expect('Content-Type', /html/)
@@ -464,14 +464,14 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
         sentenceStatus: 'A',
       },
     ])
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(emptyRemandResult)
     return request(app).get(`/prisoner/${NOMS_ID}/validation-errors`).expect(302).expect('Location', '/prisoner/ABC123')
   })
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   it('Should display intercept', () => {
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
       .expect('Content-Type', /html/)
@@ -483,7 +483,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       })
   })
   it('Should show choices for select applicable', () => {
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     cachedDataService.getSelections.mockReturnValue([])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -515,7 +515,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       })
   })
   it('Should show choices for editting select applicable', () => {
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     cachedDataService.getSelections.mockReturnValue([{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 }])
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -544,7 +544,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
   })
 
   it('Should submit choices for select applicable', () => {
-    cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     return request(app)
       .post(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .send({
