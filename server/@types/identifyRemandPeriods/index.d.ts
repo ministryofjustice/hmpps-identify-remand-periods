@@ -76,6 +76,7 @@ export interface components {
       final: boolean
       isActiveBooking: boolean
       isRecallSentence: boolean
+      isInconclusive: boolean
     }
     ChargeAndEvents: {
       charge: components['schemas']['Charge']

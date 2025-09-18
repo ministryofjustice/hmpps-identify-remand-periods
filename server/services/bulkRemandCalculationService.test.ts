@@ -228,6 +228,7 @@ describe('Bulk calculation service test', () => {
       charges: {
         1: {
           bookingId,
+          isInconclusive: true,
         } as unknown as Charge,
       },
       intersectingSentences: [],

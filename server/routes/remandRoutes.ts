@@ -67,7 +67,12 @@ export default class RemandRoutes {
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username, true)
+    const calculation = await this.cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges(
+      req,
+      nomsId,
+      username,
+      true,
+    )
 
     const detailedCalculation = new DetailedRemandCalculation(calculation)
     const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
@@ -85,7 +90,11 @@ export default class RemandRoutes {
   public replacedOffenceIntercept: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { username } = res.locals.user
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
+    const calculation = await this.cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges(
+      req,
+      nomsId,
+      username,
+    )
     const chargeIds = calculation.chargeRemand
       .find(it => ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status))
       .chargeIds.join(',')
@@ -161,7 +170,11 @@ export default class RemandRoutes {
 
     const chargeNumbers = chargeIds.split(',').map(it => Number(it))
 
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
+    const calculation = await this.cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges(
+      req,
+      nomsId,
+      username,
+    )
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
     const selections = this.cachedDataService.getSelections(req, nomsId)
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
@@ -178,7 +191,11 @@ export default class RemandRoutes {
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const { chargeIds } = req.query as Record<string, string>
     const form = new SelectApplicableRemandForm(req.body)
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
+    const calculation = await this.cachedDataService.getCalcWithoutSelectionAndOnlyInconclusiveCharges(
+      req,
+      nomsId,
+      username,
+    )
     const chargeNumbers = chargeIds.split(',').map(it => Number(it))
 
     form.validate()
