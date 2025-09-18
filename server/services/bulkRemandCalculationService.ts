@@ -80,6 +80,12 @@ export default class BulkRemandCalculationService {
     return csvData
   }
 
+  public getInconclusiveChargeRemands(remandResult: RemandResult): ChargeRemand[] {
+    return remandResult.chargeRemand.filter(remand =>
+      remand.chargeIds.some(id => remandResult.charges[id]?.isInconclusive === true),
+    )
+  }
+
   private async handlePrisoner(
     nomsId: string,
     user: UserDetails,
@@ -116,11 +122,14 @@ export default class BulkRemandCalculationService {
       courtDates = await this.prisonerService.getCourtDateResults(nomsId, username)
       imprisonmentStatuses = await this.prisonerService.getImprisonmentStatuses(nomsId, username)
 
-      calculatedRemand = await this.identifyRemandPeriodsService.calculateRelevantRemand(
-        nomsId,
-        { includeRemandCalculation: true, userSelections: [] },
-        username,
-      )
+      calculatedRemand = await this.identifyRemandPeriodsService
+        .calculateRelevantRemand(nomsId, { includeRemandCalculation: true, userSelections: [] }, username)
+        .then(calculation => {
+          return {
+            ...calculation,
+            chargeRemand: this.getInconclusiveChargeRemands(calculation),
+          }
+        })
       sentences = await this.findSourceDataForIntersectingSentence(calculatedRemand, username)
       if (!sentences.length) {
         sentences = await this.prisonerService.getSentencesAndOffences(bookingId, username)

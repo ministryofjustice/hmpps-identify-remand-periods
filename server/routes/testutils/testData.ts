@@ -21,6 +21,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3933924: {
       chargeId: 3933924,
@@ -34,6 +35,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3933870: {
       chargeId: 3933870,
@@ -47,6 +49,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     2222: {
       chargeId: 2222,
@@ -60,6 +63,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     4444: {
       chargeId: 4444,
@@ -73,6 +77,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3934217: {
       chargeId: 3934217,
@@ -86,6 +91,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3934220: {
       chargeId: 3934220,
@@ -99,6 +105,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Recall to Prison',
+      isInconclusive: true,
     } as Charge,
     3934221: {
       chargeId: 3934221,
@@ -112,6 +119,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Recall to Prison',
+      isInconclusive: true,
     } as Charge,
   },
   adjustments: [
