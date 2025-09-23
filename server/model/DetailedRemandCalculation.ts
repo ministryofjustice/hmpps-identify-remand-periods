@@ -35,15 +35,18 @@ export default class DetailedRemandCalculation {
     return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
   }
 
-  public static canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
-    return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
+  public static canBeMarkedAsApplicable(chargeRemand: ChargeRemand, charges: Charge[]): boolean {
+    return (
+      chargeRemand.chargeIds.some(id => charges.find(c => c.chargeId === id)?.isInconclusive === true) &&
+      (chargeRemand.status === 'CASE_NOT_CONCLUDED' || chargeRemand.status === 'NOT_SENTENCED')
+    )
   }
 
   public getReplaceableChargeRemandGroupedByChargeIds(): ReplaceableChargeRemands[] {
     const remands: ReplaceableChargeRemands[] = []
 
     this.chargeRemand
-      .filter(it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it))
+      .filter(it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it, it.charges))
       .forEach(chargeRemand => {
         const existing = remands.find(it => sameMembers(it.chargeIds, chargeRemand.chargeIds))
         if (existing) {

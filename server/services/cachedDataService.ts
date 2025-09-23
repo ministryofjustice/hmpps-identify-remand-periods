@@ -1,6 +1,5 @@
 import { Request } from 'express'
 import {
-  ChargeRemand,
   IdentifyRemandDecision,
   RemandApplicableUserSelection,
   RemandResult,
@@ -48,7 +47,7 @@ export default class CachedDataService {
     clear: boolean = false,
   ): Promise<RemandResult> {
     this.initialiseSession(req, nomsId)
-    let calculation: RemandResult = req.session.storedCalculationsWithoutSelection[nomsId]
+    let calculation = req.session.storedCalculationsWithoutSelection[nomsId]
     if (!calculation) {
       calculation = await this.identifyRemandPeriodsService.calculateRelevantRemand(
         nomsId,
@@ -65,14 +64,7 @@ export default class CachedDataService {
       req.session.storedCalculations[nomsId] = undefined
       req.session.storedCalculationsWithoutSelection[nomsId] = undefined
     }
-    calculation.chargeRemand = this.getInconclusiveChargeRemands(calculation)
     return calculation
-  }
-
-  public getInconclusiveChargeRemands(remandResult: RemandResult): ChargeRemand[] {
-    return remandResult.chargeRemand.filter(remand =>
-      remand.chargeIds.some(id => remandResult.charges[id]?.isInconclusive === true),
-    )
   }
 
   public storeSelection(req: Request, nomsId: string, selection: RemandApplicableUserSelection): void {

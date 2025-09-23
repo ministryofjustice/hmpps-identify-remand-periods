@@ -4,7 +4,7 @@ import { appWithAllRoutes, user } from './testutils/appSetup'
 import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
-import remandResult from './testutils/testData'
+import { remandResult, conclusiveRemandResult } from './testutils/testData'
 import CachedDataService from '../services/cachedDataService'
 import AdjustmentsService from '../services/adjustmentsService'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
@@ -83,6 +83,25 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
       .get(`/prisoner/${NOMS_ID}`)
       .expect(302)
       .expect('Location', `/prisoner/${NOMS_ID}/validation-errors`)
+  })
+  it('should redirect to landing page', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
+      ...conclusiveRemandResult,
+      issuesWithLegacyData: [],
+    })
+
+    return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
   })
   it('should redirect to replace offence', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
