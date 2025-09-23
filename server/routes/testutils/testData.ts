@@ -311,7 +311,7 @@ const conclusiveRemandResult = {
       to: '2023-05-20',
       days: 11,
       chargeIds: [1001],
-      status: 'APPLICABLE',
+      status: 'NOT_SENTENCED',
     } as ChargeRemand,
   ],
   intersectingSentences: [

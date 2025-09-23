@@ -53,7 +53,7 @@ export default abstract class RemandCardModel {
     if (remand.replacedChargeIds?.length) {
       return true
     }
-    if (DetailedRemandCalculation.canBeMarkedAsApplicable(remand, remand.charges)) {
+    if (DetailedRemandCalculation.canBeMarkedAsApplicable(remand)) {
       return true
     }
     return false

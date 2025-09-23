@@ -84,7 +84,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
       .expect(302)
       .expect('Location', `/prisoner/${NOMS_ID}/validation-errors`)
   })
-  it('should redirect to landing page', () => {
+  it('should not trigger u/d if there is only conclusive charges and charge as is Not Sentenced', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
         offences: [
