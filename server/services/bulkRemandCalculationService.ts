@@ -1,10 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import {
-  ChargeRemand,
-  LegacyDataProblem,
-  RemandResult,
-} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiImprisonmentStatusHistoryDto,
@@ -13,7 +9,7 @@ import {
 } from '../@types/prisonApi/prisonClientTypes'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import BulkRemandCalculationRow from '../model/BulkRemandCalculationRow'
-import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
+import DetailedRemandCalculation, { ReplaceableChargeRemands } from '../model/DetailedRemandCalculation'
 import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
 import { daysBetween, onlyUnique, sameMembers } from '../utils/utils'
 import IdentifyRemandPeriodsService from './identifyRemandPeriodsService'
@@ -234,10 +230,8 @@ export default class BulkRemandCalculationService {
     return this.getUpgradeDowngradePeriods(calculatedRemand).flatMap(it => it.chargeIds).length
   }
 
-  private getUpgradeDowngradePeriods(calculatedRemand: RemandResult): ChargeRemand[] {
-    return (calculatedRemand?.chargeRemand || []).filter(it =>
-      ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status),
-    )
+  private getUpgradeDowngradePeriods(calculatedRemand: RemandResult): ReplaceableChargeRemands[] {
+    return new DetailedRemandCalculation(calculatedRemand).getReplaceableChargeRemandGroupedByChargeIds()
   }
 
   private async findSourceDataForIntersectingSentence(
