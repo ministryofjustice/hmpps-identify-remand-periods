@@ -37,9 +37,7 @@ export default class DetailedRemandCalculation {
 
   public static canBeMarkedAsApplicable(remandAndCharge: RemandAndCharge): boolean {
     return (
-      remandAndCharge.chargeIds.some(
-        id => remandAndCharge.charges.find(c => c.chargeId === id)?.isInconclusive === true,
-      ) &&
+      remandAndCharge.charges.some(it => it.isInconclusive) &&
       (remandAndCharge.status === 'CASE_NOT_CONCLUDED' || remandAndCharge.status === 'NOT_SENTENCED')
     )
   }
