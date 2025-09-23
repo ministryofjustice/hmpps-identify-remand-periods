@@ -1,10 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
-import {
-  ChargeRemand,
-  LegacyDataProblem,
-  RemandResult,
-} from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
+import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
   PrisonApiCourtDateResult,
   PrisonApiImprisonmentStatusHistoryDto,
