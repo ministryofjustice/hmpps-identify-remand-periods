@@ -34,6 +34,12 @@ export default class PrisonerSearchService {
     return caseloads
   }
 
+  async getPrisonersInEstablishment(prisonId: string, user: UserDetails): Promise<PrisonerSearchApiPrisoner[]> {
+    return new PrisonerSearchApiClient(await this.getSystemClientToken(user.username))
+      .getPrisonInmates(prisonId)
+      .then(page => page.content)
+  }
+
   private async getSystemClientToken(username: string): Promise<string> {
     return this.hmppsAuthClient.getSystemClientToken(username)
   }

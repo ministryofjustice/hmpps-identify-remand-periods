@@ -84,6 +84,15 @@ And then, to build the assets and start the app with nodemon:
 
 `npm run start:dev`
 
+# Running with a local redis
+If you want to test running with redis then you can start a local redis with 
+
+`docker compose up -f docker-compose-local-redis.yml up` and set `REDIS_ENABLED=true` in your `feature.env`.
+
+Now when you start the app via `npm run start:dev` you will be running with redis.
+
+Note that this means your session will persist between restarts of the app.
+
 ### Run linter
 
 `npm run lint`

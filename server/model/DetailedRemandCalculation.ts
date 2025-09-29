@@ -35,8 +35,11 @@ export default class DetailedRemandCalculation {
     return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
   }
 
-  public static canBeMarkedAsApplicable(charge: ChargeRemand): boolean {
-    return charge.status === 'CASE_NOT_CONCLUDED' || charge.status === 'NOT_SENTENCED'
+  public static canBeMarkedAsApplicable(remandAndCharge: RemandAndCharge): boolean {
+    return (
+      remandAndCharge.charges.some(it => it.isInconclusive) &&
+      (remandAndCharge.status === 'CASE_NOT_CONCLUDED' || remandAndCharge.status === 'NOT_SENTENCED')
+    )
   }
 
   public getReplaceableChargeRemandGroupedByChargeIds(): ReplaceableChargeRemands[] {
