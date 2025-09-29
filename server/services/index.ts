@@ -10,7 +10,8 @@ import CachedDataService from './cachedDataService'
 import UserService from './userService'
 
 export const services = () => {
-  const { hmppsAuthClient, applicationInfo, manageUsersApiClient, feComponentsClient } = dataAccess()
+  const { hmppsAuthClient, applicationInfo, manageUsersApiClient, feComponentsClient, bulkRemandCalculationRunStore } =
+    dataAccess()
 
   const prisonerService = new PrisonerService(hmppsAuthClient)
   const userService = new UserService(manageUsersApiClient, prisonerService)
@@ -20,6 +21,7 @@ export const services = () => {
     prisonerSearchService,
     prisonerService,
     identifyRemandPeriodsService,
+    bulkRemandCalculationRunStore,
   )
   const cachedDataService = new CachedDataService(identifyRemandPeriodsService)
   const feComponentsService = new FeComponentsService(feComponentsClient)

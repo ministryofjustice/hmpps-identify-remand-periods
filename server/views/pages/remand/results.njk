@@ -71,12 +71,9 @@
         </div>
     </div>
     <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <p class="govuk-!-margin-bottom-8">Based on the court case information in NOMIS,
-                {% if model.totalDays > 0%}the remand tool has calculated the below remand to be applied.
-                {% else %}the remand tool has not identified any relevant remand.
-                {% endif %}
-                The rules for applying remand time can be found in the <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
+        <div class="govuk-grid-column-full">
+            <p class="govuk-!-margin-bottom-8 govuk-!-margin-right-9">The remand tool calculates remand to be applied by identifying relevant remand periods, and then deducting any time spent not in custody or spent serving an overlapping sentence.
+                The rules for applying remand time can be found in the <a class="govuk-link" rel="noreferrer noopener" target="_blank" href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
             </p>
         </div>
     </div>
@@ -149,7 +146,7 @@
         <div class="govuk-grid-column-three-quarters">
             {% if model.relevantChargeRemand.length or model.notRelevantChargeRemand.length %}
                 {% if model.relevantChargeRemand.length %}
-                    <h2 class="govuk-heading-m">Relevant remand</h2>
+                    <h3 class="govuk-heading-s">Relevant remand periods</h3>
 
                     {% for remand in model.relevantChargeRemand %}
                         {{ remandCard(remand, model, true)}}
@@ -163,7 +160,7 @@
                         {% endfor %}
                     {% endset %}
                         {{ govukDetails({
-                            summaryText: "View non-relevant remand and inactive remand",
+                            summaryText: "View non-relevant and inactive remand periods",
                             html: nonRelevantHtml
                         }) }}
                 {% endif %}
@@ -173,12 +170,19 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            {% if model.relevantRemand.intersectingSentences.length %}
-                <h2 class="govuk-heading-m">Previous sentences that may overlap remand periods</h2>
-                <p class="govuk-body">These sentences could overlap with the relevant remand periods above.</p>
+          {% if  model.intersectingSentences.length or model.periodsOutOfPrison.length %}
+            <h2 class="govuk-heading-m">Days deducted from the relevant remand periods</h2>
+            <p class="govuk-body">Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.</p>
+          {% endif %}
+            {% if model.intersectingSentences.length %}
+                <h3 class="govuk-heading-s">Previous sentences that may overlap remand periods</h3>
                 {{ govukTable( model.intersectingSentenceTable() )}}
             {% endif %}
-            
+            {% if model.periodsOutOfPrison.length %}
+                <h3 class="govuk-heading-s">Time spent not in custody</h3>
+                {{ govukTable(model.periodsOutOfPrisonTable())}}
+            {% endif %}
+
             {% if model
                 .otherErrors()
                 .length %}
