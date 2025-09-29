@@ -168,7 +168,7 @@ export default class RemandRoutes {
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
 
     return res.render('pages/remand/select-applicable', {
-      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, !!edit),
+      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
       form: SelectApplicableRemandForm.from(existingSelection),
     })
   }
@@ -187,13 +187,7 @@ export default class RemandRoutes {
     if (form.errors.length) {
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/select-applicable', {
-        model: new SelectApplicableRemandModel(
-          prisonerNumber,
-          calculation,
-          sentencesAndOffences,
-          chargeNumbers,
-          !!edit,
-        ),
+        model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
         form,
       })
     }
