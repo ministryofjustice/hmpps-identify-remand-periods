@@ -155,7 +155,8 @@ export default class RemandRoutes {
 
   public selectApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId, edit } = req.params
+    const { nomsId } = req.params
+    const edit = req.route.path.endsWith('/edit')
     const { chargeIds } = req.query as Record<string, string>
     const { bookingId, prisonerNumber } = res.locals.prisoner
 
@@ -167,14 +168,15 @@ export default class RemandRoutes {
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
 
     return res.render('pages/remand/select-applicable', {
-      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, !!edit),
+      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
       form: SelectApplicableRemandForm.from(existingSelection),
     })
   }
 
   public submitApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId, edit } = req.params
+    const { nomsId } = req.params
+    const edit = req.route.path.endsWith('/edit')
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const { chargeIds } = req.query as Record<string, string>
     const form = new SelectApplicableRemandForm(req.body)
@@ -185,13 +187,7 @@ export default class RemandRoutes {
     if (form.errors.length) {
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/select-applicable', {
-        model: new SelectApplicableRemandModel(
-          prisonerNumber,
-          calculation,
-          sentencesAndOffences,
-          chargeNumbers,
-          !!edit,
-        ),
+        model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
         form,
       })
     }
