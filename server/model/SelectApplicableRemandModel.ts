@@ -33,34 +33,63 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
     const latestRemandDate = maxOf(this.chargeRemand, it => new Date(it.to))
 
-    const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
     const minReplaceableChargeBookingId = minOf(
       this.chargeRemand.flatMap(it => it.charges),
       it => it.bookingId,
     )
-    Object.values(relevantRemand.charges)
-      .filter(
-        it =>
-          it.sentenceSequence !== null &&
-          it.bookingId >= minReplaceableChargeBookingId &&
-          it.sentenceDate !== null &&
-          new Date(it.sentenceDate) >= latestRemandDate,
-      )
-      .forEach(it => {
-        const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
-        if (!Object.keys(chargesToSelectByOffenceDateAndDesc).includes(key)) {
+    const chargesToSelect = this.removeEntriesByDuplicateCharges(
+      Object.values(relevantRemand.charges).filter(it =>
+        this.filterChargesApplicableForSelection(it, latestRemandDate, minReplaceableChargeBookingId),
+      ),
+    )
+
+    this.chargesToSelect = chargesToSelect.sort((charge1: Charge, charge2: Charge) =>
+      this.sortSelectableCharges(charge1, charge2),
+    )
+  }
+
+  private sortSelectableCharges(charge1: Charge, charge2: Charge): number {
+    const charge1Order = this.order(charge1)
+    const charge2Order = this.order(charge2)
+    if (charge1Order === charge2Order) {
+      return new Date(charge1.sentenceDate) > new Date(charge2.sentenceDate) ? 1 : -1
+    }
+    return charge2Order - charge1Order
+  }
+
+  private removeEntriesByDuplicateCharges(charges: Charge[]): Charge[] {
+    const chargesToSelectByOffenceDateAndDesc: Record<string, Charge> = {}
+    charges.forEach(it => {
+      const key = `${it.offence.description}${it.offenceDate}${it.offenceEndDate}`
+      if (!Object.keys(chargesToSelectByOffenceDateAndDesc).includes(key)) {
+        chargesToSelectByOffenceDateAndDesc[key] = it
+      } else {
+        const charge = chargesToSelectByOffenceDateAndDesc[key]
+        if (it.bookingId > charge.bookingId) {
           chargesToSelectByOffenceDateAndDesc[key] = it
         }
-      })
-
-    this.chargesToSelect = Object.values(chargesToSelectByOffenceDateAndDesc).sort((charge1, charge2) => {
-      const charge1Order = this.order(charge1)
-      const charge2Order = this.order(charge2)
-      if (charge1Order === charge2Order) {
-        return new Date(charge1.sentenceDate) > new Date(charge2.sentenceDate) ? 1 : -1
       }
-      return charge2Order - charge1Order
     })
+    return Object.values(chargesToSelectByOffenceDateAndDesc)
+  }
+
+  /*
+    Charges can be selected if they've
+    1. Been sentenced.
+    2. On the same booking or more recent booking than the charge being replaced.
+    3. Sentenced after the remand period being replaced
+  */
+  private filterChargesApplicableForSelection(
+    it: Charge,
+    latestRemandDate: Date,
+    minReplaceableChargeBookingId: number,
+  ): boolean {
+    return (
+      it.sentenceSequence !== null &&
+      it.bookingId >= minReplaceableChargeBookingId &&
+      it.sentenceDate !== null &&
+      new Date(it.sentenceDate) >= latestRemandDate
+    )
   }
 
   private order(charge: Charge) {

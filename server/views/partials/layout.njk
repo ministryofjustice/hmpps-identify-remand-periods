@@ -42,6 +42,8 @@
       <link href="{{ css }}" nonce="{{ cspNonce }}" rel="stylesheet" />
     {% endfor %}
   {% endif %}
+  {% block javascripts %}
+  {% endblock %}
 {% endblock %}
 
 {% block pageTitle %}{{pageTitle | default(applicationName)}}{% endblock %}
@@ -86,7 +88,6 @@
 
 {% block bodyEnd %}
   <script type="module" src="/assets/js/govukFrontendInit.js"></script>
-  <script src="/assets/moj/all.js"></script>
   <script src="/assets/js/mojFrontendInit.js"></script>
   {% if feComponents.jsIncludes %}
     {% for js in feComponents.jsIncludes %}
