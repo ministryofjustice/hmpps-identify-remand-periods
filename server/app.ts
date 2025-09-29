@@ -39,7 +39,12 @@ export default function createApp(services: Services): express.Application {
   app.use(authorisationMiddleware(['REMAND_IDENTIFIER']))
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services))
-  app.get('*', getFrontendComponents(services))
+
+  app.use((req, res, next) => {
+    if (req.method === 'GET') return getFrontendComponents(services)(req, res, next)
+    return next()
+  })
+
   app.use('/prisoner/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
 
   app.use(routes(services))
