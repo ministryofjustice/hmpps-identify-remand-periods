@@ -90,7 +90,7 @@ export default class RemandRoutes {
       .find(it => ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status))
       .chargeIds.join(',')
 
-    return res.render('pages/remand/replaced-offence-intercept', { chargeIds })
+    return res.redirect(`/prisoner/${nomsId}/replaced-offence?chargeIds=${chargeIds}`)
   }
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
@@ -192,26 +192,53 @@ export default class RemandRoutes {
       })
     }
 
+    const detailedCalculation = new DetailedRemandCalculation(calculation)
+    const replaceableCharges = detailedCalculation.expandChargeIds(
+      detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+    )
+
     if (form.selection === 'no') {
       this.cachedDataService.removeSelection(
         req,
         nomsId,
         chargeIds.split(',').map(it => Number(it)),
       )
-    } else {
+      const nextChargeIndex = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
+        chargeNumbers[chargeNumbers.length - 1],
+      ])
+      if (chargeNumbers.length > 0) {
+        if (nextChargeIndex !== replaceableCharges.length - 1) {
+          const nextChargeId = detailedCalculation.expandChargeIds(
+            detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+          )[nextChargeIndex + 1].chargeIds
+          return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeId}`)
+        }
+        return res.redirect(`/prisoner/${prisonerNumber}/remand`)
+      }
+    } else if (form.selection !== 'review-individually') {
       this.cachedDataService.storeSelection(req, nomsId, {
         chargeIdsToMakeApplicable: chargeIds.split(',').map(it => Number(it)),
         targetChargeId: Number(form.selection),
       })
     }
 
-    const detailedCalculation = new DetailedRemandCalculation(calculation)
-    const replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
+    if (edit && chargeNumbers.length > 1) {
+      const lastChargeIdInGroup = chargeNumbers[chargeNumbers.length - 1]
+      req.session.iterateToLastIndex = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
+        lastChargeIdInGroup,
+      ])
+    } else if (!edit) {
+      req.session.iterateToLastIndex = undefined
+    }
     const index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeNumbers)
-    if (index + 1 === replaceableCharges.length || edit) {
+
+    if (index + 1 === replaceableCharges.length || (edit && index + 1 === req.session.iterateToLastIndex + 1)) {
       return res.redirect(`/prisoner/${prisonerNumber}/remand`)
     }
     const nextChargeIds = replaceableCharges[index + 1].chargeIds.join(',')
+    if (edit) {
+      return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence/edit?chargeIds=${nextChargeIds}`)
+    }
     return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeIds}`)
   }
 
