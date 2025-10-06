@@ -1,11 +1,15 @@
 #!/bin/sh
 set -e
 
-# Add Node.js and npm to PATH
-export PATH="/Users/faiz.ibrahim/.nvm/versions/node/v22.16.0/bin:$PATH"
+# Load nvm (adjust path if needed)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+# Use desired node version (optional)
+nvm use
+
+# Run tasks
 NODE_ENV=dev
-
 npx lint-staged
 npm run typecheck
 npm test
