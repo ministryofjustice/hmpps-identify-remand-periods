@@ -164,7 +164,9 @@
                     {% for remand in model.relevantChargeRemand %}
                         {{ remandCard(remand, model, true)}}
                     {% endfor %}
-
+                {% else %}
+                    <h3 class="govuk-heading-s">Relevant remand periods</h3>
+                    <p class="govuk-body">The remand tool has not identified any relevant remand periods.</p>
                 {% endif %}
                 {% if model.notRelevantChargeRemand.length %}
                     {% set nonRelevantHtml %}
