@@ -4,7 +4,7 @@ import { appWithAllRoutes, user } from './testutils/appSetup'
 import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
 import './testutils/toContainInOrder'
-import { remandResult, conclusiveRemandResult } from './testutils/testData'
+import { remandResult, conclusiveRemandResult, onePlusremandDaysRemandResult } from './testutils/testData'
 import CachedDataService from '../services/cachedDataService'
 import AdjustmentsService from '../services/adjustmentsService'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
@@ -363,6 +363,65 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       })
   })
 
+  it('should render the results page with correct content for zero day remand identified', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 0,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/remand`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          'Explain why there should be remand to be applied. This will help our support team improve the accuracy of the remand tool.',
+        )
+        expect(res.text).toContain('No remand to be applied')
+      })
+  })
+  it('should render the results page with correct content for non zero day remand identified', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue(onePlusremandDaysRemandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/remand`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('No remand to be applied')
+        expect(res.text).toContain(
+          'Explain why the remand to be applied is incorrect. This will help our support team improve the accuracy of the remand tool.',
+        )
+      })
+  })
+
   it('should render the results page with zero remand identified', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
@@ -388,8 +447,9 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       .expect(res => {
         expect(res.text).not.toContain('Applicable')
         expect(res.text).toContain('The number of remand days recorded has changed')
-        expect(res.text).toContain('What to do next')
-        expect(res.text).toContain('The remand tool calculates remand to be applied by identifying relevant')
+        expect(res.text).toContain(
+          'The remand tool calculates remand to be applied by identifying relevant remand periods',
+        )
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })

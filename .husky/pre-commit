@@ -1,4 +1,15 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+set -e
 
-NODE_ENV=dev && node_modules/.bin/lint-staged && npm run typecheck && npm test
+# Load nvm (adjust path if needed)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Use desired node version (optional)
+nvm use
+
+# Run tasks
+NODE_ENV=dev
+npx lint-staged
+npm run typecheck
+npm test
