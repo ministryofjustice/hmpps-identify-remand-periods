@@ -300,7 +300,72 @@ const conclusiveRemandResult = {
       remand: {
         chargeId: [1001],
       },
+      days: 0,
+      status: 'ACTIVE',
+    } as Adjustment,
+  ],
+  intersectingSentencesUsingHistoricCalculation: [],
+  chargeRemand: [
+    {
+      from: '2023-05-10',
+      to: '2023-05-20',
       days: 11,
+      chargeIds: [1001],
+      status: 'NOT_SENTENCED',
+    } as ChargeRemand,
+  ],
+  intersectingSentences: [
+    {
+      from: '2023-06-01',
+      to: '2023-12-01',
+      sentence: {
+        sequence: 1,
+        sentenceDate: '2023-06-01',
+        recallDate: null,
+        bookingId: 999999,
+        recallDates: [],
+      },
+      chargeId: 1001,
+      days: 184,
+      service: 'HISTORIC',
+      errors: [],
+      calculationIds: [101],
+    } as IntersectingSentence,
+  ],
+  periodsServingSentenceUsingCRDS: [],
+  issuesWithLegacyData: [],
+  periodsOutOfPrison: [],
+} as RemandResult
+
+const onePlusremandDaysRemandResult = {
+  charges: {
+    1001: {
+      chargeId: 1001,
+      offence: {
+        code: 'AB12345',
+        statute: 'AB12',
+        description: 'Theft from a vehicle',
+      },
+      offenceDate: '2023-05-01',
+      bookingId: 999999,
+      bookNumber: '12345A',
+      offenceEndDate: null,
+      sentenceSequence: 1,
+      sentenceDate: '2023-06-01',
+      courtCaseRef: 'CASE1001',
+      courtLocation: 'Manchester Crown Court',
+      resultDescription: 'Imprisonment',
+      isInconclusive: false,
+    } as Charge,
+  },
+  adjustments: [
+    {
+      fromDate: '2023-05-10',
+      toDate: '2023-05-20',
+      remand: {
+        chargeId: [1001],
+      },
+      days: 10,
       status: 'ACTIVE',
     } as Adjustment,
   ],
@@ -339,4 +404,4 @@ const conclusiveRemandResult = {
 
 export default conclusiveRemandResult
 
-export { remandResult, conclusiveRemandResult }
+export { remandResult, conclusiveRemandResult, onePlusremandDaysRemandResult }

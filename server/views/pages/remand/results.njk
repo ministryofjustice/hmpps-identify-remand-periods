@@ -15,6 +15,20 @@
 
 {% block content %}
 
+{% set helpText = "This will help our support team improve the accuracy of the remand tool." %}
+
+{% if model.totalDays() > 0 %}
+  {% set labelText = (
+    "Explain why the remand to be applied is incorrect. "
+    ~ helpText
+  ) %}
+{% else %}
+  {% set labelText = (
+    "Explain why there should be remand to be applied. "
+    ~ helpText
+  ) %}
+{% endif %}
+
     {% if form.errors.length %}
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
@@ -72,7 +86,7 @@
     </div>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <p class="govuk-!-margin-bottom-8 govuk-!-margin-right-9">The remand tool calculates remand to be applied by identifying relevant remand periods, and then deducting any time spent not in custody or spent serving an overlapping sentence.
+            <p class="govuk-!-margin-bottom-2 govuk-!-margin-right-9">The remand tool calculates remand to be applied by identifying relevant remand periods, and then deducting any time spent not in custody or spent serving an overlapping sentence.
                 The rules for applying remand time can be found in the <a class="govuk-link" rel="noreferrer noopener" target="_blank" href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
             </p>
         </div>
@@ -81,7 +95,7 @@
     {% if  model.totalDays() > 0 %}
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <table class="govuk-table">
+                <table class="govuk-table govuk-!-margin-top-3">
                     <caption class="govuk-table__caption govuk-table__caption--m">Remand to be applied</caption>
                     <thead class="govuk-table__head">
                         <tr class="govuk-table__row">
@@ -135,9 +149,8 @@
     {% else %}
         <div class="govuk-grid-row govuk-!-margin-bottom-4">
             <div class="govuk-grid-column-three-quarters">
-                <h2 class="govuk-heading-m">What to do next</h2>
-                <p class="govuk-body">Select yes if you agree with the remand tool.</p>
-                <p class="govuk-body">If you think something is wrong, select no.</p>
+                <h2>No remand to be applied</h2>
+                <p class="govuk-body">The remand tool has calculated that there is no remand to be applied</p>
             </div>
         </div>
     {% endif %}
@@ -209,7 +222,7 @@
                     id: "comment",
                     value: form.comment,
                     label: {
-                        text: "Enter the reason that the remand is incorrect"
+                        text: labelText
                     },
                     errorMessage: form.messageForField('comment')
                     }) }}
