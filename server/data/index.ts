@@ -17,17 +17,25 @@ import RedisTokenStore from './tokenStore/redisTokenStore'
 import InMemoryTokenStore from './tokenStore/inMemoryTokenStore'
 import config from '../config'
 import FeComponentsClient from './feComponentsClient'
+import RedisBulkRemandCalculationRunStore from './bulkResultsStore/redisBulkRemandCalculationRunStore'
+import InMemoryBulkRemandCalculationRunStore from './bulkResultsStore/inMemoryBulkRemandCalculationRunStore'
 
 type RestClientBuilder<T> = (token: string) => T
 
-export const dataAccess = () => ({
-  applicationInfo,
-  hmppsAuthClient: new HmppsAuthClient(
-    config.redis.enabled ? new RedisTokenStore(createRedisClient()) : new InMemoryTokenStore(),
-  ),
-  manageUsersApiClient: new ManageUsersApiClient(),
-  feComponentsClient: new FeComponentsClient(),
-})
+export const dataAccess = () => {
+  const redisClient = createRedisClient()
+  return {
+    applicationInfo,
+    hmppsAuthClient: new HmppsAuthClient(
+      config.redis.enabled ? new RedisTokenStore(redisClient) : new InMemoryTokenStore(),
+    ),
+    manageUsersApiClient: new ManageUsersApiClient(),
+    feComponentsClient: new FeComponentsClient(),
+    bulkRemandCalculationRunStore: config.redis.enabled
+      ? new RedisBulkRemandCalculationRunStore(redisClient)
+      : new InMemoryBulkRemandCalculationRunStore(),
+  }
+}
 
 export type DataAccess = ReturnType<typeof dataAccess>
 

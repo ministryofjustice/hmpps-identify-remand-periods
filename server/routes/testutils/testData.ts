@@ -21,6 +21,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3933924: {
       chargeId: 3933924,
@@ -34,6 +35,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3933870: {
       chargeId: 3933870,
@@ -47,6 +49,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     2222: {
       chargeId: 2222,
@@ -60,6 +63,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     4444: {
       chargeId: 4444,
@@ -73,6 +77,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
       courtLocation: 'Birmingham Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3934217: {
       chargeId: 3934217,
@@ -86,6 +91,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Imprisonment',
+      isInconclusive: true,
     } as Charge,
     3934220: {
       chargeId: 3934220,
@@ -99,6 +105,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Recall to Prison',
+      isInconclusive: true,
     } as Charge,
     3934221: {
       chargeId: 3934221,
@@ -112,6 +119,7 @@ const remandResult = {
       courtCaseRef: null,
       courtLocation: 'Wood Green Crown Court',
       resultDescription: 'Recall to Prison',
+      isInconclusive: true,
     } as Charge,
   },
   adjustments: [
@@ -176,8 +184,8 @@ const remandResult = {
       calculationIds: [1],
     } as IntersectingSentence,
     {
-      from: '2023-05-18',
-      to: '2023-10-04',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -193,8 +201,8 @@ const remandResult = {
     } as IntersectingSentence,
     {
       // Same book number and shorter, shouldn't be displayed
-      from: '2023-05-18',
-      to: '2023-10-03',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -210,8 +218,8 @@ const remandResult = {
     } as IntersectingSentence,
     {
       // Different book number should be displayed with text.
-      from: '2023-05-18',
-      to: '2023-10-01',
+      from: '2023-01-17',
+      to: '2023-01-18',
       sentence: {
         sequence: 6,
         sentenceDate: '2022-08-17',
@@ -221,6 +229,17 @@ const remandResult = {
       },
       chargeId: 3934221,
       days: 140,
+      service: 'HISTORIC',
+      errors: [],
+      calculationIds: [1],
+    } as IntersectingSentence,
+    {
+      // After most recent adjustment
+      from: '2022-08-17',
+      to: '2023-01-16',
+      sentence: { sequence: 3, sentenceDate: '2022-08-17', recallDate: null, bookingId: 1209333, recallDates: [] },
+      chargeId: 3934217,
+      days: 92,
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
@@ -250,6 +269,139 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
     } as LegacyDataProblem,
   ],
+  periodsOutOfPrison: [],
 } as RemandResult
 
-export default remandResult
+const conclusiveRemandResult = {
+  charges: {
+    1001: {
+      chargeId: 1001,
+      offence: {
+        code: 'AB12345',
+        statute: 'AB12',
+        description: 'Theft from a vehicle',
+      },
+      offenceDate: '2023-05-01',
+      bookingId: 999999,
+      bookNumber: '12345A',
+      offenceEndDate: null,
+      sentenceSequence: 1,
+      sentenceDate: '2023-06-01',
+      courtCaseRef: 'CASE1001',
+      courtLocation: 'Manchester Crown Court',
+      resultDescription: 'Imprisonment',
+      isInconclusive: false,
+    } as Charge,
+  },
+  adjustments: [
+    {
+      fromDate: '2023-05-10',
+      toDate: '2023-05-20',
+      remand: {
+        chargeId: [1001],
+      },
+      days: 0,
+      status: 'ACTIVE',
+    } as Adjustment,
+  ],
+  intersectingSentencesUsingHistoricCalculation: [],
+  chargeRemand: [
+    {
+      from: '2023-05-10',
+      to: '2023-05-20',
+      days: 11,
+      chargeIds: [1001],
+      status: 'NOT_SENTENCED',
+    } as ChargeRemand,
+  ],
+  intersectingSentences: [
+    {
+      from: '2023-06-01',
+      to: '2023-12-01',
+      sentence: {
+        sequence: 1,
+        sentenceDate: '2023-06-01',
+        recallDate: null,
+        bookingId: 999999,
+        recallDates: [],
+      },
+      chargeId: 1001,
+      days: 184,
+      service: 'HISTORIC',
+      errors: [],
+      calculationIds: [101],
+    } as IntersectingSentence,
+  ],
+  periodsServingSentenceUsingCRDS: [],
+  issuesWithLegacyData: [],
+  periodsOutOfPrison: [],
+} as RemandResult
+
+const onePlusremandDaysRemandResult = {
+  charges: {
+    1001: {
+      chargeId: 1001,
+      offence: {
+        code: 'AB12345',
+        statute: 'AB12',
+        description: 'Theft from a vehicle',
+      },
+      offenceDate: '2023-05-01',
+      bookingId: 999999,
+      bookNumber: '12345A',
+      offenceEndDate: null,
+      sentenceSequence: 1,
+      sentenceDate: '2023-06-01',
+      courtCaseRef: 'CASE1001',
+      courtLocation: 'Manchester Crown Court',
+      resultDescription: 'Imprisonment',
+      isInconclusive: false,
+    } as Charge,
+  },
+  adjustments: [
+    {
+      fromDate: '2023-05-10',
+      toDate: '2023-05-20',
+      remand: {
+        chargeId: [1001],
+      },
+      days: 10,
+      status: 'ACTIVE',
+    } as Adjustment,
+  ],
+  intersectingSentencesUsingHistoricCalculation: [],
+  chargeRemand: [
+    {
+      from: '2023-05-10',
+      to: '2023-05-20',
+      days: 11,
+      chargeIds: [1001],
+      status: 'NOT_SENTENCED',
+    } as ChargeRemand,
+  ],
+  intersectingSentences: [
+    {
+      from: '2023-06-01',
+      to: '2023-12-01',
+      sentence: {
+        sequence: 1,
+        sentenceDate: '2023-06-01',
+        recallDate: null,
+        bookingId: 999999,
+        recallDates: [],
+      },
+      chargeId: 1001,
+      days: 184,
+      service: 'HISTORIC',
+      errors: [],
+      calculationIds: [101],
+    } as IntersectingSentence,
+  ],
+  periodsServingSentenceUsingCRDS: [],
+  issuesWithLegacyData: [],
+  periodsOutOfPrison: [],
+} as RemandResult
+
+export default conclusiveRemandResult
+
+export { remandResult, conclusiveRemandResult, onePlusremandDaysRemandResult }

@@ -31,8 +31,11 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/validation-errors', remandRoutes.validationErrors)
 
   get('/prisoner/:nomsId/replaced-offence-intercept', remandRoutes.replacedOffenceIntercept)
-  get('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.selectApplicable)
-  post('/prisoner/:nomsId/replaced-offence/:edit?', remandRoutes.submitApplicable)
+
+  get('/prisoner/:nomsId/replaced-offence', remandRoutes.selectApplicable)
+  get('/prisoner/:nomsId/replaced-offence/edit', remandRoutes.selectApplicable)
+  post('/prisoner/:nomsId/replaced-offence', remandRoutes.submitApplicable)
+  post('/prisoner/:nomsId/replaced-offence/edit', remandRoutes.submitApplicable)
 
   get('/prisoner/:nomsId/remand', remandRoutes.remand)
   post('/prisoner/:nomsId/remand', remandRoutes.remandSubmit)
@@ -42,6 +45,8 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId/confirm-and-save', remandRoutes.confirmAndSave)
   post('/prisoner/:nomsId/confirm-and-save', remandRoutes.submitConfirmAndSave)
 
+  get('/bulk-in-progress/:id', remandRoutes.bulkRemandInProgress)
+  get('/bulk-download/:id', remandRoutes.downloadBulkRemand)
   get('/bulk', remandRoutes.bulkRemand)
   post('/bulk', remandRoutes.submitBulkRemand)
 

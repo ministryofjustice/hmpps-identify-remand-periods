@@ -90,7 +90,7 @@ export default class RemandRoutes {
       .find(it => ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status))
       .chargeIds.join(',')
 
-    return res.render('pages/remand/replaced-offence-intercept', { chargeIds })
+    return res.redirect(`/prisoner/${nomsId}/replaced-offence?chargeIds=${chargeIds}`)
   }
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
@@ -137,25 +137,26 @@ export default class RemandRoutes {
 
     if (form.decision === 'yes') {
       this.cachedDataService.clearRejectedRemandDecision(req, nomsId)
-      return res.redirect(`/prisoner/${prisonerNumber}/overview`)
-    }
-    const decision = {
-      accepted: false,
-      rejectComment: form.comment,
-      options: {
-        includeRemandCalculation: false,
-        userSelections: selections,
-      },
-    } as IdentifyRemandDecision
+    } else {
+      const decision = {
+        accepted: false,
+        rejectComment: form.comment,
+        options: {
+          includeRemandCalculation: false,
+          userSelections: selections,
+        },
+      } as IdentifyRemandDecision
 
-    this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+      this.cachedDataService.storeRejectedRemandDecision(req, nomsId, decision)
+    }
 
     return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
 
   public selectApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId, edit } = req.params
+    const { nomsId } = req.params
+    const edit = req.route.path.endsWith('/edit')
     const { chargeIds } = req.query as Record<string, string>
     const { bookingId, prisonerNumber } = res.locals.prisoner
 
@@ -167,14 +168,15 @@ export default class RemandRoutes {
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
 
     return res.render('pages/remand/select-applicable', {
-      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, !!edit),
+      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
       form: SelectApplicableRemandForm.from(existingSelection),
     })
   }
 
   public submitApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId, edit } = req.params
+    const { nomsId } = req.params
+    const edit = req.route.path.endsWith('/edit')
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const { chargeIds } = req.query as Record<string, string>
     const form = new SelectApplicableRemandForm(req.body)
@@ -185,16 +187,15 @@ export default class RemandRoutes {
     if (form.errors.length) {
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
       return res.render('pages/remand/select-applicable', {
-        model: new SelectApplicableRemandModel(
-          prisonerNumber,
-          calculation,
-          sentencesAndOffences,
-          chargeNumbers,
-          !!edit,
-        ),
+        model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
         form,
       })
     }
+
+    const detailedCalculation = new DetailedRemandCalculation(calculation)
+    const replaceableCharges = detailedCalculation.expandChargeIds(
+      detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+    )
 
     if (form.selection === 'no') {
       this.cachedDataService.removeSelection(
@@ -202,20 +203,42 @@ export default class RemandRoutes {
         nomsId,
         chargeIds.split(',').map(it => Number(it)),
       )
-    } else {
+      const nextChargeIndex = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
+        chargeNumbers[chargeNumbers.length - 1],
+      ])
+      if (chargeNumbers.length > 0) {
+        if (nextChargeIndex !== replaceableCharges.length - 1) {
+          const nextChargeId = detailedCalculation.expandChargeIds(
+            detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds(),
+          )[nextChargeIndex + 1].chargeIds
+          return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeId}`)
+        }
+        return res.redirect(`/prisoner/${prisonerNumber}/remand`)
+      }
+    } else if (form.selection !== 'review-individually') {
       this.cachedDataService.storeSelection(req, nomsId, {
         chargeIdsToMakeApplicable: chargeIds.split(',').map(it => Number(it)),
         targetChargeId: Number(form.selection),
       })
     }
 
-    const detailedCalculation = new DetailedRemandCalculation(calculation)
-    const replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
+    if (edit && chargeNumbers.length > 1) {
+      const lastChargeIdInGroup = chargeNumbers[chargeNumbers.length - 1]
+      req.session.iterateToLastIndex = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds([
+        lastChargeIdInGroup,
+      ])
+    } else if (!edit) {
+      req.session.iterateToLastIndex = undefined
+    }
     const index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeNumbers)
-    if (index + 1 === replaceableCharges.length || edit) {
+
+    if (index + 1 === replaceableCharges.length || (edit && index + 1 === req.session.iterateToLastIndex + 1)) {
       return res.redirect(`/prisoner/${prisonerNumber}/remand`)
     }
     const nextChargeIds = replaceableCharges[index + 1].chargeIds.join(',')
+    if (edit) {
+      return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence/edit?chargeIds=${nextChargeIds}`)
+    }
     return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeIds}`)
   }
 
@@ -234,10 +257,13 @@ export default class RemandRoutes {
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {
-    return res.render('pages/remand/bulk')
+    const usersCaseload = await this.prisonerService.getUsersCaseloads(res.locals.user.token)
+    const caseloadItems = usersCaseload.map(caseload => ({ text: caseload.description, value: caseload.caseLoadId }))
+    caseloadItems.sort((a, b) => a.text.localeCompare(b.text))
+    caseloadItems.unshift({ text: '', value: '' })
+    return res.render('pages/remand/bulk', { caseloadItems })
   }
 
-  // eslint-disable-next-line consistent-return
   public submitBulkRemand: RequestHandler = async (req, res): Promise<void> => {
     if (req.body.single) {
       const prisonerId = req.body['single-prisoner']
@@ -245,17 +271,33 @@ export default class RemandRoutes {
     }
 
     const user = res.locals.user as UserDetails
-    const { prisonerIds } = req.body
-    const nomsIds = prisonerIds.split(/\r?\n/)
-    if (nomsIds.length > 500) return res.redirect(`/remand/`)
+    const { prisonerIds, prisonId } = req.body
+    const nomsIds = prisonerIds?.split(/\r?\n/) ?? []
+    if (nomsIds.length > 1000) return res.redirect(`/remand/`)
 
-    const results = await this.bulkRemandCalculationService.runCalculations(user, nomsIds)
-    const fileName = `download-remand-dates.csv`
-    res.setHeader('Content-Type', 'text/csv')
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-    stringify(results, {
-      header: true,
-    }).pipe(res)
+    const id = await this.bulkRemandCalculationService.startRun(user, nomsIds, prisonId)
+    return res.redirect(`/bulk-in-progress/${id}`)
+  }
+
+  public bulkRemandInProgress: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
+    return res.render('pages/remand/bulk-in-progress', { id, status: run?.status ?? 'MISSING' })
+  }
+
+  public downloadBulkRemand: RequestHandler = async (req, res): Promise<void> => {
+    const { id } = req.params
+    const run = await this.bulkRemandCalculationService.getRun(id)
+    if (!run || run.status !== 'DONE') {
+      res.redirect(`/bulk-in-progress/${id}`)
+    } else {
+      const fileName = `download-remand-dates.csv`
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+      stringify(run.results, {
+        header: true,
+      }).pipe(res)
+    }
   }
 
   public overview: RequestHandler = async (req, res): Promise<void> => {

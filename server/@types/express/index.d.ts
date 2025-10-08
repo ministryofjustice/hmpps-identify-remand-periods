@@ -7,6 +7,7 @@ export default {}
 declare module 'express-session' {
   // Declare that the session will potentially contain these additional fields
   interface SessionData {
+    iterateToLastIndex: number
     returnTo: string
     nowInMinutes: number
     selectedApplicableRemand?: Record<string, RemandApplicableUserSelection[]>
