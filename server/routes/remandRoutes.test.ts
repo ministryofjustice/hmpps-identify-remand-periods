@@ -582,7 +582,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
           '23 Nov 2022 to 15 Dec 2022',
           '23 Nov 2021 to 15 Dec 2021',
           'Offence 1 of 1',
-          'Has this offence been replaced?',
+          'Is this remand period relevant?',
           'No, this remand period is not relevant',
           'value="4444"',
           'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
@@ -613,7 +613,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('type="radio" value="2222" checked>')
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContainInOrder([
-          'Has this offence been replaced?',
+          'Is this remand period relevant?',
           'No, this remand period is not relevant',
           'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
