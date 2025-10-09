@@ -547,6 +547,18 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
 })
 
 describe('Remand replaced offences /prisoner/{prisonerId}', () => {
+  it('Should display intercept', () => {
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          'Before you can continue to this service, you need to check if any offences without a sentence have been replaced.',
+        )
+        expect(res.text).toContain('/prisoner/ABC123/replaced-offence?chargeIds=3933924')
+      })
+  })
   it('Should show choices for select applicable', () => {
     cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     cachedDataService.getSelections.mockReturnValue([])
@@ -565,17 +577,17 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .get(`/prisoner/${NOMS_ID}/replaced-offence?chargeIds=3933924`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        expect(res.text).not.toContain('A sentence charge, way before the remand dates')
         expect(res.text).toContainInOrder([
-          'The remand tool will treat the below remand period as not relevant.',
-          'Check whether the remand period connects to another offence.',
-          'If it does, connect it to the related offence to help the remand tool recognise it as a relevant remand period.',
-          'This will not change the court case information held about this offence.',
+          '23 Nov 2022 to 15 Dec 2022',
           '23 Nov 2021 to 15 Dec 2021',
           'Offence 1 of 1',
-          'Is this remand period relevant?',
+          'Has this offence been replaced?',
           'No, this remand period is not relevant',
-          '<strong>offence on another booking</strong> committed on 10 Jan 2022',
-          '<strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
+          'value="4444"',
+          'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
+          'value="2222"',
+          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
       })
   })
@@ -600,7 +612,11 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).not.toContain('Offence 1 of 1')
         expect(res.text).toContain('type="radio" value="2222" checked>')
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
-        expect(res.text).toContainInOrder(['Is this remand period relevant?', 'No, this remand period is not relevant'])
+        expect(res.text).toContainInOrder([
+          'Has this offence been replaced?',
+          'No, this remand period is not relevant',
+          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
+        ])
       })
   })
 

@@ -39,48 +39,28 @@
         <div class="govuk-grid-column-two-thirds">
 
             <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>Check if this remand period is relevant
-            </h1>
+                <span class="govuk-caption-xl">Adjustments</span>Confirm if this offence has been replaced</h1>
+            </p>
         </div>
-        </br>
     </div>
     
 
     {% for remand in model.chargeRemand %}
-
-       <div class="govuk-grid-row">
-         <div class="govuk-grid-column-two-thirds">
-
-           <p class="govuk-body">The remand tool will treat the below remand period as not relevant.</p>
-           <p class="govuk-body">Check whether the remand period connects to another offence.</p>
-
-           {% if remand.replacedCharges.length > 1 or remand.charges.length > 1 %}
-             <p class="govuk-body">If it does, select ‘Yes’ to view and consider each offence individually.</p>
-           {% else %}
-             <p class="govuk-body">
-               If it does, connect it to the related offence to help the remand tool recognise it as a relevant remand period.
-               This will not change the court case information held about this offence.
-             </p>
-           {% endif %}
-
-         </div>
-       </div>
-
-       {{ remandCard(remand, model, false)}}
+        {{ remandCard(remand, model, false)}}
     {% endfor %}
 
     <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
         {% if not model.edit %}
-            <p class="govuk-body">Offence {{model.getOffencePosition(model.index)}} of {{model.totalUniqueItems()}}</p>
+            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
         {% endif %}
     
         {{ govukRadios({
             name: "selection",
             fieldset: {
                 legend: {
-                text: "Is this remand period relevant?",
+                text: "Has this offence been replaced?",
                 classes: "govuk-fieldset__legend--m"
                 }
             },
