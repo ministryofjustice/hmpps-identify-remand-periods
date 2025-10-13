@@ -62,6 +62,7 @@ describe('Bulk calculation service test', () => {
       IS_REMAND_SAME: 'N',
       UPGRADE_DOWNGRADE_REMAND_PERIODS: 0,
       UPGRADE_DOWNGRADE_CHARGES: 0,
+      REMAND_PERIODS_WITH_MULTIPLE_CHARGES: 0,
       NOMIS_REMAND_DAYS: 0,
       NOMIS_REMAND_JSON: '[]',
       NOMIS_UNUSED_REMAND_JSON: '[]',
@@ -144,6 +145,7 @@ describe('Bulk calculation service test', () => {
       IS_REMAND_SAME: 'N',
       UPGRADE_DOWNGRADE_REMAND_PERIODS: 0,
       UPGRADE_DOWNGRADE_CHARGES: 0,
+      REMAND_PERIODS_WITH_MULTIPLE_CHARGES: 0,
       NOMIS_REMAND_DAYS: 29,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',
@@ -282,6 +284,7 @@ describe('Bulk calculation service test', () => {
       IS_REMAND_SAME: 'Y',
       UPGRADE_DOWNGRADE_REMAND_PERIODS: 1,
       UPGRADE_DOWNGRADE_CHARGES: 3,
+      REMAND_PERIODS_WITH_MULTIPLE_CHARGES: 1,
       NOMIS_REMAND_DAYS: 25,
       NOMIS_REMAND_JSON:
         '[{"sentenceSequence":1,"type":"REMAND","numberOfDays":25,"fromDate":"2023-02-01","toDate":"2023-02-25","active":true}]',

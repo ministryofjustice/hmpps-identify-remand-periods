@@ -190,6 +190,7 @@ export default class BulkRemandCalculationService {
         IS_DAYS_SAME: !ex && isDaysSame ? 'Y' : 'N',
         UPGRADE_DOWNGRADE_REMAND_PERIODS: ex ? 0 : this.countUpgradeDowngradeRemandPeriods(calculatedRemand),
         UPGRADE_DOWNGRADE_CHARGES: ex ? 0 : this.countUpgradeDowngradeCharges(calculatedRemand),
+        REMAND_PERIODS_WITH_MULTIPLE_CHARGES: ex ? 0 : this.countRemandPeriodsWithMultipleCharges(calculatedRemand),
 
         NOMIS_REMAND_JSON: JSON.stringify(nomisRemandSentenceAdjustment, null, 2),
         NOMIS_UNUSED_REMAND_JSON: JSON.stringify(nomisUnusedRemandSentenceAdjustment, null, 2),
@@ -232,6 +233,10 @@ export default class BulkRemandCalculationService {
 
   private getUpgradeDowngradePeriods(calculatedRemand: RemandResult): ReplaceableChargeRemands[] {
     return new DetailedRemandCalculation(calculatedRemand).getReplaceableChargeRemandGroupedByChargeIds()
+  }
+
+  private countRemandPeriodsWithMultipleCharges(calculatedRemand: RemandResult): number {
+    return calculatedRemand.chargeRemand.filter(chargeRemand => chargeRemand.chargeIds.length > 1).length
   }
 
   private async findSourceDataForIntersectingSentence(
