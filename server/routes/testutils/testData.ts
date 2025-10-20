@@ -121,6 +121,20 @@ const remandResult = {
       resultDescription: 'Recall to Prison',
       isInconclusive: true,
     } as Charge,
+    3934222: {
+      chargeId: 3934221,
+      offence: { code: 'COML016', statute: 'COML', description: 'A conclusive offence' },
+      offenceDate: '2021-06-18',
+      bookingId: 1209333,
+      bookNumber: '46201X',
+      offenceEndDate: null,
+      sentenceSequence: 6,
+      sentenceDate: '2022-08-17',
+      courtCaseRef: null,
+      courtLocation: 'Wood Green Crown Court',
+      resultDescription: 'Recall to Prison',
+      isInconclusive: false,
+    } as Charge,
   },
   adjustments: [
     {
@@ -135,6 +149,13 @@ const remandResult = {
   ],
   intersectingSentencesUsingHistoricCalculation: [],
   chargeRemand: [
+    {
+      from: '2022-11-23',
+      to: '2022-12-15',
+      days: 23,
+      chargeIds: [3934222],
+      status: 'CASE_NOT_CONCLUDED',
+    } as ChargeRemand,
     {
       from: '2022-11-23',
       to: '2022-12-15',
