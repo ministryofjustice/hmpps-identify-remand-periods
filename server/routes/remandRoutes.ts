@@ -86,11 +86,11 @@ export default class RemandRoutes {
     const { nomsId } = req.params
     const { username } = res.locals.user
     const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
-    const chargeIds = calculation.chargeRemand
-      .find(it => ['CASE_NOT_CONCLUDED', 'NOT_SENTENCED'].includes(it.status))
-      .chargeIds.join(',')
+    const firstReplaceableRemand = new DetailedRemandCalculation(
+      calculation,
+    ).getReplaceableChargeRemandGroupedByChargeIds()[0]
 
-    return res.render('pages/remand/replaced-offence-intercept', { chargeIds })
+    return res.render('pages/remand/replaced-offence-intercept', { chargeIds: firstReplaceableRemand.chargeIds })
   }
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
