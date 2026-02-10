@@ -164,7 +164,7 @@
     "esbuild-plugin-clean": "^1.0.1",
     "esbuild-plugin-copy": "^2.1.1",
     "esbuild-sass-plugin": "^3.6.0",
-    "eslint": "^8.57.1",
+    "eslint": "^10.0.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
