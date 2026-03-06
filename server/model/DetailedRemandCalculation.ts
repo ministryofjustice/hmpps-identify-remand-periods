@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { Charge, ChargeRemand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
-import { sameMembers } from '../utils/utils'
+import { maxOf, sameMembers } from '../utils/utils'
 
 export type RemandAndCharge = ChargeRemand & {
   charges: Charge[]
@@ -43,23 +43,33 @@ export default class DetailedRemandCalculation {
   }
 
   public getReplaceableChargeRemandGroupedByChargeIds(): ReplaceableChargeRemands[] {
-    const remands: ReplaceableChargeRemands[] = []
-
-    this.chargeRemand
+    const replaceableChargeRemands: ReplaceableChargeRemands[] = []
+    const latestRemandDate = maxOf(this.chargeRemand, it => new Date(it.to))
+    const sentenceCharges = this.chargeRemand
       .filter(it => it.status !== 'INACTIVE' && DetailedRemandCalculation.canBeMarkedAsApplicable(it))
-      .forEach(chargeRemand => {
-        const existing = remands.find(it => sameMembers(it.chargeIds, chargeRemand.chargeIds))
-        if (existing) {
-          existing.remand.push(chargeRemand)
-        } else {
-          remands.push({
-            chargeIds: chargeRemand.chargeIds,
-            remand: [chargeRemand],
-          })
-        }
-      })
+      .filter(it => it.charges.some(charge => charge.sentenceSequence !== null && charge.sentenceDate !== null))
 
-    return remands
+    const minBookingId = Math.min(
+      ...sentenceCharges.flatMap(chargeRemand => chargeRemand.charges.map(c => c.bookingId)),
+    )
+
+    sentenceCharges.forEach(chargeRemand => {
+      const existing = replaceableChargeRemands.find(it => sameMembers(it.chargeIds, chargeRemand.chargeIds))
+      if (existing) {
+        existing.remand.push(chargeRemand)
+      } else {
+        replaceableChargeRemands.push({
+          chargeIds: chargeRemand.chargeIds,
+          remand: [chargeRemand],
+        })
+      }
+    })
+
+    return replaceableChargeRemands.filter(rcr =>
+      rcr.remand.some(r =>
+        r.charges.some(c => new Date(c.sentenceDate) >= latestRemandDate && c.bookingId >= minBookingId),
+      ),
+    )
   }
 
   public chargeIdsOfRemand(remand: RemandAndCharge): number[] {
