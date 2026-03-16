@@ -5,7 +5,7 @@
   "repository": "git@github.com:ministryofjustice/hmpps-identify-remand-periods.git",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "hmpps-precommit-hooks-prepare",
     "copy-views": "cp -R server/views dist/server/",
     "compile-sass": "sass --quiet-deps --no-source-map --load-path=node_modules/govuk-frontend/dist --load-path=node_modules/@ministryofjustice/frontend --load-path=node_modules/accessible-autocomplete --load-path=node_modules/hmpps-court-cases-release-dates-design --load-path=. assets/scss/application.scss:./assets/stylesheets/application.css --style compressed",
     "watch-ts": "tsc -w",
@@ -32,7 +32,7 @@
     "generate-identify-remand-period-types": "openapi-typescript https://identify-remand-periods-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/identifyRemandPeriods/index.d.ts",
     "generate-prison-api-types": "openapi-typescript https://prison-api-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonApi/index.d.ts",
     "generate-prisoner-search-api-types": "openapi-typescript https://prisoner-search-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonerSearchApi/index.d.ts",
-    "rebuild": "npm run clean && npm i && npm run build",
+    "rebuild": "npm run clean && npm run setup && npm run build",
     "setup": "npm ci && hmpps-npm-script-run-allowlist"
   },
   "engines": {
@@ -100,6 +100,7 @@
     "@microsoft/applicationinsights-web": "^3.3.11",
     "@ministryofjustice/frontend": "^8.0.1",
     "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.15.2",
+    "@ministryofjustice/hmpps-precommit-hooks": "2.0.2",
     "accessible-autocomplete": "^3.0.1",
     "agentkeepalive": "^4.6.0",
     "applicationinsights": "^2.9.8",
