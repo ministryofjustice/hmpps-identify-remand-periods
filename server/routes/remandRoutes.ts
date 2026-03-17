@@ -49,7 +49,11 @@ export default class RemandRoutes {
     }
     if (detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds().length) {
       const decision = await this.identifyRemandPeriodsService.getRemandDecision(nomsId, username)
-      if (decision?.accepted && decision?.options?.userSelections?.length) {
+      if (
+        decision?.accepted &&
+        decision?.options?.userSelections?.length &&
+        this.decisionStillApplies(decision.options.userSelections, detailedCalculation)
+      ) {
         decision.options.userSelections.forEach(it => {
           this.cachedDataService.storeSelection(req, nomsId, it)
         })
@@ -349,5 +353,36 @@ export default class RemandRoutes {
       action: rejectedRemandDecision ? 'REJECTED' : 'CREATE',
     })
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/success?message=${message}`)
+  }
+
+  decisionStillApplies(
+    previousUserSelection: { chargeIdsToMakeApplicable: number[]; targetChargeId: number }[],
+    newCalculation: DetailedRemandCalculation,
+  ) {
+    const currentApplicableChargeIdGroups = newCalculation.chargeRemand
+      .filter(it => newCalculation.isRelevant(it))
+      .map(it => it.chargeIds)
+    const chargeIdGroupsNeedingADecision = newCalculation
+      .getReplaceableChargeRemandGroupedByChargeIds()
+      .map(it => it.chargeIds)
+    const relevantPreviousUserSelections = previousUserSelection.filter(prev =>
+      currentApplicableChargeIdGroups.some(
+        currentApplicable =>
+          currentApplicable.indexOf(prev.targetChargeId) >= 0 &&
+          prev.chargeIdsToMakeApplicable.every(prevChargeId =>
+            chargeIdGroupsNeedingADecision.some(newNeedingDecision => newNeedingDecision.indexOf(prevChargeId) >= 0),
+          ),
+      ),
+    )
+    if (relevantPreviousUserSelections.length !== previousUserSelection.length) {
+      return false
+    }
+    return chargeIdGroupsNeedingADecision.every(curr =>
+      relevantPreviousUserSelections.some(
+        prev =>
+          curr.length === prev.chargeIdsToMakeApplicable.length &&
+          curr.every(chargeId => prev.chargeIdsToMakeApplicable.indexOf(chargeId) >= 0),
+      ),
+    )
   }
 }

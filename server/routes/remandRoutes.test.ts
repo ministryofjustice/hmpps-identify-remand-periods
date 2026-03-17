@@ -151,6 +151,129 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
 
     return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
   })
+  it('should redirect to replace offence if already accepted previously but the remand periods are now against different charges', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [{ chargeIdsToMakeApplicable: [3933924], targetChargeId: 9999 }],
+      },
+    })
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+  })
+
+  it('should redirect to replace offence if already accepted previously but charge ids needing replacing are now different', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [{ chargeIdsToMakeApplicable: [9999], targetChargeId: 2222 }],
+      },
+    })
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+  })
+
+  it('should redirect to replace offence if already accepted previously but new charges require accepting', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [],
+      },
+    })
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+  })
+
+  it('should redirect to replace offence if already accepted previously but less charges require accepting', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue({
+      ...remandResult,
+      issuesWithLegacyData: [],
+    })
+    identifyRemandPeriodsService.getRemandDecision.mockResolvedValue({
+      accepted: true,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [
+          { chargeIdsToMakeApplicable: [3933924], targetChargeId: 2222 },
+          { chargeIdsToMakeApplicable: [123456789], targetChargeId: 2222 },
+        ],
+      },
+    })
+
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}`)
+      .expect(302)
+      .expect('Location', `/prisoner/${NOMS_ID}/replaced-offence-intercept`)
+  })
+
   it('should redirect to straight to results if no replace choices', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
       {
