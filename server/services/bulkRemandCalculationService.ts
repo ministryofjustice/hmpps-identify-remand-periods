@@ -171,7 +171,7 @@ export default class BulkRemandCalculationService {
     try {
       const calculatedActiveAdjustments = (calculatedRemand?.adjustments
         ?.filter(it => it.status === 'ACTIVE')
-        ?.filter(it => it.bookingId, toString() === bookingId) || []) as Adjustment[]
+        ?.filter(it => it.bookingId.toString() === bookingId) || []) as Adjustment[]
       const nomisDays =
         this.sumRemandDaysNOMISAdjustment(nomisRemandSentenceAdjustment) +
         this.sumRemandDaysNOMISAdjustment(nomisUnusedRemandSentenceAdjustment)
