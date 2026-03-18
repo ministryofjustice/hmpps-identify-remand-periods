@@ -20,8 +20,6 @@ import FeComponentsClient from './feComponentsClient'
 import RedisBulkRemandCalculationRunStore from './bulkResultsStore/redisBulkRemandCalculationRunStore'
 import InMemoryBulkRemandCalculationRunStore from './bulkResultsStore/inMemoryBulkRemandCalculationRunStore'
 
-type RestClientBuilder<T> = (token: string) => T
-
 export const dataAccess = () => {
   const redisClient = createRedisClient()
   return {
@@ -39,4 +37,4 @@ export const dataAccess = () => {
 
 export type DataAccess = ReturnType<typeof dataAccess>
 
-export { HmppsAuthClient, RestClientBuilder, ManageUsersApiClient }
+export { HmppsAuthClient, ManageUsersApiClient }

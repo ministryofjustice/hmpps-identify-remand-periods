@@ -5,6 +5,11 @@ import ValidationError from './validationError'
 export default class SelectApplicableRemandForm extends AbstractForm<SelectApplicableRemandForm> {
   selection: string
 
+  constructor(params: Partial<SelectApplicableRemandForm>) {
+    super(params)
+    this.selection = params?.selection
+  }
+
   validation(): ValidationError[] {
     if (!this.selection) {
       return [

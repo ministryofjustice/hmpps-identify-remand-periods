@@ -32,7 +32,7 @@ export default class RemandRoutes {
 
   public entry: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
@@ -63,7 +63,7 @@ export default class RemandRoutes {
 
   public validationErrors: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId } = res.locals.prisoner
 
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
@@ -83,7 +83,7 @@ export default class RemandRoutes {
   }
 
   public replacedOffenceIntercept: RequestHandler = async (req, res): Promise<void> => {
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { username } = res.locals.user
     const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username)
     const firstReplaceableRemand = new DetailedRemandCalculation(
@@ -95,7 +95,7 @@ export default class RemandRoutes {
 
   public remand: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const selections = this.cachedDataService.getSelections(req, nomsId)
     const calculation = await this.cachedDataService.getCalculation(req, nomsId, username, true)
@@ -115,7 +115,7 @@ export default class RemandRoutes {
 
   public remandSubmit: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const selections = this.cachedDataService.getSelections(req, nomsId)
     const form = new RemandDecisionForm(req.body)
@@ -155,7 +155,7 @@ export default class RemandRoutes {
 
   public selectApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const edit = req.route.path.endsWith('/edit')
     const { chargeIds } = req.query as Record<string, string>
     const { bookingId, prisonerNumber } = res.locals.prisoner
@@ -175,7 +175,7 @@ export default class RemandRoutes {
 
   public submitApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const edit = req.route.path.endsWith('/edit')
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const { chargeIds } = req.query as Record<string, string>
@@ -216,7 +216,7 @@ export default class RemandRoutes {
   }
 
   public removeSelection: RequestHandler = async (req, res): Promise<void> => {
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { chargeIds } = req.query as Record<string, string>
     const { prisonerNumber } = res.locals.prisoner
 
@@ -253,13 +253,13 @@ export default class RemandRoutes {
   }
 
   public bulkRemandInProgress: RequestHandler = async (req, res): Promise<void> => {
-    const { id } = req.params
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
     const run = await this.bulkRemandCalculationService.getRun(id)
     return res.render('pages/remand/bulk-in-progress', { id, status: run?.status ?? 'MISSING' })
   }
 
   public downloadBulkRemand: RequestHandler = async (req, res): Promise<void> => {
-    const { id } = req.params
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
     const run = await this.bulkRemandCalculationService.getRun(id)
     if (!run || run.status !== 'DONE') {
       res.redirect(`/bulk-in-progress/${id}`)
@@ -275,7 +275,7 @@ export default class RemandRoutes {
 
   public overview: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId } = res.locals.prisoner
     const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
     const identifiedRemand = calculation.adjustments.filter(it => it.status === 'ACTIVE') as Adjustment[]
@@ -291,7 +291,7 @@ export default class RemandRoutes {
 
   public confirmAndSave: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
     const { bookingId } = res.locals.prisoner
 
     const rejectedRemandDecision = this.cachedDataService.getRejectedRemandDecision(req, nomsId)
@@ -326,7 +326,7 @@ export default class RemandRoutes {
 
   public submitConfirmAndSave: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
 
     const rejectedRemandDecision = this.cachedDataService.getRejectedRemandDecision(req, nomsId)
 
