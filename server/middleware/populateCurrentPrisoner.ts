@@ -6,7 +6,7 @@ import { UserDetails } from '../services/userService'
 export default function populateCurrentPrisoner(prisonerSearchService: PrisonerSearchService): RequestHandler {
   return async (req, res, next) => {
     const user = res.locals.user as UserDetails
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
 
     if (user.username && nomsId) {
       try {
