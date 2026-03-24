@@ -8,7 +8,7 @@ export default class PrisonerImageRoutes {
   constructor(private readonly prisonerService: PrisonerService) {}
 
   getImage = async (req: Request, res: Response): Promise<void> => {
-    const { nomsId } = req.params
+    const nomsId = req.params.nomsId as string
 
     return this.prisonerService
       .getPrisonerImage(res.locals.user.token, nomsId)

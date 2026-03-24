@@ -6,6 +6,12 @@ export default class RemandDecisionForm extends AbstractForm<RemandDecisionForm>
 
   comment: string
 
+  constructor(params: Partial<RemandDecisionForm>) {
+    super(params)
+    this.decision = params?.decision
+    this.comment = params?.comment
+  }
+
   validation(): ValidationError[] {
     if (!this.decision) {
       return [

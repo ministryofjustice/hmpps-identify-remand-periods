@@ -36,7 +36,7 @@
     appInsights.trackPageView();
   </script>
   {% endif %}
-  <link href="/assets/css/app.css?{{ version }}" rel="stylesheet"/>
+   <link href="{{ '/assets/css/index.css' | assetMap }}" rel="stylesheet"/>
   {% if feComponents.cssIncludes %}
     {% for css in feComponents.cssIncludes %}
       <link href="{{ css }}" nonce="{{ cspNonce }}" rel="stylesheet" />
@@ -47,14 +47,14 @@
 {% endblock %}
 
 {% block pageTitle %}{{pageTitle | default(applicationName)}}{% endblock %}
-
+<script type="module" src="{{ '/assets/js/index.js' | assetMap }}"></script>
 {% block header %}
   {% if feComponents.header %}
     {{ feComponents.header | safe }}
   {% else %}
     {% include "./header.njk" %}
   {% endif %}
-  {{ 
+  {{
       serviceHeader({
       environment: environment,
       prisonNumber: prisoner.prisonerNumber
@@ -73,13 +73,13 @@
 
 {% block footer %}
   {% if feComponents.enabled %}
-    {{ 
-      footer({ 
-        environment: environment, 
+    {{
+      footer({
+        environment: environment,
         attributes: {
           "data-qa": "ccrds-footer"
-        } 
-      }) 
+        }
+      })
     }}
   {% else %}
     {{ super() }}
