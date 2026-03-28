@@ -29,6 +29,12 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
     this.total = this.replaceableCharges.length
+
+    if (this.total === 0) {
+      this.chargesToSelect = []
+      return
+    }
+
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
     const latestRemandDate = maxOf(this.chargeRemand, it => new Date(it.to))
