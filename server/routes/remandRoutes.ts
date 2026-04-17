@@ -171,8 +171,20 @@ export default class RemandRoutes {
     const selections = this.cachedDataService.getSelections(req, nomsId)
     const existingSelection = selections.find(it => sameMembers(it.chargeIdsToMakeApplicable, chargeNumbers))
 
+    const model = new SelectApplicableRemandModel(
+      prisonerNumber,
+      calculation,
+      sentencesAndOffences,
+      chargeNumbers,
+      edit,
+    )
+
+    if (model.chargesToSelect.length === 0) {
+      return res.redirect(`/prisoner/${prisonerNumber}/remand`)
+    }
+
     return res.render('pages/remand/select-applicable', {
-      model: new SelectApplicableRemandModel(prisonerNumber, calculation, sentencesAndOffences, chargeNumbers, edit),
+      model,
       form: SelectApplicableRemandForm.from(existingSelection),
     })
   }
