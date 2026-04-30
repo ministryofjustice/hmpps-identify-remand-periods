@@ -20,6 +20,8 @@ import routes from './routes'
 import type { Services } from './services'
 import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 import getFrontendComponents from './middleware/getFeComponents'
+import maintenanceMiddleware from './middleware/maintenanceMiddleware'
+import config from './config'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
@@ -40,14 +42,16 @@ export default function createApp(services: Services): express.Application {
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services))
 
-  app.use((req, res, next) => {
-    if (req.method === 'GET') return getFrontendComponents(services)(req, res, next)
-    return next()
-  })
-
-  app.use('/prisoner/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
-
-  app.use(routes(services))
+  if (config.maintenanceMode) {
+    app.use(maintenanceMiddleware)
+  } else {
+    app.use((req, res, next) => {
+      if (req.method === 'GET') return getFrontendComponents(services)(req, res, next)
+      return next()
+    })
+    app.use('/prisoner/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
+    app.use(routes(services))
+  }
 
   app.use((req, res, next) => next(createError(404, 'Not found')))
   app.use(errorHandler(process.env.NODE_ENV === 'production'))

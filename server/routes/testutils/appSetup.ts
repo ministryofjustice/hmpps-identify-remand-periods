@@ -9,6 +9,8 @@ import * as auth from '../../authentication/auth'
 import type { Services } from '../../services'
 import type { ApplicationInfo } from '../../applicationInfo'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
+import config from '../../config'
+import maintenanceMiddleware from '../../middleware/maintenanceMiddleware'
 
 const testAppInfo: ApplicationInfo = {
   applicationName: 'test',
@@ -64,7 +66,13 @@ function appSetup(
   })
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
-  app.use(routes(services))
+
+  if (config.maintenanceMode) {
+    app.use(maintenanceMiddleware)
+  } else {
+    app.use(routes(services))
+  }
+
   app.use((req, res, next) => next(new NotFound()))
   app.use(errorHandler(production))
 
