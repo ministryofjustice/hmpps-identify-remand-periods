@@ -32,11 +32,15 @@
     appInsights.addTelemetryInitializer(function (envelope) {
       envelope.tags["ai.cloud.role"] = "{{ appInsightsApplicationName }}"
       envelope.tags["ai.application.ver"] = "{{ buildNumber }}"
+
+      if (envelope && (envelope.baseType === "EventData" || envelope.baseType === "PageviewData")) {
+          envelope.baseData.properties = envelope.baseData.properties || {};
+          envelope.baseData.properties.username = '{{ user.username | default("") | safe }}';
+          envelope.baseData.properties.caseloadId = '{{ prisoner.prisonId | default("") | safe }}';
+      }
     });
-    appInsights.trackPageView(null, {
-       username: '{{ user.username | default("") | safe }}',
-       caseloadId: '{{ prisoner.prisonId | default("") | safe }}'
-    })
+
+    appInsights.trackPageView()
   </script>
   {% endif %}
    <link href="{{ '/assets/css/index.css' | assetMap }}" rel="stylesheet"/>
