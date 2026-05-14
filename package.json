@@ -69,7 +69,7 @@
     "serialize-javascript": "7.0.5",
     "superagent": "^10.3.0",
     "url-value-parser": "^2.2.0",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@jgoz/esbuild-plugin-typecheck": "^4.0.4",
@@ -94,7 +94,7 @@
     "autoprefixer": "^10.4.27",
     "concurrently": "^9.2.1",
     "cookie-session": "^2.1.1",
-    "cypress": "^15.13.1",
+    "cypress": "^15.15.0",
     "del": "8.0.1",
     "dotenv": "^17.4.1",
     "esbuild": "^0.28.0",
@@ -104,7 +104,7 @@
     "glob": "^13.0.6",
     "jest": "^30.3.0",
     "jest-html-reporter": "^4.4.0",
-    "jest-junit": "^16.0.0",
+    "jest-junit": "^17.0.0",
     "jsonwebtoken": "^9.0.3",
     "lint-staged": "^16.4.0",
     "nock": "^14.0.12",
