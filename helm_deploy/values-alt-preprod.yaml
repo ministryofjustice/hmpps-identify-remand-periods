@@ -1,0 +1,33 @@
+---
+# Per environment values which override defaults in hmpps-identify-remand-periods/values.yaml
+
+generic-service:
+  replicaCount: 2
+
+  ingress:
+    host: identify-remand-periods-alt-preprod.hmpps.service.justice.gov.uk
+
+  env:
+    INGRESS_URL: "https://identify-remand-periods-alt-preprod.hmpps.service.justice.gov.uk"
+
+    HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
+    TOKEN_VERIFICATION_API_URL: "https://token-verification-api-preprod.prison.service.justice.gov.uk"
+    PRISON_API_URL: "https://prison-api-preprod.prison.service.justice.gov.uk"
+
+    ADJUSTMENTS_API_URL: "https://adjustments-api-alt-preprod.hmpps.service.justice.gov.uk"
+    ADJUSTMENTS_URL: "https://adjust-release-dates-alt-preprod.hmpps.service.justice.gov.uk"
+    CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api-alt-preprod.hmpps.service.justice.gov.uk"
+    CALCULATE_RELEASE_DATES_URL: "https://calculate-release-dates-alt-preprod.hmpps.service.justice.gov.uk"
+    IDENTIFY_REMAND_PERIODS_API_URL: "https://identify-remand-periods-api-alt-preprod.hmpps.service.justice.gov.uk"
+
+    DIGITAL_PRISON_SERVICES_URL: "https://digital-preprod.prison.service.justice.gov.uk"
+    MANAGE_USERS_API_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
+    PRISONER_SEARCH_API_URL: "https://prisoner-search-preprod.prison.service.justice.gov.uk"
+    COMPONENT_API_URL: "https://frontend-components-preprod.hmpps.service.justice.gov.uk"
+
+    COMMON_COMPONENTS_ENABLED: 'true'
+    ENVIRONMENT_NAME: PRE-PRODUCTION
+
+generic-prometheus-alerts:
+  businessHoursOnly: true
+  alertSeverity: legacy-replacement-alerts-non-prod
