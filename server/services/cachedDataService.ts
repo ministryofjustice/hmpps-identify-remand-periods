@@ -102,6 +102,21 @@ export default class CachedDataService {
     req.session.rejectedRemandDecision[nomsId] = undefined
   }
 
+  public getReasonForMissingInformation(req: Request, nomsId: string): string {
+    this.initialiseSession(req, nomsId)
+    return req.session.reasonForMissingInformation[nomsId]
+  }
+
+  public setReasonForMissingInformation(req: Request, nomsId: string, reason: string): void {
+    this.initialiseSession(req, nomsId)
+    req.session.reasonForMissingInformation[nomsId] = reason
+  }
+
+  public clearReasonForMissingInformation(req: Request, nomsId: string): void {
+    this.initialiseSession(req, nomsId)
+    req.session.reasonForMissingInformation[nomsId] = undefined
+  }
+
   private initialiseSession(req: Request, nomsId: string) {
     if (!req.session.selectedApplicableRemand) {
       req.session.selectedApplicableRemand = {}
@@ -120,6 +135,12 @@ export default class CachedDataService {
     }
     if (!req.session.rejectedRemandDecision[nomsId]) {
       req.session.rejectedRemandDecision[nomsId] = undefined
+    }
+    if (!req.session.reasonForMissingInformation) {
+      req.session.reasonForMissingInformation = {}
+    }
+    if (!req.session.reasonForMissingInformation[nomsId]) {
+      req.session.reasonForMissingInformation[nomsId] = undefined
     }
   }
 }

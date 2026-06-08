@@ -52,7 +52,7 @@
     "connect-redis": "^9.0.0",
     "csrf-sync": "^4.2.1",
     "csv-stringify": "^6.7.0",
-    "dayjs": "^1.11.20",
+    "dayjs": "1.11.21",
     "express": "^5.2.1",
     "express-prom-bundle": "^8.0.0",
     "express-session": "^1.19.0",

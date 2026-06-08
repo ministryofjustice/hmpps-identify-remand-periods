@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express'
+import { Request, RequestHandler } from 'express'
 import { stringify } from 'csv-stringify'
 import PrisonerService from '../services/prisonerService'
 import BulkRemandCalculationService from '../services/bulkRemandCalculationService'
@@ -19,6 +19,7 @@ import DetailedRemandCalculation from '../model/DetailedRemandCalculation'
 import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalculationAndSentence'
 import RemandOverviewModel from '../model/RemandOverviewModel'
 import { sameMembers } from '../utils/utils'
+import ReasonForMissingInformationForm from '../model/ReasonForMissingInformationForm'
 
 export default class RemandRoutes {
   constructor(
@@ -70,20 +71,70 @@ export default class RemandRoutes {
     const nomsId = req.params.nomsId as string
     const { bookingId } = res.locals.prisoner
 
-    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
-    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username, true)
+    const detailedRemandAndSentence = await this.getDetailedRemandAndSentence(bookingId, req, nomsId, username)
 
-    const detailedCalculation = new DetailedRemandCalculation(calculation)
-    const detailedRemandAndSentence = new DetailedRemandCalculationAndSentence(
-      detailedCalculation,
-      sentencesAndOffences,
-    )
     if (detailedRemandAndSentence.mostImportantErrors().length) {
       return res.render('pages/remand/validation-errors', {
         model: detailedRemandAndSentence,
+        nomsId,
       })
     }
     return res.redirect(`/prisoner/${nomsId}`)
+  }
+
+  public reasonForMissingInformation: RequestHandler = async (req, res): Promise<void> => {
+    const { username } = res.locals.user
+    const nomsId = req.params.nomsId as string
+    const { bookingId } = res.locals.prisoner
+
+    const detailedRemandAndSentence = await this.getDetailedRemandAndSentence(bookingId, req, nomsId, username)
+
+    // Ensure validation errors are present before prompting for missing information.
+    if (detailedRemandAndSentence.mostImportantErrors().length === 0) {
+      return res.redirect(`/prisoner/${nomsId}`)
+    }
+
+    const existingReason = this.cachedDataService.getReasonForMissingInformation(req, nomsId)
+    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(nomsId, {
+      reasonForMissingInformation: existingReason,
+    })
+
+    return res.render('pages/remand/reason-for-missing-information', {
+      model: reasonForMissingInformationForm,
+    })
+  }
+
+  public reasonForMissingInformationSubmit: RequestHandler = async (req, res): Promise<void> => {
+    const nomsId = req.params.nomsId as string
+    const { username } = res.locals.user
+    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(nomsId, req.body)
+    this.cachedDataService.setReasonForMissingInformation(
+      req,
+      nomsId,
+      reasonForMissingInformationForm.reasonForMissingInformation,
+    )
+
+    reasonForMissingInformationForm.validate()
+
+    if (reasonForMissingInformationForm.errors.length) {
+      return res.render('pages/remand/reason-for-missing-information', {
+        model: reasonForMissingInformationForm,
+      })
+    }
+
+    const decision: IdentifyRemandDecision = {
+      accepted: false,
+      rejectComment: 'missing NOMIS information',
+      reasonForMissingInformation: reasonForMissingInformationForm.reasonForMissingInformation,
+      options: {
+        includeRemandCalculation: false,
+        userSelections: [],
+      },
+    }
+
+    await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
+    this.cachedDataService.clearReasonForMissingInformation(req, nomsId)
+    return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/remand/add`)
   }
 
   public replacedOffenceIntercept: RequestHandler = async (req, res): Promise<void> => {
@@ -384,5 +435,13 @@ export default class RemandRoutes {
           curr.every(chargeId => prev.chargeIdsToMakeApplicable.indexOf(chargeId) >= 0),
       ),
     )
+  }
+
+  async getDetailedRemandAndSentence(bookingId: string, req: Request, nomsId: string, username: string) {
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+    const calculation = await this.cachedDataService.getCalculationWithoutSelections(req, nomsId, username, true)
+
+    const detailedCalculation = new DetailedRemandCalculation(calculation)
+    return new DetailedRemandCalculationAndSentence(detailedCalculation, sentencesAndOffences)
   }
 }
