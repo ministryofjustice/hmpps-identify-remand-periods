@@ -13,6 +13,7 @@ declare module 'express-session' {
     storedCalculations?: Record<string, RemandResult>
     storedCalculationsWithoutSelection?: Record<string, RemandResult>
     rejectedRemandDecision?: Record<string, IdentifyRemandDecision>
+    reasonForMissingInformation?: Record<string, string>
   }
 }
 

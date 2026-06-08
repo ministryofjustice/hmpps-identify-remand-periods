@@ -14,7 +14,7 @@
 }
 
 .moj-interruption-card__body {
-   .govuk-details {  
+   .govuk-details {
     * {
       color: white;
     }
@@ -30,6 +30,12 @@
     }
   }
 }
+
 .autocomplete__option {
   font-family: "GDS Transport", arial, sans-serif;
+}
+
+.manual-entry-inset-test {
+  background-color: #f3f2f1;
+  width: 80%;
 }

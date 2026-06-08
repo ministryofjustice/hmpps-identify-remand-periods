@@ -1,14 +1,13 @@
 import { type RequestHandler, Router } from 'express'
 
-import asyncMiddleware from '../middleware/asyncMiddleware'
 import type { Services } from '../services'
 import RemandRoutes from './remandRoutes'
 import PrisonerImageRoutes from './prisonerImageRoutes'
 
 export default function routes(service: Services): Router {
   const router = Router()
-  const get = (path: string | string[], handler: RequestHandler) => router.get(path, asyncMiddleware(handler))
-  const post = (path: string, handler: RequestHandler) => router.post(path, asyncMiddleware(handler))
+  const get = (path: string | string[], handler: RequestHandler) => router.get(path, handler)
+  const post = (path: string, handler: RequestHandler) => router.post(path, handler)
 
   const remandRoutes = new RemandRoutes(
     service.prisonerService,
@@ -28,6 +27,9 @@ export default function routes(service: Services): Router {
   get('/prisoner/:nomsId', remandRoutes.entry)
 
   get('/prisoner/:nomsId/validation-errors', remandRoutes.validationErrors)
+
+  get('/prisoner/:nomsId/reason-for-missing-information', remandRoutes.reasonForMissingInformation)
+  post('/prisoner/:nomsId/reason-for-missing-information', remandRoutes.reasonForMissingInformationSubmit)
 
   get('/prisoner/:nomsId/replaced-offence-intercept', remandRoutes.replacedOffenceIntercept)
 

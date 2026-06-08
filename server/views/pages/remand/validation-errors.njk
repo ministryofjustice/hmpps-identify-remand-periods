@@ -8,23 +8,26 @@
 
 {% block content %}
 
-    {% set errorBody %}
-        <div class="govuk-error-summary__body">
-            <p>There is information missing in NOMIS that could impact the remand time.</p>
-            <ul class="govuk-list govuk-error-summary__list">
-                {% for error in model.mostImportantErrors() %}
-                    <li>
-                        <p class="govuk-body">{{error.message}}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-            <p class="govuk-!-margin-top-4">To ensure the remand time is calculated correctly, add the missing information in NOMIS, then <a href="">reload this page</a>.</p>
-        </div>
-    {% endset -%}
+    <div class="govuk-grid-column-full">
+        <h1 class="govuk-heading-l">
+            <span class="govuk-caption-xl">Review remand</span>
+            Update the NOMIS information
+        </h1>
 
-    {{ govukErrorSummary({
-        titleText: "There is a problem",
-        errorList: [],
-        descriptionHtml: errorBody
-    }) }}
+        <p class="govuk-body">There is information missing in NOMIS that could impact the remand time.</p>
+
+        What needs updating:
+
+        <ul>
+        {% for error in model.mostImportantErrors() %}
+            <li>
+                <p>{{error.message}}</p>
+            </li>
+        {% endfor %}
+        </ul>
+    <h2>What you need to do</h2>
+    <p>Update the information in NOMIS, then <a href="">reload this page</a></p>
+    <p>If you cannot find the documentation for the missing information, <a href="{{ '/prisoner/' + nomsId + '/reason-for-missing-information' }}">you can enter the remand time manually.</a></p>
+    </div>
+
 {% endblock %}

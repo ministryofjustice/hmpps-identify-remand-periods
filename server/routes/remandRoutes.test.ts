@@ -623,8 +623,9 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
           'There is information missing in NOMIS that could impact the remand time.',
           'This is an important message',
           'This is also important message',
-          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+          '<h2>What you need to do</h2>',
         ])
+        expect(res.text).toContain('you can enter the remand time manually.')
       })
   })
   it('Should display error page without cached result', () => {
@@ -648,8 +649,9 @@ describe('Validation error page /prisoner/{prisonerId}/validation-errors', () =>
           'There is information missing in NOMIS that could impact the remand time.',
           'This is an important message',
           'This is also important message',
-          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+          '<h2>What you need to do</h2>',
         ])
+        expect(res.text).toContain('you can enter the remand time manually.')
       })
   })
   it('Should display redirect with no errors', () => {
@@ -845,6 +847,29 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
         expect(res.text).toContain('The remand tool suggested the below remand')
         expect(res.text).toContain('The reason for rejection was: <strong>Rejected</strong>')
         expect(calculateReleaseDatesService.unusedDeductionsHandlingCRDError.mock.calls.length).toBe(0)
+      })
+  })
+
+  it('Should show reason form missing information when bypassing validation', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
+    cachedDataService.getReasonForMissingInformation.mockReturnValue('missing NOMIS data')
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/reason-for-missing-information`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('<a href="/prisoner/ABC123/validation-errors" class="govuk-back-link">Back</a>')
       })
   })
 

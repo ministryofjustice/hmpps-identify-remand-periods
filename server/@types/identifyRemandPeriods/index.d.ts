@@ -198,6 +198,7 @@ export interface components {
     IdentifyRemandDecisionDto: {
       accepted: boolean
       rejectComment?: string
+      reasonForMissingInformation?: string
       options?: components['schemas']['RemandCalculationRequestOptions']
       /** Format: int32 */
       days?: number
