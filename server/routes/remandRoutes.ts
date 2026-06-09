@@ -95,9 +95,13 @@ export default class RemandRoutes {
     }
 
     const existingReason = this.cachedDataService.getReasonForMissingInformation(req, nomsId)
-    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(nomsId, {
-      reasonForMissingInformation: existingReason,
-    })
+    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(
+      nomsId,
+      `${config.services.adjustmentServices.url}/${nomsId}`,
+      {
+        reasonForMissingInformation: existingReason,
+      },
+    )
 
     return res.render('pages/remand/reason-for-missing-information', {
       model: reasonForMissingInformationForm,
@@ -107,7 +111,11 @@ export default class RemandRoutes {
   public reasonForMissingInformationSubmit: RequestHandler = async (req, res): Promise<void> => {
     const nomsId = req.params.nomsId as string
     const { username } = res.locals.user
-    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(nomsId, req.body)
+    const reasonForMissingInformationForm = new ReasonForMissingInformationForm(
+      nomsId,
+      `${config.services.adjustmentServices.url}/${nomsId}`,
+      req.body,
+    )
     this.cachedDataService.setReasonForMissingInformation(
       req,
       nomsId,
@@ -134,6 +142,12 @@ export default class RemandRoutes {
 
     await this.identifyRemandPeriodsService.saveRemandDecision(nomsId, decision, username)
     this.cachedDataService.clearReasonForMissingInformation(req, nomsId)
+    const existingRemand = await this.adjustmentsService.findByPerson(nomsId, username)
+
+    if (existingRemand.some(a => a.adjustmentType === 'REMAND' && a.remand)) {
+      return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/remand/view`)
+    }
+
     return res.redirect(`${config.services.adjustmentServices.url}/${nomsId}/remand/add`)
   }
 

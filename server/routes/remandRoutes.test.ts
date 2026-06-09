@@ -987,3 +987,56 @@ describe('bulk comparison', () => {
       })
   })
 })
+
+describe('POST /prisoner/:nomsId/reason-for-missing-information', () => {
+  it('should redirect to adjustments service if form is valid', () => {
+    adjustmentsService.findByPerson.mockResolvedValue([{ adjustmentType: 'REMAND', remand: {} } as Adjustment])
+    return request(app)
+      .post(`/prisoner/${NOMS_ID}/reason-for-missing-information`)
+      .send({
+        reasonForMissingInformation: 'some reason',
+      })
+      .expect(302)
+      .expect('Location', `http://localhost:3000/adj/${NOMS_ID}/remand/view`)
+      .expect(() => {
+        expect(identifyRemandPeriodsService.saveRemandDecision).toHaveBeenCalledWith(
+          NOMS_ID,
+          {
+            accepted: false,
+            rejectComment: 'missing NOMIS information',
+            reasonForMissingInformation: 'some reason',
+            options: {
+              includeRemandCalculation: false,
+              userSelections: [],
+            },
+          },
+          'user1',
+        )
+        expect(cachedDataService.clearReasonForMissingInformation).toHaveBeenCalled()
+      })
+  })
+
+  it('should redirect to adjustments service add page if form is valid and no remand exists', () => {
+    adjustmentsService.findByPerson.mockResolvedValue([{ adjustmentType: 'LAWFULLY_AT_LARGE' } as Adjustment])
+    return request(app)
+      .post(`/prisoner/${NOMS_ID}/reason-for-missing-information`)
+      .send({
+        reasonForMissingInformation: 'some reason',
+      })
+      .expect(302)
+      .expect('Location', `http://localhost:3000/adj/${NOMS_ID}/remand/add`)
+  })
+
+  it('should render with errors if form is invalid', () => {
+    return request(app)
+      .post(`/prisoner/${NOMS_ID}/reason-for-missing-information`)
+      .send({
+        reasonForMissingInformation: '',
+      })
+      .expect(200)
+      .expect(res => {
+        expect(res.text).toContain('There is a problem')
+        expect(res.text).toContain('Enter a reason for missing information')
+      })
+  })
+})
