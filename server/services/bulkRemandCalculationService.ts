@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
 import { LegacyDataProblem, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import {
@@ -31,7 +31,7 @@ export default class BulkRemandCalculationService {
   private readonly SECONDS_TO_KEEP_RESULTS = 60 * 60 * 4 // Keep results in redis for up to 4 hours
 
   public async startRun(user: UserDetails, nomsIds: string[] | null, prisonId: string | null): Promise<string> {
-    const id = uuidv4()
+    const id = randomUUID()
     await this.bulkResultsStore.setRun(id, { id, status: 'RUNNING', results: null }, this.SECONDS_TO_KEEP_RESULTS)
     this.runCalculations(user, nomsIds, prisonId)
       .catch(err => {
