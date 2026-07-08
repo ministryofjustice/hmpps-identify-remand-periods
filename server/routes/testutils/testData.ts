@@ -43,7 +43,7 @@ const remandResult = {
       offenceDate: '2022-01-10',
       bookingId: 1204935,
       bookNumber: '41938A',
-      offenceEndDate: null,
+      offenceEndDate: '2022-01-12',
       sentenceSequence: 1,
       sentenceDate: '2023-03-21',
       courtCaseRef: 'CASE1234',
