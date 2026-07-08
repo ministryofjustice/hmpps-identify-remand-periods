@@ -1,0 +1,23 @@
+{% from "govuk/components/table/macro.njk" import govukTable %}
+<div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            {{ govukTable({
+                head: [
+                    {
+                        text: "Dates"
+                    },
+                    {
+                        text: "Days"
+                    },
+                    {
+                        text: "Offence"
+                    },
+                    {
+                        text: "Committed on"
+                    }
+                ],
+                rows: model.rows,
+                attributes: { "data-qa": "remand-table" }
+            }) }}
+        </div>
+</div>
