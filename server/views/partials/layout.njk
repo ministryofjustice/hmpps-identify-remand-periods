@@ -94,8 +94,7 @@
 {% endblock %}
 
 {% block bodyEnd %}
-  <script type="module" src="/assets/js/govukFrontendInit.js"></script>
-  <script src="/assets/js/mojFrontendInit.js"></script>
+  <script type="module" src="{{ "/assets/js/index.js" | assetMap }}"></script>
   {% if feComponents.jsIncludes %}
     {% for js in feComponents.jsIncludes %}
       <script src="{{ js }}" nonce="{{ cspNonce }}"></script>

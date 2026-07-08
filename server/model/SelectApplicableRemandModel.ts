@@ -4,6 +4,7 @@ import config from '../config'
 import { maxOf, minOf } from '../utils/utils'
 import DetailedRemandCalculation, { RemandAndCharge, ReplaceableChargeRemands } from './DetailedRemandCalculation'
 import RemandCardModel from './RemandCardModel'
+import RemandTableModel, { createRemandTable } from '../views/components/remand-table/RemandTableModel'
 
 export default class SelectApplicableRemandModel extends RemandCardModel {
   public chargeRemand: RemandAndCharge[]
@@ -13,6 +14,8 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
   public total: number
 
   public index: number
+
+  public remandTable: RemandTableModel
 
   private replaceableCharges: ReplaceableChargeRemands[]
 
@@ -28,6 +31,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     this.replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
+    this.remandTable = createRemandTable(this.chargeRemand, relevantRemand.charges)
     this.total = this.replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 
@@ -123,23 +127,19 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
 
   public radioItems() {
     return [
+      ...this.chargesToSelect.map(it => {
+        return {
+          value: it.chargeId,
+          html: `Yes, because this offence was replaced with <strong>${it.offence.code} - ${it.offence.description} committed on ${this.offenceDateText(it)}</strong>`,
+        }
+      }),
+      {
+        divider: 'or',
+      },
       {
         value: 'no',
         text: 'No, this remand period is not relevant',
       },
-      ...(this.chargesToSelect.length > 0
-        ? [
-            {
-              divider: 'or',
-            },
-          ]
-        : []),
-      ...this.chargesToSelect.map(it => {
-        return {
-          value: it.chargeId,
-          html: `Yes, this offence was replaced with <strong>${it.offence.description}</strong> committed on ${this.offenceDateText(it)}`,
-        }
-      }),
     ]
   }
 }
