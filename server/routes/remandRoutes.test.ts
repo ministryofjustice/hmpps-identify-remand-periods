@@ -704,15 +704,15 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
       .expect(res => {
         expect(res.text).not.toContain('A sentence charge, way before the remand dates')
         expect(res.text).toContainInOrder([
-          '23 Nov 2022 to 15 Dec 2022',
-          '23 Nov 2021 to 15 Dec 2021',
-          'Offence 1 of 1',
+          '1 of 1 remand periods to review',
+          '23/11/2022 to 15/12/2022',
+          '23/11/2021 to 15/12/2021',
           'Is this remand period relevant?',
-          'No, this remand period is not relevant',
           'value="4444"',
-          'Yes, this offence was replaced with <strong>offence on another booking</strong> committed on 10 Jan 2022',
+          'Yes, because this offence was replaced with <strong>WR91001 - offence on another booking committed on 10 Jan 2022</strong>',
           'value="2222"',
-          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
+          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10 Jan 2022</strong>',
+          'No, this remand period is not relevant',
         ])
       })
   })
@@ -739,8 +739,8 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContainInOrder([
           'Is this remand period relevant?',
+          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10 Jan 2022</strong>',
           'No, this remand period is not relevant',
-          'Yes, this offence was replaced with <strong>Abstract water without a licence</strong> committed on 10 Jan 2022',
         ])
       })
   })

@@ -7,6 +7,7 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "../../macros/remandCard.njk" import remandCard %}
+{% from "../../components/remand-table/macro.njk" import remandTable %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -37,25 +38,31 @@
     {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
+            <span class="govuk-caption-xl">Review remand</span>
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-0">Is this remand period relevant?</h1>
+            {% if not model.edit %}
+                <p class="govuk-body govuk-hint">{{model.index + 1}} of {{model.total}} remand periods to review</p>
+            {% endif %}
+        </div>
+    </div>
 
-            <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>Confirm if this offence has been replaced</h1>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <p class="govuk-!-margin-top-2">
+                There are periods of remand that may be relevant to this person’s offence history. <br/>
+                Check if the remand period is relevant to another offence.
             </p>
         </div>
     </div>
-    
 
-    {% for remand in model.chargeRemand %}
-        {{ remandCard(remand, model, false)}}
-    {% endfor %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            {{ remandTable(model.remandTable) }}
+        </div>
+    </div>
 
     <form class="form" method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
-
-        {% if not model.edit %}
-            <p class="govuk-body">Offence {{model.index + 1}} of {{model.total}}</p>
-        {% endif %}
-    
         {{ govukRadios({
             name: "selection",
             fieldset: {
@@ -67,11 +74,17 @@
             errorMessage: form.messageForField('selection'),
             value: form.selection,
             items: model.radioItems()
-        
+
             }) }}
         <div>
             <button class="govuk-button" data-module="govuk-button" name="submit">Confirm and continue</button>
+            <a data-qa="cancel-link"
+               data-prevent-double-click="true" class="govuk-button govuk-!-margin-left-3 govuk-button--secondary no-js-hidden"
+               data-module="govuk-button"
+               href="{{ model.cancelLink() }}">
+                Cancel
+            </a>
         </div>
     </form>
-    <a href="{{model.cancelLink()}}" class="govuk-link">Cancel</a>
+
 {% endblock %}
