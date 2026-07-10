@@ -14,19 +14,21 @@ export default class ConfirmAndSaveModel {
 
   public table() {
     return {
-      head: [{ text: 'Remand period' }, { text: 'Days spent on remand' }],
+      head: [{ text: 'Dates' }, { text: 'Days' }],
       rows: [...this.rows(), this.totalRow()],
     }
   }
 
   private totalRow() {
+    const total = this.getTotalDaysRemand()
     return [
       {
         text: 'Total days',
-        classes: 'govuk-table__header',
+        classes: 'govuk-!-font-weight-bold',
       },
       {
-        text: this.getTotalDaysRemand(),
+        text: `${total} ${total > 1 ? 'days' : 'day'}`,
+        classes: 'govuk-!-font-weight-bold',
       },
     ]
   }
@@ -41,7 +43,7 @@ export default class ConfirmAndSaveModel {
     return this.adjustments.map(it => {
       return [
         {
-          text: `${dayjs(it.fromDate).format('DD MMM YYYY')} to ${dayjs(it.toDate).format('DD MMM YYYY')}`,
+          text: `${dayjs(it.fromDate).format('DD/MM/YYYY')} to ${dayjs(it.toDate).format('DD/MM/YYYY')}`,
         },
         {
           text: daysBetween(new Date(it.fromDate), new Date(it.toDate)),
@@ -60,7 +62,7 @@ export default class ConfirmAndSaveModel {
     if (this.getTotalDaysRemand() === 0) {
       return '<p class="govuk-body"><strong>No remand to be applied</strong></p><p>The remand tool has calculated that there is no remand to be applied.</p>'
     }
-    return '<h2 class="govuk-heading-m">Remand details</h2>'
+    return ''
   }
 
   private isDecisionRejected() {

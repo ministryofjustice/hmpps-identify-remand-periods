@@ -297,6 +297,7 @@ describe('Remand entrypoint /prisoner/{prisonerId}', () => {
     return request(app).get(`/prisoner/${NOMS_ID}`).expect(302).expect('Location', `/prisoner/${NOMS_ID}/remand`)
   })
 })
+
 describe('Remand results page /prisoner/{prisonerId}/remand', () => {
   it('should render the results page with remand', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -329,160 +330,8 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
           'There are errors with nomis data that may be unrelated to the given relevant remand',
           'This is not an important message',
         ])
-        // Remand card test
-        expect(res.text).toContainInOrder([
-          'Court name',
-          'Birmingham Crown Court',
-          'Case number',
-          'CASE1234',
-          'Offence outcome',
-          'Imprisonment',
-          'Days on remand',
-          '11 days',
-          'Remand period',
-          '10 Jan 2023 to 20 Jan 2023',
-        ])
-        expect(res.text).toContainInOrder([
-          'Previous sentences that may overlap remand periods',
-          'Sentenced on 17 Aug 2022',
-          '16 Jan 2023',
-          'Burglary dwelling and theft  - no violence',
-          '18 Jun 2022',
-          'Recalled on 17 Jan 2023',
-          '18 Jan 2023',
-          'Escape from lawful custody within booking 46201A',
-          '18 Jun 2021',
-          'Recalled on 17 Jan 2023',
-          '18 Jan 2023',
-          'Escape from lawful custody within booking 46201X',
-          '18 Jun 2021',
-        ])
-        expect(res.text).toContain('Applicable')
-        expect(res.text).toContain('Case Not Concluded')
-        expect(res.text).toContain('Shared')
         expect(res.text).toContain('The number of remand days recorded has changed')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
-      })
-  })
-
-  it('If a period out of prison is present it should be displayed', () => {
-    prisonerService.getSentencesAndOffences.mockResolvedValue([
-      {
-        offences: [
-          {
-            offenceStatute: 'WR91',
-          },
-        ],
-        caseReference: 'CASE1234',
-        sentenceStatus: 'A',
-      },
-    ])
-    cachedDataService.getCalculation.mockResolvedValue({
-      ...remandResult,
-      periodsOutOfPrison: [
-        {
-          from: '2023-04-20',
-          to: '2023-05-20',
-          days: 30,
-        },
-      ],
-    })
-    adjustmentsService.findByPerson.mockResolvedValue([
-      {
-        days: 10,
-        adjustmentType: 'REMAND',
-      } as Adjustment,
-    ])
-    return request(app)
-      .get(`/prisoner/${NOMS_ID}/remand`)
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain('Days deducted from the relevant remand periods')
-        expect(res.text).toContain(
-          'Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.',
-        )
-        expect(res.text).toContainInOrder([
-          '<h3 class="govuk-heading-s">Time spent not in custody</h3>',
-          '20 Apr 2023',
-          '20 May 2023',
-          '30',
-        ])
-      })
-  })
-
-  it('The section is omitted if no intersecting sentences and no periods out of prison', () => {
-    prisonerService.getSentencesAndOffences.mockResolvedValue([
-      {
-        offences: [
-          {
-            offenceStatute: 'WR91',
-          },
-        ],
-        caseReference: 'CASE1234',
-        sentenceStatus: 'A',
-      },
-    ])
-    cachedDataService.getCalculation.mockResolvedValue({
-      ...remandResult,
-      intersectingSentences: [],
-    })
-    adjustmentsService.findByPerson.mockResolvedValue([
-      {
-        days: 10,
-        adjustmentType: 'REMAND',
-      } as Adjustment,
-    ])
-    return request(app)
-      .get(`/prisoner/${NOMS_ID}/remand`)
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).not.toContain('Days deducted from the relevant remand periods')
-        expect(res.text).not.toContain(
-          'Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.',
-        )
-        expect(res.text).not.toContain('Previous sentences that may overlap remand periods')
-        expect(res.text).not.toContain('<h3 class="govuk-heading-s">Time spent not in custody</h3>')
-      })
-  })
-
-  it('Zero day periods not in prison and periods where the from date is after the to date are not displayed', () => {
-    prisonerService.getSentencesAndOffences.mockResolvedValue([
-      {
-        offences: [
-          {
-            offenceStatute: 'WR91',
-          },
-        ],
-        caseReference: 'CASE1234',
-        sentenceStatus: 'A',
-      },
-    ])
-    cachedDataService.getCalculation.mockResolvedValue({
-      ...remandResult,
-      periodsOutOfPrison: [
-        {
-          from: '2023-04-20',
-          to: '2023-04-20',
-          days: 0,
-        },
-        {
-          from: '2023-04-20',
-          to: '2023-04-10',
-          days: 30,
-        },
-      ],
-    })
-    adjustmentsService.findByPerson.mockResolvedValue([
-      {
-        days: 10,
-        adjustmentType: 'REMAND',
-      } as Adjustment,
-    ])
-    return request(app)
-      .get(`/prisoner/${NOMS_ID}/remand`)
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).not.toContain('<h3 class="govuk-heading-s">Time spent not in custody</h3>')
       })
   })
 
@@ -570,9 +419,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       .expect(res => {
         expect(res.text).not.toContain('Applicable')
         expect(res.text).toContain('The number of remand days recorded has changed')
-        expect(res.text).toContain(
-          'The remand tool calculates remand to be applied by identifying relevant remand periods',
-        )
+        expect(res.text).toContain('The remand tool has calculated that there is no remand to be applied')
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
@@ -601,6 +448,229 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       .expect('Location', '/prisoner/ABC123/confirm-and-save')
   })
 })
+
+describe('Remand detailed results page /prisoner/{prisonerId}/detailed-breakdown', () => {
+  it('should render the results page with remand', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue(remandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContainInOrder([
+          'There is information missing in NOMIS that could impact the remand time.',
+          'This is an important message',
+          'This is also important message',
+          'To ensure the remand time is calculated correctly, add the missing information in NOMIS, then ',
+          'There are errors with nomis data that may be unrelated to the given relevant remand',
+          'This is not an important message',
+        ])
+        // Remand card test
+        expect(res.text).toContainInOrder([
+          'Court name',
+          'Birmingham Crown Court',
+          'Case number',
+          'CASE1234',
+          'Offence outcome',
+          'Imprisonment',
+          'Days on remand',
+          '11 days',
+          'Remand period',
+          '10 Jan 2023 to 20 Jan 2023',
+        ])
+        expect(res.text).toContainInOrder([
+          'Previous sentences that may overlap remand periods',
+          'Sentenced on 17 Aug 2022',
+          '16 Jan 2023',
+          'Burglary dwelling and theft  - no violence',
+          '18 Jun 2022',
+          'Recalled on 17 Jan 2023',
+          '18 Jan 2023',
+          'Escape from lawful custody within booking 46201A',
+          '18 Jun 2021',
+          'Recalled on 17 Jan 2023',
+          '18 Jan 2023',
+          'Escape from lawful custody within booking 46201X',
+          '18 Jun 2021',
+        ])
+        expect(res.text).toContain('Applicable')
+        expect(res.text).toContain('Case Not Concluded')
+        expect(res.text).toContain('Shared')
+        expect(res.text).toContain('The number of remand days recorded has changed')
+        expect(res.text).not.toContain('Confirm the identified remand is correct')
+      })
+  })
+
+  it('If a period out of prison is present it should be displayed', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue({
+      ...remandResult,
+      periodsOutOfPrison: [
+        {
+          from: '2023-04-20',
+          to: '2023-05-20',
+          days: 30,
+        },
+      ],
+    })
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('Days deducted from the relevant remand periods')
+        expect(res.text).toContain(
+          'Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.',
+        )
+        expect(res.text).toContainInOrder([
+          '<h3 class="govuk-heading-s">Time spent not in custody</h3>',
+          '20 Apr 2023',
+          '20 May 2023',
+          '30',
+        ])
+      })
+  })
+
+  it('The section is omitted if no intersecting sentences and no periods out of prison', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue({
+      ...remandResult,
+      intersectingSentences: [],
+    })
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('Days deducted from the relevant remand periods')
+        expect(res.text).not.toContain(
+          'Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.',
+        )
+        expect(res.text).not.toContain('Previous sentences that may overlap remand periods')
+        expect(res.text).not.toContain('<h3 class="govuk-heading-s">Time spent not in custody</h3>')
+      })
+  })
+
+  it('Zero day periods not in prison and periods where the from date is after the to date are not displayed', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue({
+      ...remandResult,
+      periodsOutOfPrison: [
+        {
+          from: '2023-04-20',
+          to: '2023-04-20',
+          days: 0,
+        },
+        {
+          from: '2023-04-20',
+          to: '2023-04-10',
+          days: 30,
+        },
+      ],
+    })
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('<h3 class="govuk-heading-s">Time spent not in custody</h3>')
+      })
+  })
+
+  it('should render the results page with zero remand identified', () => {
+    prisonerService.getSentencesAndOffences.mockResolvedValue([
+      {
+        offences: [
+          {
+            offenceStatute: 'WR91',
+          },
+        ],
+        caseReference: 'CASE1234',
+        sentenceStatus: 'A',
+      },
+    ])
+    cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
+    adjustmentsService.findByPerson.mockResolvedValue([
+      {
+        days: 10,
+        adjustmentType: 'REMAND',
+      } as Adjustment,
+    ])
+    return request(app)
+      .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).not.toContain('Applicable')
+        expect(res.text).toContain('The number of remand days recorded has changed')
+        expect(res.text).toContain(
+          'The remand tool calculates remand to be applied by identifying relevant remand periods',
+        )
+        expect(res.text).not.toContain('Confirm the identified remand is correct')
+      })
+  })
+})
+
 describe('Validation error page /prisoner/{prisonerId}/validation-errors', () => {
   it('Should display error page', () => {
     prisonerService.getSentencesAndOffences.mockResolvedValue([
@@ -822,10 +892,10 @@ describe('Confirm and save /prisoner/{prisonerId}/confirm-and-save', () => {
       .expect(res => {
         expect(res.text).toContainInOrder([
           'When you save this remand, the unused deductions will automatically be recorded. Check that the unused remand alert has been added.',
-          '10 Jan 2023 to 20 Jan 2023',
+          '10/01/2023 to 20/01/2023',
           '11',
           'Total days',
-          '11',
+          '11 days',
         ])
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContain('http://localhost:3000/adj/ABC123/')

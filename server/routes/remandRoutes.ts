@@ -222,6 +222,25 @@ export default class RemandRoutes {
     return res.redirect(`/prisoner/${prisonerNumber}/confirm-and-save`)
   }
 
+  public detailedBreakdown: RequestHandler = async (req, res): Promise<void> => {
+    const { username } = res.locals.user
+    const nomsId = req.params.nomsId as string
+    const { bookingId, prisonerNumber } = res.locals.prisoner
+    const selections = this.cachedDataService.getSelections(req, nomsId)
+    const calculation = await this.cachedDataService.getCalculation(req, nomsId, username, true)
+    const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+
+    return res.render('pages/remand/detailed-breakdown', {
+      model: new RelevantRemandModel(
+        prisonerNumber,
+        calculation,
+        sentencesAndOffences,
+        selections,
+        await this.adjustmentsService.findByPerson(nomsId, username),
+      ),
+    })
+  }
+
   public selectApplicable: RequestHandler = async (req, res): Promise<void> => {
     const { username } = res.locals.user
     const nomsId = req.params.nomsId as string
