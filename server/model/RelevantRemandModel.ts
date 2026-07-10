@@ -13,6 +13,7 @@ import { daysBetween, maxOf } from '../utils/utils'
 import RemandCardModel from './RemandCardModel'
 import DetailedRemandCalculationAndSentence from './DetailedRemandCalculationAndSentence'
 import DetailedRemandCalculation, { RemandAndCharge } from './DetailedRemandCalculation'
+import RemandTableModel, { createRemandTableFromAdjustments } from '../views/components/remand-table/RemandTableModel'
 
 export default class RelevantRemandModel extends RemandCardModel {
   public relevantChargeRemand: RemandAndCharge[]
@@ -26,6 +27,8 @@ export default class RelevantRemandModel extends RemandCardModel {
   private periodsOutOfPrison: PeriodOutOfPrison[]
 
   public adjustments: (Adjustment & { daysBetween: number })[]
+
+  public remandTable: RemandTableModel
 
   constructor(
     public prisonerNumber: string,
@@ -46,6 +49,7 @@ export default class RelevantRemandModel extends RemandCardModel {
       sentencesAndOffences,
     )
     this.adjustments = RelevantRemandModel.getAdjustments(relevantRemand)
+    this.remandTable = createRemandTableFromAdjustments(this.adjustments, relevantRemand.charges, true)
     this.periodsOutOfPrison = this.relevantRemand.periodsOutOfPrison
       ?.filter(it => it.days > 0)
       .filter(it => dayjs(it.from).isBefore(dayjs(it.to)))
@@ -228,5 +232,9 @@ export default class RelevantRemandModel extends RemandCardModel {
       .map(it => daysBetween(new Date(it.fromDate), new Date(it.toDate)))
       .reduce((sum, current) => sum + current, 0)
     return adjustmentDays !== 0 && adjustmentDays !== identifiedDays
+  }
+
+  public detailedBreakdownLink() {
+    return `/prisoner/${this.prisonerNumber}/detailed-breakdown`
   }
 }

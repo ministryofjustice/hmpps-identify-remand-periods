@@ -4,7 +4,7 @@ import config from '../config'
 import { maxOf, minOf } from '../utils/utils'
 import DetailedRemandCalculation, { RemandAndCharge, ReplaceableChargeRemands } from './DetailedRemandCalculation'
 import RemandCardModel from './RemandCardModel'
-import RemandTableModel, { createRemandTable } from '../views/components/remand-table/RemandTableModel'
+import RemandTableModel, { createRemandTableFromChargeRemand } from '../views/components/remand-table/RemandTableModel'
 
 export default class SelectApplicableRemandModel extends RemandCardModel {
   public chargeRemand: RemandAndCharge[]
@@ -31,7 +31,7 @@ export default class SelectApplicableRemandModel extends RemandCardModel {
     this.replaceableCharges = detailedCalculation.getReplaceableChargeRemandGroupedByChargeIds()
 
     this.chargeRemand = detailedCalculation.findReplaceableChargesMatchingChargeIds(chargeIds)
-    this.remandTable = createRemandTable(this.chargeRemand, relevantRemand.charges)
+    this.remandTable = createRemandTableFromChargeRemand(this.chargeRemand, relevantRemand.charges, false)
     this.total = this.replaceableCharges.length
     this.index = detailedCalculation.indexOfReplaceableChargesMatchingChargeIds(chargeIds)
 

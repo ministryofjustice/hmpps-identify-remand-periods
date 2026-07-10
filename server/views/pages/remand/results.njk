@@ -1,3 +1,4 @@
+
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
@@ -6,7 +7,7 @@
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
-{% from "../../macros/remandCard.njk" import remandCard %}
+{% from "../../components/remand-table/macro.njk" import remandTable %}
 
 {% extends "../../partials/layout.njk" %}
 
@@ -64,12 +65,8 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
             <h1 class="govuk-heading-l">
-                <span class="govuk-caption-xl">Adjustments</span>
-                {% if model.totalDays() > 0 %}Check remand details for
-                {% else %}Confirm there is no relevant remand for 
-                {% endif %}
-                {{prisoner.firstName | title}}
-                {{prisoner.lastName | title}}
+                <span class="govuk-caption-xl">Review remand</span>
+                Check remand details for {{prisoner.firstName | title}} {{prisoner.lastName | title}}
             </h1>
 
             {% if model.changesNumberOfDays() %}
@@ -84,68 +81,9 @@
             {% endif %}
         </div>
     </div>
-    <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <p class="govuk-!-margin-bottom-2">The remand tool calculates remand to be applied by identifying relevant remand periods, and then deducting any time spent not in custody or spent serving an overlapping sentence.
-                    The rules for applying remand time can be found in the <a class="govuk-link" rel="noreferrer noopener" target="_blank" href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1083190/sc-annex-a-operational-guidance.pdf#page=72">policy framework</a>.
-                </p>
-            </div>
-        </div>
-    
+
     {% if  model.totalDays() > 0 %}
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-full">
-                <table class="govuk-table govuk-!-margin-top-3">
-                    <caption class="govuk-table__caption govuk-table__caption--m">Remand to be applied</caption>
-                    <thead class="govuk-table__head">
-                        <tr class="govuk-table__row">
-                            <th scope="col" class="govuk-table__header">From</th>
-                            <th scope="col" class="govuk-table__header">To</th>
-                            <th scope="col" class="govuk-table__header">Days</th>
-                            <th scope="col" class="govuk-table__header">Offence details</th>
-                            <th scope="col" class="govuk-table__header">Committed on</th>
-                        </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                        {% for remand in model.adjustments %}
-                            {% set rowspan = model.adjustmentCharges(remand).length %}
-                            {% set rowspanAttr = '' %}
-                            {% if rowspan > 1 %}
-                                {% set rowspanAttr = 'rowspan=' + rowspan %}
-                            {% endif %}
-                            {% for charge in model.adjustmentCharges(remand) %}
-                                <tr class="govuk-table__row">
-                                    {% if loop.first %}
-                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.fromDate | date('DD MMM YYYY') }}
-                                            {% if remand.status == 'INACTIVE' %}
-                                                <br /><span class="govuk-tag govuk-tag--red">Served</span>
-                                            {% endif %}
-                                            {% if model.isRecallAdjustment(remand) %}
-                                                <br /><span class="govuk-tag govuk-tag--black">Recall</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.toDate | date('DD MMM YYYY') }}</td>
-                                        <td class="govuk-table__cell"{{rowspanAttr}}>{{remand.daysBetween}}</td>
-                                    {% endif %}
-                                    <td class="govuk-table__cell">{{charge.offence.description}}</td>
-                                    <td class="govuk-table__cell">
-                                        {% if (charge.offenceDate and charge.offenceEndDate and charge.offenceEndDate !== charge.offenceDate) %}
-                                            {{ charge.offenceDate | date('DD MMM YYYY') }} to {{ charge.offenceEndDate | date('DD MMM YYYY') }}
-                                        {% elif charge.offenceDate %}
-                                            {{ charge.offenceDate | date('DD MMM YYYY') }}
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% endfor %}
-                            <tr class="govuk-table__row">
-                            <th scope="row" class="govuk-table__header" colspan="2">Total days</th>
-                            <td class="govuk-table__cell" colspan="3">{{model.totalDays()}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        {{ remandTable(model.remandTable) }}
     {% else %}
         <div class="govuk-grid-row govuk-!-margin-bottom-4">
             <div class="govuk-grid-column-three-quarters">
@@ -157,47 +95,12 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
-            {% if model.relevantChargeRemand.length or model.notRelevantChargeRemand.length %}
-                {% if model.relevantChargeRemand.length %}
-                    <h3 class="govuk-heading-s">Relevant remand periods</h3>
-
-                    {% for remand in model.relevantChargeRemand %}
-                        {{ remandCard(remand, model, true)}}
-                    {% endfor %}
-                {% else %}
-                    <h3 class="govuk-heading-s">Relevant remand periods</h3>
-                    <p class="govuk-body">The remand tool has not identified any relevant remand periods.</p>
-                {% endif %}
-                {% if model.notRelevantChargeRemand.length %}
-                    {% set nonRelevantHtml %}
-                        {% for remand in model.notRelevantChargeRemand %}
-                            {{ remandCard(remand, model, false)}}
-                        {% endfor %}
-                    {% endset %}
-                        {{ govukDetails({
-                            summaryText: "View non-relevant and inactive remand periods",
-                            html: nonRelevantHtml
-                        }) }}
-                {% endif %}
-            {% endif %}
+            <p class="govuk-body"><a href="{{ model.detailedBreakdownLink() }}" class="govuk-link--no-visited-state">View full remand breakdown</a></p>
         </div>
     </div>
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-          {% if  model.intersectingSentences.length or model.periodsOutOfPrison.length %}
-            <h2 class="govuk-heading-m">Days deducted from the relevant remand periods</h2>
-            <p class="govuk-body">Time spent not in custody or spent serving an overlapping sentence are deducted from the relevant remand periods above.</p>
-          {% endif %}
-            {% if model.intersectingSentences.length %}
-                <h3 class="govuk-heading-s">Previous sentences that may overlap remand periods</h3>
-                {{ govukTable( model.intersectingSentenceTable() )}}
-            {% endif %}
-            {% if model.periodsOutOfPrison.length %}
-                <h3 class="govuk-heading-s">Time spent not in custody</h3>
-                {{ govukTable(model.periodsOutOfPrisonTable())}}
-            {% endif %}
-
             {% if model
                 .otherErrors()
                 .length %}
@@ -256,10 +159,15 @@
                 }) }}
                     <div>
                         <button class="govuk-button" data-module="govuk-button" name="submit">Confirm remand</button>
+                        <a data-qa="cancel-link"
+                           data-prevent-double-click="true" class="govuk-button govuk-!-margin-left-3 govuk-button--secondary no-js-hidden"
+                           data-module="govuk-button"
+                           href="{{ model.returnToAdjustments() }}">
+                            Cancel
+                        </a>
                     </div>
                 </form>
             {% endif %}
-            <a href="{{model.returnToAdjustments()}}" class="govuk-link">Cancel and return to adjustments</a>
         </div>
     </div>
 {% endblock %}
