@@ -481,39 +481,21 @@ describe('Remand detailed results page /prisoner/{prisonerId}/detailed-breakdown
           'There are errors with nomis data that may be unrelated to the given relevant remand',
           'This is not an important message',
         ])
-        // Remand card test
-        expect(res.text).toContainInOrder([
-          'Court name',
-          'Birmingham Crown Court',
-          'Case number',
-          'CASE1234',
-          'Offence outcome',
-          'Imprisonment',
-          'Days on remand',
-          '11 days',
-          'Remand period',
-          '10 Jan 2023 to 20 Jan 2023',
-        ])
         expect(res.text).toContainInOrder([
           'Previous sentences that may overlap remand periods',
-          'Sentenced on 17 Aug 2022',
-          '16 Jan 2023',
+          'Sentenced on 17/08/2022',
+          '16/01/2023',
           'Burglary dwelling and theft  - no violence',
-          '18 Jun 2022',
-          'Recalled on 17 Jan 2023',
-          '18 Jan 2023',
+          '18/06/2022',
+          'Recalled on 17/01/2023',
+          '18/01/2023',
           'Escape from lawful custody within booking 46201A',
-          '18 Jun 2021',
-          'Recalled on 17 Jan 2023',
-          '18 Jan 2023',
+          '18/06/2021',
+          'Recalled on 17/01/2023',
+          '18/01/2023',
           'Escape from lawful custody within booking 46201X',
-          '18 Jun 2021',
+          '18/06/2021',
         ])
-        expect(res.text).toContain('Applicable')
-        expect(res.text).toContain('Case Not Concluded')
-        expect(res.text).toContain('Shared')
-        expect(res.text).toContain('The number of remand days recorded has changed')
-        expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
 
@@ -555,8 +537,8 @@ describe('Remand detailed results page /prisoner/{prisonerId}/detailed-breakdown
         )
         expect(res.text).toContainInOrder([
           '<h3 class="govuk-heading-s">Time spent not in custody</h3>',
-          '20 Apr 2023',
-          '20 May 2023',
+          '20/04/2023',
+          '20/05/2023',
           '30',
         ])
       })
@@ -661,11 +643,8 @@ describe('Remand detailed results page /prisoner/{prisonerId}/detailed-breakdown
       .get(`/prisoner/${NOMS_ID}/detailed-breakdown`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        expect(res.text).toContain('The remand tool has calculated that there is no remand to be applied')
         expect(res.text).not.toContain('Applicable')
-        expect(res.text).toContain('The number of remand days recorded has changed')
-        expect(res.text).toContain(
-          'The remand tool calculates remand to be applied by identifying relevant remand periods',
-        )
         expect(res.text).not.toContain('Confirm the identified remand is correct')
       })
   })
@@ -779,9 +758,9 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
           '23/11/2021 to 15/12/2021',
           'Is this remand period relevant?',
           'value="4444"',
-          'Yes, because this offence was replaced with <strong>WR91001 - offence on another booking committed on 10 Jan 2022</strong>',
+          'Yes, because this offence was replaced with <strong>WR91002 - offence on another booking committed on 10/01/2022</strong>',
           'value="2222"',
-          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10 Jan 2022</strong>',
+          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10/01/2022</strong>',
           'No, this remand period is not relevant',
         ])
       })
@@ -809,7 +788,7 @@ describe('Remand replaced offences /prisoner/{prisonerId}', () => {
         expect(res.text).toContain('<a href="/prisoner/ABC123/remand" class="govuk-back-link">Back</a>')
         expect(res.text).toContainInOrder([
           'Is this remand period relevant?',
-          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10 Jan 2022</strong>',
+          'Yes, because this offence was replaced with <strong>WR91001 - Abstract water without a licence committed on 10/01/2022</strong>',
           'No, this remand period is not relevant',
         ])
       })

@@ -20,6 +20,7 @@ import DetailedRemandCalculationAndSentence from '../model/DetailedRemandCalcula
 import RemandOverviewModel from '../model/RemandOverviewModel'
 import { sameMembers } from '../utils/utils'
 import ReasonForMissingInformationForm from '../model/ReasonForMissingInformationForm'
+import RelevantRemandBreakdownModel from '../model/RelevantRemandBreakdownModel'
 
 export default class RemandRoutes {
   constructor(
@@ -231,7 +232,7 @@ export default class RemandRoutes {
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/detailed-breakdown', {
-      model: new RelevantRemandModel(
+      model: new RelevantRemandBreakdownModel(
         prisonerNumber,
         calculation,
         sentencesAndOffences,
@@ -301,20 +302,6 @@ export default class RemandRoutes {
     }
     const nextChargeIds = replaceableCharges[index + 1].chargeIds.join(',')
     return res.redirect(`/prisoner/${prisonerNumber}/replaced-offence?chargeIds=${nextChargeIds}`)
-  }
-
-  public removeSelection: RequestHandler = async (req, res): Promise<void> => {
-    const nomsId = req.params.nomsId as string
-    const { chargeIds } = req.query as Record<string, string>
-    const { prisonerNumber } = res.locals.prisoner
-
-    this.cachedDataService.removeSelection(
-      req,
-      nomsId,
-      chargeIds.split(',').map(it => Number(it)),
-    )
-
-    return res.redirect(`/prisoner/${prisonerNumber}`)
   }
 
   public bulkRemand: RequestHandler = async (req, res): Promise<void> => {

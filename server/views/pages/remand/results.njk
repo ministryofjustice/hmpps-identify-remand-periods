@@ -64,7 +64,7 @@
     {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-l">
+            <h1 class="govuk-heading-xl">
                 <span class="govuk-caption-xl">Review remand</span>
                 Check remand details for {{prisoner.firstName | title}} {{prisoner.lastName | title}}
             </h1>
@@ -83,7 +83,7 @@
     </div>
 
     {% if  model.totalDays() > 0 %}
-        {{ remandTable(model.remandTable) }}
+        {{ remandTable(model.remandTable, 'Remand periods to be applied') }}
     {% else %}
         <div class="govuk-grid-row govuk-!-margin-bottom-4">
             <div class="govuk-grid-column-three-quarters">
@@ -138,7 +138,7 @@
                 fieldset: {
                     legend: {
                     text: "Confirm the remand to be applied is correct",
-                    classes: "govuk-fieldset__legend--m"
+                    classes: "govuk-fieldset__legend--l"
                     }
                 },
                 errorMessage: form.messageForField('decision'),

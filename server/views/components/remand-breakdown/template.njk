@@ -1,0 +1,59 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full" data-qa="remand-period">
+        <h3 class="govuk-heading-m">{{ model.from }} to {{ model.to }} ({{ model.days }} days)</h3>
+        {% for case in model.cases %}
+            <h4 class="govuk-heading-s" data-qa="case-heading">
+                Case {{ case.courtCaseRef or 'unknown' }}{% if case.courtLocation %} at {{ case.courtLocation }}{% endif %}</h4>
+            {% for offence in case.offences %}
+                <article class="moj-ticket-panel govuk-!-margin-bottom-4" data-qa="offence-card-{{ case.courtCaseRef or 'unknown' }}-{{ offence.offenceCode }}">
+                    <section class="moj-ticket-panel__content moj-ticket-panel__content--purple">
+                        {% if offence.count %}<p class="govuk-body" data-qa="count">Count {{ offence.count }}</p>{% endif%}
+                        <h4 class="govuk-heading-s" data-qa="card-title">
+                            {{ offence.offenceCode }} - {{ offence.offenceDescription }}
+                        </h4>
+
+                        {{ govukSummaryList({
+                            classes: 'govuk-summary-list--no-border govuk-summary-list--s',
+                            rows: [
+                                {
+                                    key: {
+                                        text: 'Committed on'
+                                    },
+                                    value: {
+                                        text: offence.committedOn
+                                    }
+                                },
+                                {
+                                    key: {
+                                        text: 'Outcome at remand start'
+                                    },
+                                    value: {
+                                        text: offence.outcomeAtRemandStartDescription
+                                    }
+                                },
+                                {
+                                    key: {
+                                        text: 'Outcome at remand end'
+                                    },
+                                    value: {
+                                        text: offence.outcomeAtRemandEndDescription
+                                    }
+                                },
+                                {
+                                    key: {
+                                        text: 'Current offence outcome'
+                                    },
+                                    value: {
+                                        text: offence.currentOutcomeDescription
+                                    }
+                                }
+                            ]
+                        }) }}
+
+                    </section>
+                </article>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>

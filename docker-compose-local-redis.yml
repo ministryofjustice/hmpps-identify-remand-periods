@@ -1,7 +1,7 @@
 version: '3.1'
 services:
 
-  redis-contacts:
+  redis-identify-remand:
     image: 'redis:8.6'
     networks:
       - hmpps

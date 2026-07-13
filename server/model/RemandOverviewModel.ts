@@ -69,8 +69,8 @@ export default class RemandOverviewModel {
   private offenceDateText(offence: PrisonApiOffence) {
     return `${
       offence.offenceStartDate && offence.offenceEndDate && offence.offenceEndDate !== offence.offenceStartDate
-        ? `${dayjs(offence.offenceStartDate).format('D MMM YYYY')} to ${dayjs(offence.offenceEndDate).format('D MMM YYYY')}`
-        : `${dayjs(offence.offenceStartDate).format('D MMM YYYY')}`
+        ? `${dayjs(offence.offenceStartDate).format('DD/MM/YYYY')} to ${dayjs(offence.offenceEndDate).format('DD/MM/YYYY')}`
+        : `${dayjs(offence.offenceStartDate).format('DD/MM/YYYY')}`
     }`
   }
 
