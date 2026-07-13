@@ -83,8 +83,8 @@ export default class DetailedRemandCalculation {
   public offenceDateText(charge: Charge) {
     return `${
       charge.offenceDate && charge.offenceEndDate && charge.offenceEndDate !== charge.offenceDate
-        ? `${dayjs(charge.offenceDate).format('D MMM YYYY')} to ${dayjs(charge.offenceEndDate).format('D MMM YYYY')}`
-        : `${dayjs(charge.offenceDate).format('D MMM YYYY')}`
+        ? `${dayjs(charge.offenceDate).format('DD/MM/YYYY')} to ${dayjs(charge.offenceEndDate).format('DD/MM/YYYY')}`
+        : `${dayjs(charge.offenceDate).format('DD/MM/YYYY')}`
     }`
   }
 }

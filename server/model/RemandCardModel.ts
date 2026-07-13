@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { PrisonApiOffenderSentenceAndOffences } from '../@types/prisonApi/prisonClientTypes'
 import { Charge, ChargeRemand, RemandResult } from '../@types/identifyRemandPeriods/identifyRemandPeriodsTypes'
 import { Adjustment } from '../@types/adjustments/adjustmentsTypes'
@@ -57,84 +56,6 @@ export default abstract class RemandCardModel {
       return true
     }
     return false
-  }
-
-  public summaryRows(remand: RemandAndCharge) {
-    const charge = remand.charges[0]
-    return [
-      ...(charge.courtLocation
-        ? [
-            {
-              key: {
-                text: 'Court name',
-              },
-              value: {
-                text: charge.courtLocation,
-              },
-            },
-          ]
-        : []),
-      ...(charge.courtCaseRef
-        ? [
-            {
-              key: {
-                text: 'Case number',
-              },
-              value: {
-                text: charge.courtCaseRef,
-              },
-            },
-          ]
-        : []),
-      ...(remand.fromEvent?.description
-        ? [
-            {
-              key: {
-                text: 'Start outcome',
-              },
-              value: {
-                text: `${remand.fromEvent.description} on ${dayjs(remand.fromEvent.date).format('D MMM YYYY')}`,
-              },
-            },
-          ]
-        : []),
-      ...(remand.toEvent?.description
-        ? [
-            {
-              key: {
-                text: 'Stop outcome',
-              },
-              value: {
-                text: `${remand.toEvent.description} on ${dayjs(remand.toEvent.date).format('D MMM YYYY')}`,
-              },
-            },
-          ]
-        : []),
-      {
-        key: {
-          text: 'Offence outcome',
-        },
-        value: {
-          text: charge.resultDescription,
-        },
-      },
-      {
-        key: {
-          text: 'Days on remand',
-        },
-        value: {
-          text: `${remand.days} days`,
-        },
-      },
-      {
-        key: {
-          text: 'Remand period',
-        },
-        value: {
-          text: `${dayjs(remand.from).format('D MMM YYYY')} to ${dayjs(remand.to).format('D MMM YYYY')}`,
-        },
-      },
-    ]
   }
 
   protected offenceDateText(charge: Charge) {

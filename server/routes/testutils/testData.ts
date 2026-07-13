@@ -67,7 +67,7 @@ const remandResult = {
     } as Charge,
     4444: {
       chargeId: 4444,
-      offence: { code: 'WR91001', statute: 'WR91', description: 'offence on another booking' },
+      offence: { code: 'WR91002', statute: 'WR91', description: 'offence on another booking' },
       offenceDate: '2022-01-10',
       bookingId: 1204936,
       bookNumber: '41938A',
@@ -155,6 +155,8 @@ const remandResult = {
       days: 23,
       chargeIds: [3934222],
       status: 'CASE_NOT_CONCLUDED',
+      fromEvent: { date: '2022-11-23', description: 'Remanded' },
+      toEvent: { date: '2022-12-15', description: 'Not sentenced' },
     } as ChargeRemand,
     {
       from: '2022-11-23',
@@ -162,6 +164,8 @@ const remandResult = {
       days: 23,
       chargeIds: [3933924],
       status: 'CASE_NOT_CONCLUDED',
+      fromEvent: { date: '2022-11-23', description: 'Remanded' },
+      toEvent: { date: '2022-12-15', description: 'Not sentenced' },
     } as ChargeRemand,
     {
       from: '2021-11-23',
@@ -169,6 +173,8 @@ const remandResult = {
       days: 23,
       chargeIds: [3933924],
       status: 'CASE_NOT_CONCLUDED',
+      fromEvent: { date: '2021-11-23', description: 'Remanded' },
+      toEvent: { date: '2021-12-15', description: 'Not sentenced' },
     } as ChargeRemand,
     {
       from: '2023-01-10',
@@ -176,6 +182,8 @@ const remandResult = {
       days: 11,
       chargeIds: [3933870],
       status: 'APPLICABLE',
+      fromEvent: { date: '2023-01-10', description: 'Remanded' },
+      toEvent: { date: '2023-01-20', description: 'Imprisonment' },
     } as ChargeRemand,
     {
       from: '2023-02-01',
@@ -183,6 +191,8 @@ const remandResult = {
       days: 48,
       chargeIds: [3933870],
       status: 'APPLICABLE',
+      fromEvent: { date: '2023-02-01', description: 'Remanded' },
+      toEvent: { date: '2023-03-20', description: 'Imprisonment' },
     } as ChargeRemand,
 
     {
@@ -191,6 +201,8 @@ const remandResult = {
       chargeIds: [2222],
       days: 48,
       status: 'SHARED',
+      fromEvent: { date: '2023-02-01', description: 'Remanded' },
+      toEvent: { date: '2023-03-20', description: 'Imprisonment' },
     } as ChargeRemand,
   ],
   intersectingSentences: [
