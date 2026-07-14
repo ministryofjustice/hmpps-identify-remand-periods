@@ -1,5 +1,6 @@
 import type { Express } from 'express'
 import request from 'supertest'
+import * as cheerio from 'cheerio'
 import { appWithAllRoutes, user } from './testutils/appSetup'
 import PrisonerService from '../services/prisonerService'
 import IdentifyRemandPeriodsService from '../services/identifyRemandPeriodsService'
@@ -312,6 +313,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       },
     ])
     cachedDataService.getCalculation.mockResolvedValue(remandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(remandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -322,6 +324,10 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       .get(`/prisoner/${NOMS_ID}/remand`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
+          '/prisoner/ABC123/replaced-offence?chargeIds=3933924',
+        )
         expect(res.text).toContainInOrder([
           'There is information missing in NOMIS that could impact the remand time.',
           'This is an important message',
@@ -348,6 +354,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       },
     ])
     cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(emptyRemandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 0,
@@ -358,6 +365,8 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       .get(`/prisoner/${NOMS_ID}/remand`)
       .expect('Content-Type', /html/)
       .expect(res => {
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa=back-link]')).toHaveLength(0)
         expect(res.text).toContain(
           'Explain why there should be remand to be applied. This will help our support team improve the accuracy of the remand tool.',
         )
@@ -377,6 +386,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       },
     ])
     cachedDataService.getCalculation.mockResolvedValue(onePlusremandDaysRemandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(onePlusremandDaysRemandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,
@@ -407,6 +417,7 @@ describe('Remand results page /prisoner/{prisonerId}/remand', () => {
       },
     ])
     cachedDataService.getCalculation.mockResolvedValue(emptyRemandResult)
+    cachedDataService.getCalculationWithoutSelections.mockResolvedValue(emptyRemandResult)
     adjustmentsService.findByPerson.mockResolvedValue([
       {
         days: 10,

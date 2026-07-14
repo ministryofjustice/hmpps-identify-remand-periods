@@ -8,11 +8,26 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "../../components/remand-table/macro.njk" import remandTable %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% extends "../../partials/layout.njk" %}
 
 {% set pageTitle = applicationName + " - Home" %}
 {% set mainClasses = "app-container govuk-body" %}
+
+{% block beforeContent %}
+    {{ super() }}
+    <nav>
+        {% set backLink = model.backLink() %}
+        {% if backLink %}
+            {{ govukBackLink({
+                text: "Back",
+                href: backLink,
+                attributes: { "data-qa": "back-link" }
+            }) }}
+        {% endif %}
+    </nav>
+{% endblock %}
 
 {% block content %}
 
@@ -64,7 +79,7 @@
     {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-xl">
+            <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">
                 <span class="govuk-caption-xl">Review remand</span>
                 Check remand details for {{prisoner.firstName | title}} {{prisoner.lastName | title}}
             </h1>
