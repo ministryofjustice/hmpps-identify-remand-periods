@@ -29,6 +29,7 @@ export default class RelevantRemandModel extends RemandCardModel {
     sentencesAndOffences: PrisonApiOffenderSentenceAndOffences[],
     public selections: RemandApplicableUserSelection[],
     private existingAdjustments: Adjustment[],
+    private calculationWithoutSelections: RemandResult,
   ) {
     super(prisonerNumber, relevantRemand, sentencesAndOffences)
     const chargeRemandAndCharges = this.relevantRemand.chargeRemand.map(it =>
@@ -90,5 +91,16 @@ export default class RelevantRemandModel extends RemandCardModel {
 
   public detailedBreakdownLink() {
     return `/prisoner/${this.prisonerNumber}/detailed-breakdown`
+  }
+
+  public backLink(): string | null {
+    const replaceableCharges = new DetailedRemandCalculation(
+      this.calculationWithoutSelections,
+    ).getReplaceableChargeRemandGroupedByChargeIds()
+    if (replaceableCharges && replaceableCharges.length > 0) {
+      const nextChargeIds = replaceableCharges[replaceableCharges.length - 1].chargeIds.join(',')
+      return `/prisoner/${this.prisonerNumber}/replaced-offence?chargeIds=${nextChargeIds}`
+    }
+    return null
   }
 }

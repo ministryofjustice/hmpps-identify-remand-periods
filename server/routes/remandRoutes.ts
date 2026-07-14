@@ -169,6 +169,12 @@ export default class RemandRoutes {
     const { bookingId, prisonerNumber } = res.locals.prisoner
     const selections = this.cachedDataService.getSelections(req, nomsId)
     const calculation = await this.cachedDataService.getCalculation(req, nomsId, username, true)
+    const calculationWithoutSelections = await this.cachedDataService.getCalculationWithoutSelections(
+      req,
+      nomsId,
+      username,
+      false,
+    )
     const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
 
     return res.render('pages/remand/results', {
@@ -178,6 +184,7 @@ export default class RemandRoutes {
         sentencesAndOffences,
         selections,
         await this.adjustmentsService.findByPerson(nomsId, username),
+        calculationWithoutSelections,
       ),
       form: new RemandDecisionForm({}),
     })
@@ -193,6 +200,12 @@ export default class RemandRoutes {
     if (form.errors.length) {
       const calculation = await this.cachedDataService.getCalculation(req, nomsId, username)
       const sentencesAndOffences = await this.prisonerService.getSentencesAndOffences(bookingId, username)
+      const calculationWithoutSelections = await this.cachedDataService.getCalculationWithoutSelections(
+        req,
+        nomsId,
+        username,
+        false,
+      )
       return res.render('pages/remand/results', {
         model: new RelevantRemandModel(
           prisonerNumber,
@@ -200,6 +213,7 @@ export default class RemandRoutes {
           sentencesAndOffences,
           selections,
           await this.adjustmentsService.findByPerson(nomsId, username),
+          calculationWithoutSelections,
         ),
         form,
       })

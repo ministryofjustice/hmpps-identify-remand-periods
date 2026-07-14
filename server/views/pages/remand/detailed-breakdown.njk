@@ -63,7 +63,7 @@
     {% endif %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-xl">
+            <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">
                 <span class="govuk-caption-xl">Review remand</span>
                 Remand breakdown
             </h1>
@@ -90,7 +90,7 @@
                     {% for remand in model.relevantRemandBreakdowns %}
                         {{ remandBreakdown(remand)}}
                         {% if not loop.last %}
-                        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-bottom-6">
                         {% endif %}
                     {% endfor %}
                 {% else %}
@@ -102,7 +102,7 @@
                         {% for remand in model.notRelevantRemandBreakdowns %}
                             {{ remandBreakdown(remand)}}
                             {% if not loop.last %}
-                            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-bottom-6">
                             {% endif %}
                         {% endfor %}
                     {% endset %}
@@ -147,4 +147,10 @@
             {% endif %}
         </div>
     </div>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+           <a href="{{ backlink }}" class="govuk-link--no-visited-state">Back to remand summary</a>
+        </div>
+    </div>
+
 {% endblock %}
