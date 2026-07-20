@@ -15,14 +15,15 @@
 
 {% set pageTitle = applicationName + " - Home" %}
 {% set mainClasses = "app-container govuk-body" %}
+{% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/remand" %}
 
 {% block beforeContent %}
     {{ super() }}
     <nav>
-        {% set backlink = "/prisoner/" + prisoner.prisonerNumber + "/remand" %}
         {{ govukBackLink({
             text: "Back",
-            href: backlink
+            href: backlink,
+            attributes: { "data-qa": "back-link" }
         }) }}
     </nav>
 {% endblock %}
@@ -149,7 +150,7 @@
     </div>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-           <a href="{{ backlink }}" class="govuk-link--no-visited-state">Back to remand summary</a>
+           <a href="{{ backlink }}" data-qa="back-to-summary-link" class="govuk-link--no-visited-state">Back to remand summary</a>
         </div>
     </div>
 
