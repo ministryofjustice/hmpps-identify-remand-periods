@@ -507,6 +507,10 @@ describe('Remand detailed results page /prisoner/{prisonerId}/detailed-breakdown
           'Escape from lawful custody within booking 46201X',
           '18/06/2021',
         ])
+        const $ = cheerio.load(res.text)
+        const expectedBackLink = '/prisoner/ABC123/remand'
+        expect($('[data-qa=back-link]').attr('href')).toStrictEqual(expectedBackLink)
+        expect($('[data-qa=back-to-summary-link]').attr('href')).toStrictEqual(expectedBackLink)
       })
   })
 
