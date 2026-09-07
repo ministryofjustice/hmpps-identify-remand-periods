@@ -26,7 +26,7 @@ export default class RedisBulkRemandCalculationRunStore implements BulkRemandCal
 
   public async getRun(id: string): Promise<BulkRemandCalculationRun | null> {
     await this.ensureConnected()
-    const result = await this.client.get(`${this.prefix}${id}`)
+    const result = (await this.client.get(`${this.prefix}${id}`)) as string | Buffer | null
     if (!result) return null
 
     const json = Buffer.isBuffer(result) ? result.toString() : result
