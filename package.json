@@ -95,7 +95,7 @@
     "concurrently": "^10.0.6",
     "cookie-session": "^2.1.1",
     "cypress": "^15.21.1",
-    "del": "8.0.1",
+    "del": "9.0.1",
     "dotenv": "^18.0.6",
     "esbuild": "^0.28.2",
     "esbuild-plugin-copy": "^2.1.1",
