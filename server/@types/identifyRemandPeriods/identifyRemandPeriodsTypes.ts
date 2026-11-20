@@ -1,13 +1,13 @@
-import { components } from './index'
+import type * as Api from './generated/types.gen'
 
-export type ChargeRemand = components['schemas']['ChargeRemand']
-export type Charge = components['schemas']['Charge']
-export type RemandResult = components['schemas']['RemandResult']
-export type RemandResultAdjustment = components['schemas']['AdjustmentDto']
-export type IntersectingSentence = components['schemas']['SentencePeriod']
-export type IdentifyRemandDecision = components['schemas']['IdentifyRemandDecisionDto']
-export type LegacyDataProblem = components['schemas']['LegacyDataProblem']
-export type RemandCalculationRequestOptions = components['schemas']['RemandCalculationRequestOptions']
-export type RemandCalculation = components['schemas']['RemandCalculation']
-export type RemandApplicableUserSelection = components['schemas']['RemandApplicableUserSelection']
-export type PeriodOutOfPrison = components['schemas']['DatePeriod']
+export type ChargeRemand = Api.ChargeRemand
+export type Charge = Api.Charge
+export type RemandResult = Api.RemandResult
+export type RemandResultAdjustment = Api.AdjustmentDto
+export type IntersectingSentence = Api.SentencePeriod
+export type IdentifyRemandDecision = Api.IdentifyRemandDecisionDto
+export type LegacyDataProblem = Api.ChargeLegacyDataProblem | Api.GenericLegacyDataProblem
+export type RemandCalculationRequestOptions = Api.RemandCalculationRequestOptions
+export type RemandCalculation = Api.RemandCalculation
+export type RemandApplicableUserSelection = Api.RemandApplicableUserSelection
+export type PeriodOutOfPrison = Api.DatePeriod

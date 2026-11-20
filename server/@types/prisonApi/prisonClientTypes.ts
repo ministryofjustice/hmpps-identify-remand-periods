@@ -1,12 +1,12 @@
-import { components } from './index'
+import type * as Api from './generated/types.gen'
 
-export type PrisonApiPrisoner = components['schemas']['InmateDetail']
-export type PrisonApiUserCaseloads = components['schemas']['CaseLoad']
-export type PrisonApiCharge = components['schemas']['Charge']
-export type PrisonApiCourtCase = components['schemas']['CourtCase']
-export type PrisonApiCourtDateResult = components['schemas']['CourtDateResult']
-export type PrisonApiBookingAndSentenceAdjustments = components['schemas']['BookingAndSentenceAdjustments']
-export type PrisonApiSentenceAdjustments = components['schemas']['SentenceAdjustmentValues']
-export type PrisonApiOffenderSentenceAndOffences = components['schemas']['OffenderSentenceAndOffences']
-export type PrisonApiImprisonmentStatusHistoryDto = components['schemas']['ImprisonmentStatusHistoryDto']
-export type PrisonApiOffence = components['schemas']['OffenderOffence']
+export type PrisonApiPrisoner = Api.InmateDetail
+export type PrisonApiUserCaseloads = Api.CaseLoad
+export type PrisonApiCharge = Api.Charge
+export type PrisonApiCourtCase = Api.CourtCase
+export type PrisonApiCourtDateResult = Api.CourtDateResult
+export type PrisonApiBookingAndSentenceAdjustments = Api.BookingAndSentenceAdjustments
+export type PrisonApiSentenceAdjustments = Api.SentenceAdjustmentValues
+export type PrisonApiOffenderSentenceAndOffences = Api.OffenderSentenceAndOffences
+export type PrisonApiImprisonmentStatusHistoryDto = Api.ImprisonmentStatusHistoryDto
+export type PrisonApiOffence = Api.OffenderOffence
