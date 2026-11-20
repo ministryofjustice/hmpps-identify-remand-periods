@@ -1,4 +1,4 @@
-import { components } from './index'
+import type * as Api from './generated/types.gen'
 
-export type Adjustment = components['schemas']['AdjustmentDto']
-export type CreateResponse = components['schemas']['CreateResponseDto']
+export type Adjustment = Api.AdjustmentDto
+export type CreateResponse = Api.CreateResponseDto

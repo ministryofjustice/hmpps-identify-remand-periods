@@ -1,4 +1,4 @@
-import { components } from './index'
+import type * as Api from './generated/types.gen'
 
-export type UnusedDeductionCalculationResponse = components['schemas']['UnusedDeductionCalculationResponse']
-export type CalculateReleaseDatesValidationMessage = components['schemas']['ValidationMessage']
+export type UnusedDeductionCalculationResponse = Api.UnusedDeductionCalculationResponse
+export type CalculateReleaseDatesValidationMessage = Api.ValidationMessage

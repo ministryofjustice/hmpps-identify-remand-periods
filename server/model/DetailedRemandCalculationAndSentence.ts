@@ -45,6 +45,9 @@ export default class DetailedRemandCalculationAndSentence {
     ) {
       return true
     }
+    if (!('offence' in problem)) {
+      return false
+    }
     return (
       activeSentenceStatues.includes(problem.offence.statute) || activeSentenceCourtCases.includes(problem.courtCaseRef)
     )

@@ -32,7 +32,7 @@ export default class DetailedRemandCalculation {
   }
 
   public isRelevant(remand: RemandAndCharge) {
-    return remand.charges[0].sentenceSequence != null && (remand.status === 'APPLICABLE' || remand.status === 'SHARED')
+    return remand.charges[0].sentenceSequence != null && remand.status === 'APPLICABLE'
   }
 
   public static canBeMarkedAsApplicable(remandAndCharge: RemandAndCharge): boolean {

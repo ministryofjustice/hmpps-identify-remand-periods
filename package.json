@@ -22,11 +22,11 @@
     "int-test": "cypress run --config video=false",
     "int-test-ui": "cypress open --e2e --browser chrome",
     "clean": "rm -rf dist test_results",
-    "generate-adjustments-api-types": "openapi-typescript https://adjustments-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/adjustments/index.d.ts",
-    "generate-calculate-release-dates-api-types": "openapi-typescript https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/calculateReleaseDates/index.d.ts",
-    "generate-identify-remand-period-types": "openapi-typescript https://identify-remand-periods-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/identifyRemandPeriods/index.d.ts",
-    "generate-prison-api-types": "openapi-typescript https://prison-api-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonApi/index.d.ts",
-    "generate-prisoner-search-api-types": "openapi-typescript https://prisoner-search-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonerSearchApi/index.d.ts",
+    "generate-adjustments-api-types": "openapi-ts -i https://adjustments-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/adjustments/generated -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/adjustments/generated/types.gen.ts\"",
+    "generate-calculate-release-dates-api-types": "openapi-ts -i https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/calculateReleaseDates/generated -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/calculateReleaseDates/generated/types.gen.ts\"",
+    "generate-identify-remand-period-types": "openapi-ts -i https://identify-remand-periods-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/identifyRemandPeriods/generated -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/identifyRemandPeriods/generated/types.gen.ts\"",
+    "generate-prison-api-types": "openapi-ts -i https://prison-api-dev.prison.service.justice.gov.uk/v3/api-docs -o ./server/@types/prisonApi/generated -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/prisonApi/generated/types.gen.ts\"",
+    "generate-prisoner-search-api-types": "openapi-ts -i https://prisoner-search-dev.prison.service.justice.gov.uk/v3/api-docs -o ./server/@types/prisonerSearchApi/generated -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/prisonerSearchApi/generated/types.gen.ts\"",
     "rebuild": "npm run clean && npm run setup && npm run build",
     "setup": "npm ci && hmpps-npm-script-run-allowlist"
   },
@@ -71,6 +71,7 @@
     "url-value-parser": "^2.2.0"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "0.97.3",
     "@jgoz/esbuild-plugin-typecheck": "^5.0.0",
     "@ministryofjustice/eslint-config-hmpps": "^1.0.4",
     "@ministryofjustice/hmpps-npm-script-allowlist": "0.0.6",

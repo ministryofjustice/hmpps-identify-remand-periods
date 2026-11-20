@@ -200,7 +200,7 @@ const remandResult = {
       to: '2023-03-20',
       chargeIds: [2222],
       days: 48,
-      status: 'SHARED',
+      status: 'APPLICABLE',
       fromEvent: { date: '2023-02-01', description: 'Remanded' },
       toEvent: { date: '2023-03-20', description: 'Imprisonment' },
     } as ChargeRemand,
@@ -215,6 +215,7 @@ const remandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
+      externalMovementRelease: false,
     } as IntersectingSentence,
     {
       from: '2023-01-17',
@@ -231,6 +232,7 @@ const remandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
+      externalMovementRelease: false,
     } as IntersectingSentence,
     {
       // Same book number and shorter, shouldn't be displayed
@@ -248,6 +250,7 @@ const remandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
+      externalMovementRelease: false,
     } as IntersectingSentence,
     {
       // Different book number should be displayed with text.
@@ -265,6 +268,7 @@ const remandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
+      externalMovementRelease: false,
     } as IntersectingSentence,
     {
       // After most recent adjustment
@@ -276,11 +280,13 @@ const remandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [1],
+      externalMovementRelease: false,
     } as IntersectingSentence,
   ],
   periodsServingSentenceUsingCRDS: [],
   issuesWithLegacyData: [
     {
+      type: 'MISSING_OFFENCE_DATE',
       message: 'This is an important message',
       offence: { code: 'ASD', statute: 'WR91', description: 'An offence with same statute' },
       bookingId: 1204935,
@@ -288,6 +294,7 @@ const remandResult = {
       courtCaseRef: 'CASE5678',
     } as LegacyDataProblem,
     {
+      type: 'MISSING_OFFENCE_DATE',
       message: 'This is also important message',
       offence: { code: 'A', statute: 'B', description: 'C' },
       bookingId: 1204935,
@@ -295,6 +302,7 @@ const remandResult = {
       courtCaseRef: 'CASE1234',
     } as LegacyDataProblem,
     {
+      type: 'MISSING_OFFENCE_DATE',
       message: 'This is not an important message',
       offence: { code: 'TP47017', statute: 'TP47', description: 'Accidentally allow a chimney to be on fire' },
       bookingId: 1204935,
@@ -363,6 +371,7 @@ const conclusiveRemandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [101],
+      externalMovementRelease: false,
     } as IntersectingSentence,
   ],
   periodsServingSentenceUsingCRDS: [],
@@ -428,6 +437,7 @@ const onePlusremandDaysRemandResult = {
       service: 'HISTORIC',
       errors: [],
       calculationIds: [101],
+      externalMovementRelease: false,
     } as IntersectingSentence,
   ],
   periodsServingSentenceUsingCRDS: [],
