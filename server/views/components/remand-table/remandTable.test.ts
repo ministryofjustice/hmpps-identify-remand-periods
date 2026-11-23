@@ -43,7 +43,7 @@ describe('Tests for remand tables component using charge remand', () => {
     expect(firstRowCells.eq(0).text()).toStrictEqual('01/02/2023 to 20/03/2023')
     expect(firstRowCells.eq(1).text()).toStrictEqual('48')
     expect(firstRowCells.eq(2).text()).toStrictEqual('WR91001 - Abstract water without a licence')
-    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 10/01/2022')
+    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 12/01/2022')
 
     const secondRowCells = remandRows.eq(1).find('td')
     expect(secondRowCells.eq(0).text()).toStrictEqual('10/01/2023 to 20/01/2023')
@@ -119,7 +119,7 @@ describe('Tests for remand tables component using charge remand', () => {
     expect(firstRowCells.eq(1).hasClass('no-bottom-border')).toStrictEqual(true)
     expect(firstRowCells.eq(2).text()).toStrictEqual('WR91001 - Abstract water without a licence')
     expect(firstRowCells.eq(2).hasClass('no-bottom-border')).toStrictEqual(true)
-    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 10/01/2022')
+    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 12/01/2022')
     expect(firstRowCells.eq(3).hasClass('no-bottom-border')).toStrictEqual(true)
 
     const secondRowCells = remandRows.eq(1).find('td')
@@ -177,7 +177,7 @@ describe('Tests for remand tables component using adjustments', () => {
     expect(firstRowCells.eq(0).text()).toStrictEqual('01/02/2023 to 20/03/2023')
     expect(firstRowCells.eq(1).text()).toStrictEqual('48')
     expect(firstRowCells.eq(2).text()).toStrictEqual('WR91001 - Abstract water without a licence')
-    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 10/01/2022')
+    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 12/01/2022')
 
     const secondRowCells = remandRows.eq(1).find('td')
     expect(secondRowCells.eq(0).text()).toStrictEqual('10/01/2023 to 20/01/2023')
@@ -282,7 +282,7 @@ describe('Tests for remand tables component using adjustments', () => {
     expect(firstRowCells.eq(1).hasClass('no-bottom-border')).toStrictEqual(true)
     expect(firstRowCells.eq(2).text()).toStrictEqual('WR91001 - Abstract water without a licence')
     expect(firstRowCells.eq(2).hasClass('no-bottom-border')).toStrictEqual(true)
-    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 10/01/2022')
+    expect(firstRowCells.eq(3).text()).toStrictEqual('10/01/2022 to 12/01/2022')
     expect(firstRowCells.eq(3).hasClass('no-bottom-border')).toStrictEqual(true)
 
     const secondRowCells = remandRows.eq(1).find('td')
