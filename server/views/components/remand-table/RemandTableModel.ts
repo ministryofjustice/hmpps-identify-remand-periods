@@ -56,7 +56,7 @@ function createRemandTable(
         { text: firstCharge ? `${period.days}` : '', classes },
         { text: `${charge.offence.code} - ${charge.offence.description}`, classes },
         {
-          text: `${date(charge.offenceDate)}${charge.offenceEndDate ? ` to ${date(charge.offenceDate)}` : ''}`,
+          text: `${date(charge.offenceDate)}${charge.offenceEndDate ? ` to ${date(charge.offenceEndDate)}` : ''}`,
           classes,
         },
       ])
